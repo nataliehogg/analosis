@@ -12,14 +12,16 @@ from lenstronomy.LightModel.light_model import LightModel
 
 class Image:
 
-    def __init__(self, lens_model_list, kwargs, number_of_images, path):
+    def __init__(self):#, lens_model_list, kwargs, number_of_images, path):
         rings_for_dwarf_lords = 7
 
-        self.generate_image(lens_model_list, kwargs, number_of_images, path)
+        # self.generate_image(lens_model_list, kwargs, number_of_images, path)
 
     def generate_image(self, lens_model_list, kwargs, number_of_images, path):
 
         image_list = []
+        data = []
+        psf = []
 
         kwargs_los = kwargs['los_kwargs'].to_dict('records')
         kwargs_bar = kwargs['baryonic_kwargs'].to_dict('records')
@@ -64,4 +66,4 @@ class Image:
             pickle.dump(image_list, outfile)
             outfile.close()
 
-        return image_list
+        return kwargs_data, kwargs_psf, kwargs_numerics

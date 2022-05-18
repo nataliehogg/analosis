@@ -50,7 +50,16 @@ class Run:
         else:
             print('Scenario options are `composite lens` or `distributed haloes`.')
 
-        image = Image(settings['lens_model_list'], kwargs, settings['number_of_images'], path)
+        im = Image()
+        kwargs_data, kwargs_psf, kwargs_numerics = im.generate_image(settings['lens_model_list'],
+                                                                     kwargs, settings['number_of_images'], path)
+
+        if settings['MCMC'] == True:
+            chain = MCMC(settings, kwargs, kwargs_data, kwargs_psf, kwargs_numerics, path)
+        elif settings['MCMC'] == False:
+            print('MCMC will not be run.')
+        else:
+            print('MCMC must be True or False.')
 
         print('\nAnalysis complete and results saved at {}.'.format(path))
 

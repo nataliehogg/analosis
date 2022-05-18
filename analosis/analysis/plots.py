@@ -44,24 +44,39 @@ class Plots:
         v_min = -4
         v_max = 1
 
-        f, ax = plt.subplots(int(np.sqrt(number_of_images)), int(np.sqrt(number_of_images)),
-                             figsize=(10, 10), sharex=False, sharey=False)
 
-        for a, i in zip(ax.flat, range(number_of_images)):
-            im = a.matshow(np.log10(image_list[i]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
-            if quality[i] < quality_cut:
-                a.set_title('{:.2f}'.format(quality[i]), color='red', fontsize=12)
-                a.plot([0,1],[0,1], color='red')
-                a.plot([0,1],[1,0], color='red')
+        if number_of_images == 1:
+            f, ax = plt.subplots(1, 1, figsize = (5,5), sharex=False, sharey=False)
+            im = ax.matshow(np.log10(image_list[0]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
+            if quality < quality_cut:
+                ax.set_title('{:.2f}'.format(quality[0]), color='red', fontsize=12)
+                ax.plot([0,1],[0,1], color='red')
+                ax.plot([0,1],[1,0], color='red')
             else:
-                a.set_title('{:.2f}'.format(quality[i]), fontsize=12)
-            a.get_xaxis().set_visible(False)
-            a.get_yaxis().set_visible(False)
-            a.autoscale(False)
+                ax.set_title('{:.2f}'.format(quality[0]), fontsize=12)
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+            ax.autoscale(False)
+        else:
+            if number_of_images >= 4:
+                f, ax = plt.subplots(int(np.sqrt(number_of_images)), int(np.sqrt(number_of_images)),
+                                 figsize=(10, 10), sharex=False, sharey=False)
+            else:
+                f, ax = plt.subplots(1, number_of_images, figsize = (10, 10), sharex=False, sharey=False)
+
+            for a, i in zip(ax.flat, range(number_of_images)):
+                im = a.matshow(np.log10(image_list[i]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
+                if quality[i] < quality_cut:
+                    a.set_title('{:.2f}'.format(quality[i]), color='red', fontsize=12)
+                    a.plot([0,1],[0,1], color='red')
+                    a.plot([0,1],[1,0], color='red')
+                else:
+                    a.set_title('{:.2f}'.format(quality[i]), fontsize=12)
+                a.get_xaxis().set_visible(False)
+                a.get_yaxis().set_visible(False)
+                a.autoscale(False)
 
         plt.savefig(str(path) + '/plots/image.pdf', dpi=300, bbox_inches='tight')
-
-        # plt.show()
 
         return None
 
