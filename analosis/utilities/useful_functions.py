@@ -1,27 +1,33 @@
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from lenstronomy.LensModel.Profiles.sersic_utils import SersicUtil
-sersic_util = SersicUtil()
 
 class Utilities:
     """
     This class contains useful functions.
     """
 
-    def __init__(self):
-        # empty init kills everything
-        rings_for_the_elves = 3
+    def __init__(self, cosmo):
+        self.cosmo = cosmo
+        self.sersic_util = SersicUtil()
 
-    def dA(self, cosmo, z1, z2):
-        # returns angular diameter distances in Mpc
-        distance = cosmo.angular_diameter_distance_z1z2(z1, z2).value
-        return distance
 
+    def dA(self, z1, z2):
+        """
+        returns angular diameter distances in Mpc
+        """
+        
+        distance = self.cosmo.angular_diameter_distance_z1z2(z1, z2).value
+        
+        return distance    
+
+    
     def ellipticity(self, phi, q):
         # transforms orientation angle phi and aspect ratio q into complex ellipticity modulii e1, e2
         e1 = (1 - q)/(1 + q)*np.cos(2*phi)
         e2 = (1 - q)/(1 + q)*np.sin(2*phi)
         return e1, e2
+
 
     def colorbar(self, mappable):
         # thanks to Joseph Long! https://joseph-long.com/writing/colorbars/
@@ -33,6 +39,7 @@ class Utilities:
         cbar = fig.colorbar(mappable, cax = cax)
         plt.sca(last_axes)
         return cbar
+
 
     def distance_conversion(self, distance, conversion_type):
         # converts a distance in Mpc to Gpc, kpc, pc or m
@@ -49,6 +56,7 @@ class Utilities:
             print('Unknown conversion type')
         return new_distance
 
+
     def angle_conversion(self, angle, conversion_type):
         # converts an angle in arcsec to rad or rad to arcsec
         # careful! it doesn't sanity check your input
@@ -58,23 +66,33 @@ class Utilities:
         elif conversion_type == 'to radians':
             new_angle = angle*conversion_factor
         else:
-            print('Unknown conversion type')
+            raise ValueError('Unknown conversion type')
         return new_angle
 
-    def main_lens_convergence(self, mass, rs, ns, e1, e2, d_os, d_od, d_ds):
-        '''
-        computes convergence at half-light radius, assuming light traces baryonic mass
-        '''
 
-        # 1. Get critical density in lens plane
+    def get_effective_convergence(self, mass, R_sersic, n_sersic, e1, e2,
+                                  d_os, d_od, d_ds):
+        """
+        Computes convergence at half-light radius for a Sérsec profile,
+        assuming light traces baryonic mass.
+        """
+
+        # Get critical density in lens plane
         rS_sun = 2.95e3 / (3.086e22) # Schwarszchild radius of the sun in Mpc
         Sigma_crit_rad = d_os * d_od / 2 / rS_sun / d_ds # [M_sun / rad^2]
         Sigma_crit = Sigma_crit_rad / (3600 * 180 / np.pi)**2 # [M_sun / arcsec^2]
-        # 2. Compute integrated convergence if kappa_eff = 1
-        integral_unity = sersic_util.total_flux(amp = 1, R_sersic = rs, n_sersic = ns, e1 = e1, e2 = e2) # [arcsec^2]
-        # 3. Deduce the value of kappa_eff
+        
+        # Compute integrated convergence if kappa_eff = 1
+        
+        integral_unity = self.sersic_util.total_flux(amp=1,
+                                                R_sersic=R_sersic,
+                                                n_sersic=n_sersic,
+                                                e1=e1, e2=e2) # [arcsec^2]
+        # Deduce the value of kappa_eff
         kappa = mass / Sigma_crit / integral_unity
+        
         return kappa
+
 
     def gamma(self, max_value, which):
         '''
@@ -91,7 +109,8 @@ class Utilities:
             print('bad option')
         return gamma
 
-    def compute_omega_LOS(self, gamma1_od, gamma2_od, gamma1_os, gamma2_os, gamma1_ds, gamma2_ds):
+
+    def compute_omega_LOS(self, kwargs_shear):
         """
         This function computes the rotation (antisymmmetic) part of the LOS amplification
         matrix, assuming that it is defined as
@@ -99,9 +118,9 @@ class Utilities:
         """
 
         # Define the complex shears
-        gamma_od = gamma1_od + gamma2_od * 1j
-        gamma_os = gamma1_os + gamma2_os * 1j
-        gamma_ds = gamma1_ds + gamma2_ds * 1j
+        gamma_od = kwargs_shear['gamma1_od'] + kwargs_shear['gamma2_od'] * 1j
+        gamma_os = kwargs_shear['gamma1_os'] + kwargs_shear['gamma2_os'] * 1j
+        gamma_ds = kwargs_shear['gamma1_ds'] + kwargs_shear['gamma2_ds'] * 1j
 
         # Compute the rotation
         kappaomega = (gamma_ds * np.conj(gamma_os)
@@ -111,3 +130,23 @@ class Utilities:
         omega = np.imag(kappaomega)
 
         return omega
+    
+    
+    def Einstein_radius_point_lens(self, mass, distances):
+        """
+        This function returns the Einstein radius [in arcsec] of a point lens
+        with mass [in solar masses] and with the various distances [in Mpc].
+        """
+        
+        rS_sun = 2.95e3 / (3.086e22) # Schwarszchild radius of the sun in Mpc
+        d_od = distances['od']
+        d_os = distances['os']
+        d_ds = distances['ds']
+        
+        theta_E = np.sqrt(2 * rS_sun * d_ds / d_os / d_od) # in rad
+        theta_E = self.angle_conversion(theta_E, 'to arcsecs')
+        
+        return theta_E
+        
+        
+        
