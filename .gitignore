@@ -9,7 +9,10 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-results/
+*.pdf
+*.pickle
+*.h5
+*.csv
 *.pyc
 .DS_Store
 develop-eggs/
