@@ -4,7 +4,7 @@ import pandas as pd
 from analosis.utilities.useful_functions import Utilities
 from analosis.image.source import Source
 from analosis.image.los import LOS
-from analosis.image.composite_lens.composite_main_lens import CompositeMainLens
+from analosis.image.composite_lens.composite_baryons import CompositeBaryons
 from analosis.image.composite_lens.composite_nfw_halo import CompositeNFWHalo
 
 class CompositeLens:
@@ -23,7 +23,7 @@ class CompositeLens:
         util = Utilities()
         source = Source()
         los = LOS()
-        main = CompositeMainLens()
+        bar = CompositeBaryons()
         nfw = CompositeNFWHalo()
 
         d_od = util.dA(cosmo, cpars['z_observer'], cpars['z_lens'])
@@ -37,7 +37,7 @@ class CompositeLens:
         kwargs_sl_dataframe = source.kwargs(number_of_images)
         kwargs_los_dataframe = los.kwargs(number_of_images, max_gamma)
         # lens light kwargs are fixed to be the same as the main lens kwargs
-        kwargs_main_dataframe, kwargs_ll_dataframe = main.kwargs(number_of_images, d_os, d_od, d_ds)
+        kwargs_bar_dataframe, kwargs_ll_dataframe = bar.kwargs(number_of_images, d_os, d_od, d_ds)
         kwargs_nfw_dataframe = nfw.kwargs(number_of_images, cpars, lens_cosmo)
 
         # check this part works as wanted
@@ -47,7 +47,7 @@ class CompositeLens:
 
 
         # combine and save final dataframe to file
-        kwargs_dataframe = pd.concat([kwargs_main_dataframe, kwargs_ll_dataframe,
+        kwargs_dataframe = pd.concat([kwargs_bar_dataframe, kwargs_ll_dataframe,
                                       kwargs_nfw_dataframe, kwargs_sl_dataframe,
                                       kwargs_los_dataframe], axis=1)
 
