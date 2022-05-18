@@ -1,9 +1,71 @@
+import numpy as np
+import pandas as pd
+import matplotlib
+from matplotlib import rc
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pickle
+import copy
+
+# Use TeX
+rc('text', usetex=True)
+rc('font', family='serif')
+matplotlib.rcParams.update({'font.size': 18})
 
 class Plots:
 
-    def __init__():
+    def __init__(self):
         rings_to_bind_them_all = 1
 
-        # we want the ability to plot everything: image, lens mass dist, contours etc
+    def lens_mass_plot(self, path):
 
-        # this should all be called separately from the notebook once the results have been saved
+        return plot
+
+    def image_plot(self, path, number_of_images):
+
+        # Define the quality of images (the criterion is very empirical here)
+        kwargs = pd.read_csv(str(path) + '/datasets/input_kwargs.csv')
+        R_s = kwargs['R_sersic_sl'].to_numpy()
+        beta = np.sqrt(kwargs['x_sl']**2. + kwargs['y_sl']**2.).to_numpy()
+        quality = 1 / (1 + (beta/3/R_s)**2)
+
+        quality_cut = 0
+
+        filename = str(path) + '/datasets/image_list.pickle'
+        infile = open(filename,'rb')
+        image_list = pickle.load(infile)
+        infile.close()
+
+        cmap_string = 'bone'
+        cmap = copy.copy(matplotlib.cm.get_cmap(cmap_string))
+        cmap.set_bad(color='k', alpha=1.)
+        cmap.set_under('k')
+
+        v_min = -4
+        v_max = 1
+
+        f, ax = plt.subplots(int(np.sqrt(number_of_images)), int(np.sqrt(number_of_images)),
+                             figsize=(10, 10), sharex=False, sharey=False)
+
+        for a, i in zip(ax.flat, range(number_of_images)):
+            im = a.matshow(np.log10(image_list[i]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
+            if quality[i] < quality_cut:
+                a.set_title('{:.2f}'.format(quality[i]), color='red', fontsize=12)
+                a.plot([0,1],[0,1], color='red')
+                a.plot([0,1],[1,0], color='red')
+            else:
+                a.set_title('{:.2f}'.format(quality[i]), fontsize=12)
+            a.get_xaxis().set_visible(False)
+            a.get_yaxis().set_visible(False)
+            a.autoscale(False)
+
+        plt.savefig(str(path) + '/plots/image.pdf', dpi=300, bbox_inches='tight')
+
+        # plt.show()
+
+        return None
+
+
+    def contour_plot(self, path):
+
+        return plot

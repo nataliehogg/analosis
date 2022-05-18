@@ -25,6 +25,9 @@ import pickle
 
 from analosis.image.composite_lens.composite_lens_generator import CompositeLens
 from analosis.image.distributed_haloes.distributed_haloes_generator import DistributedHaloes
+from analosis.image.image_generator import Image
+from analosis.analysis.mcmc import MCMC
+from analosis.analysis.plots import Plots
 
 class Run:
 
@@ -37,13 +40,20 @@ class Run:
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
         lens_cosmo = LensCosmo(z_lens = cpars['z_lens'], z_source = cpars['z_source'], cosmo = cosmo)
 
-        path = (Path(__file__).parent/'results/').resolve()
+        path = self.pathfinder()
 
         if settings['scenario'] == 'composite lens':
-            self.result = CompositeLens(cpars, cosmo, lens_cosmo, settings, parameters, path)
+            s = CompositeLens()
+            kwargs = s.kwargs(cpars, cosmo, lens_cosmo, settings, parameters, path)
         elif settings['scenario'] == 'distributed haloes':
-            self.result = DistributedHaloes(cpars, cosmo, lens_cosmo, settings, parameters, path)
+            kwargs = DistributedHaloes(cpars, cosmo, lens_cosmo, settings, parameters, path)
         else:
             print('Scenario options are `composite lens` or `distributed haloes`.')
 
+        image = Image(settings['lens_model_list'], kwargs, settings['number_of_images'], path)
+
         print('\nAnalysis complete and results saved at {}.'.format(path))
+
+    def pathfinder(self):
+        path = (Path(__file__).parent/'results/').resolve()
+        return str(path)

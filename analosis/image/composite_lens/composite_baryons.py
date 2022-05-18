@@ -13,7 +13,7 @@ class CompositeBaryons():
         util = Utilities()
 
         kwargs_bar_dataframe = pd.DataFrame(columns = ['k_eff_ml', 'R_sersic_ml', 'n_sersic_ml', 'x_ml', 'y_ml', 'e1_ml', 'e2_ml'])
-        kwargs_ll_dataframe = pd.DataFrame(columns = ['k_eff_ll', 'R_sersic_ll', 'n_sersic_ll', 'x_ll', 'y_ll', 'e1_ll', 'e2_ll'])
+        kwargs_ll_dataframe = pd.DataFrame(columns = ['R_sersic_ll', 'n_sersic_ll', 'x_ll', 'y_ll', 'e1_ll', 'e2_ll'])
 
 
         # get the main lens kwargs
@@ -31,11 +31,11 @@ class CompositeBaryons():
         kwargs_bar_dataframe['y_ml']        = kwargs_ll_dataframe['y_ll']        = [0.0]*number_of_images
         kwargs_bar_dataframe['e1_ml']       = kwargs_ll_dataframe['e1_ll']       = np.random.normal(0.0, 0.1, number_of_images)
         kwargs_bar_dataframe['e2_ml']       = kwargs_ll_dataframe['e2_ll']       = np.random.normal(0.0, 0.1, number_of_images)
-        kwargs_bar_dataframe['k_eff_ml']    = kwargs_ll_dataframe['k_eff_ll']    = [util.main_lens_convergence(mass_bar_lens[i],
-                                                                                                                  kwargs_bar_dataframe['R_sersic_ml'][i],
-                                                                                                                  kwargs_bar_dataframe['n_sersic_ml'][i],
-                                                                                                                  kwargs_bar_dataframe['e1_ml'][i],
-                                                                                                                  kwargs_bar_dataframe['e2_ml'][i],
-                                                                                                                  d_os, d_od, d_ds) for i in range(len(mass_bar_lens))]
+        kwargs_bar_dataframe['k_eff_ml']    = [util.main_lens_convergence(mass_bar_lens[i],
+                                                                          kwargs_bar_dataframe['R_sersic_ml'][i],
+                                                                          kwargs_bar_dataframe['n_sersic_ml'][i],
+                                                                          kwargs_bar_dataframe['e1_ml'][i],
+                                                                          kwargs_bar_dataframe['e2_ml'][i],
+                                                                          d_os, d_od, d_ds) for i in range(len(mass_bar_lens))]
 
         return kwargs_bar_dataframe, kwargs_ll_dataframe
