@@ -1,5 +1,5 @@
 import numpy as np
-#import matplotlib.pyplot as plt
+import pandas as pd
 from lenstronomy.LensModel.Profiles.sersic_utils import SersicUtil
 
 class Utilities:
@@ -7,8 +7,9 @@ class Utilities:
     This class contains useful functions.
     """
 
-    def __init__(self, cosmo):
+    def __init__(self, cosmo, path):
         self.cosmo = cosmo
+        self.path = path
         self.sersic_util = SersicUtil()
 
 
@@ -16,12 +17,12 @@ class Utilities:
         """
         returns angular diameter distances in Mpc
         """
-        
-        distance = self.cosmo.angular_diameter_distance_z1z2(z1, z2).value
-        
-        return distance    
 
-    
+        distance = self.cosmo.angular_diameter_distance_z1z2(z1, z2).value
+
+        return distance
+
+
     def ellipticity(self, phi, q):
         # transforms orientation angle phi and aspect ratio q into complex ellipticity modulii e1, e2
         e1 = (1 - q)/(1 + q)*np.cos(2*phi)
@@ -81,16 +82,16 @@ class Utilities:
         rS_sun = 2.95e3 / (3.086e22) # Schwarszchild radius of the sun in Mpc
         Sigma_crit_rad = d_os * d_od / 2 / rS_sun / d_ds # [M_sun / rad^2]
         Sigma_crit = Sigma_crit_rad / (3600 * 180 / np.pi)**2 # [M_sun / arcsec^2]
-        
+
         # Compute integrated convergence if kappa_eff = 1
-        
+
         integral_unity = self.sersic_util.total_flux(amp=1,
                                                 R_sersic=R_sersic,
                                                 n_sersic=n_sersic,
                                                 e1=e1, e2=e2) # [arcsec^2]
         # Deduce the value of kappa_eff
         kappa = mass / Sigma_crit / integral_unity
-        
+
         return kappa
 
 
@@ -130,23 +131,40 @@ class Utilities:
         omega = np.imag(kappaomega)
 
         return omega
-    
-    
+
+
     def Einstein_radius_point_lens(self, mass, distances):
         """
         This function returns the Einstein radius [in arcsec] of a point lens
         with mass [in solar masses] and with the various distances [in Mpc].
         """
-        
+
         rS_sun = 2.95e3 / (3.086e22) # Schwarszchild radius of the sun in Mpc
         d_od = distances['od']
         d_os = distances['os']
         d_ds = distances['ds']
-        
+
         theta_E = np.sqrt(2 * rS_sun * d_ds / d_os / d_od) # in rad
         theta_E = self.angle_conversion(theta_E, 'to arcsecs')
-        
+
         return theta_E
-        
-        
-        
+
+    def get_dataframe(self, kwargs_dict):
+
+        dataframe = pd.DataFrame(kwargs_dict)
+
+        return dataframe
+
+    def combine_dataframes(self, dataframe_list):
+
+        dataframe = pd.concat(dataframe_list, axis=1)
+
+        return dataframe
+
+    def save_input_kwargs(self, dataframe):
+        '''
+        saves input kwargs dataframe to file
+        '''
+
+        dataframe.to_csv(str(self.path) + '/datasets/input_kwargs.csv',
+                              index = False)

@@ -12,22 +12,23 @@ from lenstronomy.LightModel.light_model import LightModel
 
 class Image:
 
-    def __init__(self):#, lens_model_list, kwargs, number_of_images, path):
+    def __init__(self):
         rings_for_dwarf_lords = 7
 
-        # self.generate_image(lens_model_list, kwargs, number_of_images, path)
-
-    def generate_image(self, lens_model_list, kwargs, number_of_images, path):
+    def generate_image(self, baryons, halo, los, lens_light, source, number_of_images, path):
 
         image_list = []
         data = []
         psf = []
 
-        kwargs_los = kwargs['los_kwargs'].to_dict('records')
-        kwargs_bar = kwargs['baryonic_kwargs'].to_dict('records')
-        kwargs_nfw = kwargs['nfw_kwargs'].to_dict('records')
-        kwargs_sl  = kwargs['source_kwargs'].to_dict('records')
-        kwargs_ll = kwargs['lens_light_kwargs'].to_dict('records')
+        kwargs_los = los.to_dict('records')
+        kwargs_bar = baryons.to_dict('records')
+        kwargs_nfw = halo.to_dict('records')
+        kwargs_sl  = source.to_dict('records')
+        kwargs_ll  = lens_light.to_dict('records')
+
+        # work out how to deal with this
+        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
 
         for i in range(number_of_images):
 

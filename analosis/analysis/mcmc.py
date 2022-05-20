@@ -8,12 +8,12 @@ im = Image()
 
 class MCMC:
 
-    def __init__(self, settings, kwargs, kwargs_data, kwargs_psf, kwargs_numerics, path):
+    def __init__(self, settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path):
         rings_to_rule_them_all = 1
 
-        self.mcmc(settings, kwargs, kwargs_data, kwargs_psf, kwargs_numerics, path)
+        self.mcmc(settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path)
 
-    def mcmc(self, settings, kwargs, kwargs_data, kwargs_psf, kwargs_numerics, path):
+    def mcmc(self, settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path):
 
         if settings['scenario'] == 'distributed haloes':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
@@ -21,17 +21,20 @@ class MCMC:
             pass
 
         if settings['complexity'] == 'perfect':
+            # we need to deal with the error that happens by selecting perfect
+            # but not having the non-minimal LOS parameters defined
+            # currently you get a key error regarding kappa_os if you run this setting
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         elif settings['complexity'] == 'perfect minimal':
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         else:
             print('I didn\'t implement that setting yet.')
 
-        kwargs_los = kwargs['los_kwargs'].to_dict('records')
-        kwargs_bar = kwargs['baryonic_kwargs'].to_dict('records')
-        kwargs_nfw = kwargs['nfw_kwargs'].to_dict('records')
-        kwargs_sl  = kwargs['source_kwargs'].to_dict('records')
-        kwargs_ll = kwargs['lens_light_kwargs'].to_dict('records')
+        kwargs_los = los.to_dict('records')
+        kwargs_bar = baryons.to_dict('records')
+        kwargs_nfw = halo.to_dict('records')
+        kwargs_sl  = source.to_dict('records')
+        kwargs_ll = lens_light.to_dict('records')
 
         kwargs_likelihood = {'source_marg': True}
 
@@ -196,7 +199,7 @@ class MCMC:
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': 1.,
-                                     'backup_filename': path + '/chains/fit_image_'+ str(i) + '.h5'}]]
+                                     'backup_filename': str(path) + '/chains/fit_image_'+ str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())
@@ -222,7 +225,7 @@ class MCMC:
 
 
         # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
-        output_los_kwargs_dataframe.to_csv(path + '/datasets/output_kwargs.csv', index = False)
+        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/output_kwargs.csv', index = False)
 
 
         return None

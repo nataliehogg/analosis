@@ -10,14 +10,14 @@ class LOS:
         """
         Creates the LOS structure, with upper limit for the value of the shears.
         """
-        
+
         self.model = model
         self.kwargs = {}
-        
+
         # standard parameters
         for interval in ['_os', '_od', '_ds', '_los']:
             for distortion in ['kappa', 'gamma', 'omega']:
-            
+
                 if interval != '_los':
                     if distortion == 'gamma':
                         gamma_sq = np.random.uniform(0, gamma_max**2)
@@ -27,9 +27,9 @@ class LOS:
                         self.kwargs['gamma2'+interval] = gamma * np.sin(phi)
                     else:
                         self.kwargs[distortion + interval] = 0
-                
+
                 else: # this syntax works because _los is last
-                
+
                     if distortion == 'omega':
                         self.kwargs[distortion + interval] = util.compute_omega_LOS(self.kwargs)
                     else:
@@ -37,22 +37,21 @@ class LOS:
                             components = ['1', '2']
                         else:
                             components = ['']
-                            
+
                         for component in components:
                             self.kwargs[distortion + component + interval] = (
                                 self.kwargs[distortion + component + '_od']
                                 + self.kwargs[distortion + component + '_os']
                                 - self.kwargs[distortion + component + '_ds'])
-                            
-                            
+
     def make_dataframe(self):
         """
         Transforms the kwargs into a dataframe.
         """
-         
+
         dataframe = pd.DataFrame()
-         
+
         for key, value in self.kwargs.items():
             dataframe[key] = [value]
-             
+
         return dataframe

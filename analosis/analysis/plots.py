@@ -28,7 +28,8 @@ class Plots:
         R_s = kwargs['R_sersic_sl'].to_numpy()
         beta = np.sqrt(kwargs['x_sl']**2. + kwargs['y_sl']**2.).to_numpy()
         quality = 1 / (1 + (beta/3/R_s)**2)
-
+        
+        # make this user-defined
         quality_cut = 0
 
         filename = str(path) + '/datasets/image_list.pickle'
