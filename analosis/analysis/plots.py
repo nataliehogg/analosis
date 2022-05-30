@@ -21,7 +21,7 @@ class Plots:
 
         return plot
 
-    def image_plot(self, path, number_of_images):
+    def image_plot(self, path, number_of_images, save=True, show=True):
 
         # Define the quality of images (the criterion is very empirical here)
         kwargs = pd.read_csv(str(path) + '/datasets/input_kwargs.csv')
@@ -43,7 +43,7 @@ class Plots:
         cmap.set_under('k')
 
         v_min = -4
-        v_max = 1
+        v_max = 3
 
 
         if number_of_images == 1:
@@ -77,7 +77,10 @@ class Plots:
                 a.get_yaxis().set_visible(False)
                 a.autoscale(False)
 
-        plt.savefig(str(path) + '/plots/image.pdf', dpi=300, bbox_inches='tight')
+        if save:
+            plt.savefig(str(path) + '/plots/image.pdf', dpi=300, bbox_inches='tight')
+        if show:
+            plt.show()
 
         return None
 

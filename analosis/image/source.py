@@ -12,7 +12,7 @@ class Source:
                  util,
                  maximum_source_offset_factor=1,
                  model='SERSIC_ELLIPSE',
-                 amplitude_reference=1):
+                 amplitude_reference=100):
       """
       Creates the source light with Sérsic profile.
       This could later be generalised to other profiles.

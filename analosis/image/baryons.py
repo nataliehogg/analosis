@@ -14,7 +14,7 @@ class Baryons():
                  util,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
-                 amplitude_reference=1, # amplitude for a source with mean mass at z=1
+                 amplitude_reference=100, # amplitude for a source with mean mass at z=1
                  ):
         """
         Create the baryonic component of the main lens with Sérsic profile.
