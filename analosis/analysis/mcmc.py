@@ -154,36 +154,43 @@ class MCMC:
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
 
-            lens_light_model_list = ['SERSIC_ELLIPSE']
+            if settings['lens_light'] == True:
+                lens_light_model_list = ['SERSIC_ELLIPSE']
 
-            # lens light model
-            fixed_lens_light = []
-            kwargs_lens_light_init = []
-            kwargs_lens_light_sigma = []
-            kwargs_lower_lens_light = []
-            kwargs_upper_lens_light = []
+                # lens light model
+                fixed_lens_light = []
+                kwargs_lens_light_init = []
+                kwargs_lens_light_sigma = []
+                kwargs_lower_lens_light = []
+                kwargs_upper_lens_light = []
 
-            # Define parameters
-            fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
-            kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
-                                           'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
-            kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_lens_light.append({'R_sersic': -10.0, 'n_sersic': 0.5,   'e1': -0.5, 'e2': -0.5,})
-            kwargs_upper_lens_light.append({'R_sersic': 10.0,  'n_sersic': 5.0,   'e1': 0.5,  'e2': 0.5})
+                # Define parameters
+                fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
+                kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
+                                               'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
+                kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_lens_light.append({'R_sersic': -10.0, 'n_sersic': 0.5,   'e1': -0.5, 'e2': -0.5,})
+                kwargs_upper_lens_light.append({'R_sersic': 10.0,  'n_sersic': 5.0,   'e1': 0.5,  'e2': 0.5})
 
-            lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
-                                fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
+                lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
+                                    fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
 
+                kwargs_params = {'lens_model': lens_params,
+                                 'source_model': source_params,
+                                 'lens_light_model': lens_light_params}
 
-            # COMPLETE PARAMETER SPECIFICATION
+                kwargs_model = {'lens_model_list': lens_fit_list,
+                                'source_light_model_list': source_model_list,
+                                'lens_light_model_list': lens_light_model_list}
 
-            kwargs_params = {'lens_model': lens_params,
-                             'source_model': source_params,
-                             'lens_light_model': lens_light_params}
+            elif settings['lens_light'] == False:
+                kwargs_params = {'lens_model': lens_params,
+                                 'source_model': source_params}
 
-            kwargs_model = {'lens_model_list': lens_fit_list,
-                            'source_light_model_list': source_model_list,
-                            'lens_light_model_list': lens_light_model_list}
+                kwargs_model = {'lens_model_list': lens_fit_list,
+                                'source_light_model_list': source_model_list}
+            else:
+                print('Something went wrong with the lens light settings.')
 
             multi_band_list = [[kwargs_data, kwargs_psf, kwargs_numerics]]
 

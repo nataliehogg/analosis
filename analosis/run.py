@@ -36,8 +36,9 @@ class Run:
 
         path = (Path(__file__).parent/'results/').resolve()
 
-        print('Running the {} case with the following settings:\n\nModel: {}\nNumber of runs: {}'
-              .format(settings['scenario'], settings['complexity'], settings['number_of_images']))
+        print('Running the {} case with the following settings:\n\nModel: {}\nNumber of runs: {}\nLens light: {}'
+              .format(settings['scenario'], settings['complexity'],
+                      settings['number_of_images'], settings['lens_light']))
 
         colcos.setCosmology(cpars['id'])
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
@@ -104,12 +105,12 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            kwargs_data, kwargs_psf, kwargs_numerics = im.generate_image(baryons,
+            kwargs_data, kwargs_psf, kwargs_numerics = im.generate_image(settings,
+                                                                         baryons,
                                                                          halo,
                                                                          los,
                                                                          lens_light,
                                                                          source,
-                                                                         settings['number_of_images'],
                                                                          path)
 
         if settings['MCMC'] == True:

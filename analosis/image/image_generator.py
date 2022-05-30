@@ -15,7 +15,7 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
-    def generate_image(self, baryons, halo, los, lens_light, source, number_of_images, path):
+    def generate_image(self, settings, baryons, halo, los, lens_light, source, path):
 
         image_list = []
         data = []
@@ -30,7 +30,7 @@ class Image:
         # work out how to deal with this
         lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
 
-        for i in range(number_of_images):
+        for i in range(settings['number_of_images']):
 
             # telescope settings (HST)
             kwargs_data = sim_util.data_configure_simple(50, 0.08, 5400, 0.005)
@@ -39,18 +39,33 @@ class Image:
             psf_class = PSF(**kwargs_psf)
             kwargs_numerics = {'supersampling_factor': 1, 'supersampling_convolution': False}
 
-            imageModel = ImageModel(data_class, psf_class,
-                                    lens_model_class = LensModel(lens_model_list),
-                                    source_model_class = LightModel(['SERSIC_ELLIPSE']),
-                                    lens_light_model_class = LightModel(['SERSIC_ELLIPSE']),
-                                    kwargs_numerics = kwargs_numerics)
+            if settings['lens_light'] == True:
+                imageModel = ImageModel(data_class, psf_class,
+                                        lens_model_class = LensModel(lens_model_list),
+                                        source_model_class = LightModel(['SERSIC_ELLIPSE']),
+                                        lens_light_model_class = LightModel(['SERSIC_ELLIPSE']),
+                                        kwargs_numerics = kwargs_numerics)
 
-            image_model = imageModel.image([kwargs_los[i],
-                                           kwargs_bar[i],
-                                           kwargs_nfw[i]],
-                                           [kwargs_sl[i]],
-                                           [kwargs_ll[i]],
-                                           kwargs_ps = None)
+                image_model = imageModel.image([kwargs_los[i],
+                                               kwargs_bar[i],
+                                               kwargs_nfw[i]],
+                                               [kwargs_sl[i]],
+                                               [kwargs_ll[i]],
+                                               kwargs_ps = None)
+
+            elif settings['lens_light'] == False:
+                imageModel = ImageModel(data_class, psf_class,
+                                        lens_model_class = LensModel(lens_model_list),
+                                        source_model_class = LightModel(['SERSIC_ELLIPSE']),
+                                        kwargs_numerics = kwargs_numerics)
+
+                image_model = imageModel.image([kwargs_los[i],
+                                               kwargs_bar[i],
+                                               kwargs_nfw[i]],
+                                               [kwargs_sl[i]],
+                                               kwargs_ps = None)
+            else:
+                print('You need to select lens light True or False.')
 
             poisson = image_util.add_poisson(image_model, exp_time = 5400)
             bkg = image_util.add_background(image_model, sigma_bkd = 0.005)
