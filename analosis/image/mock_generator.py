@@ -17,10 +17,10 @@ class Mocks:
                  scenario='composite lens',
                  path='',
                  number_of_images=1,
-                 Einstein_radius_min=0.5,
+                 Einstein_radius_min=0.5, # arcsec
                  gamma_max=0.03,
-                 sigma_halo_offset=0.16,
-                 maximum_source_offset_factor=2
+                 sigma_halo_offset=300, # pc
+                 maximum_source_offset_factor=2 # in units of source size
                  ):
 
         self.util = util
@@ -28,6 +28,7 @@ class Mocks:
         self.path = path
         self.number_of_images = number_of_images
         self.Einstein_radius_min = Einstein_radius_min
+        self.Einstein_radii = []
         self.gamma_max = gamma_max
         self.sigma_halo_offset = sigma_halo_offset
         self.maximum_source_offset_factor = maximum_source_offset_factor
@@ -66,18 +67,21 @@ class Mocks:
                     baryons = Baryons(redshifts, distances, self.util)
                     halo = Halo(mass_baryons=baryons.mass,
                                 redshifts=redshifts,
+                                distances=distances,
                                 util=self.util,
                                 sigma_offset=self.sigma_halo_offset)
 
                     # estimate the Einstein radius in arcsec
                     theta_E_bar = self.util.Einstein_radius_point_lens(
                         mass=baryons.mass, distances=distances)
-                    Einstein_radius = theta_E_bar + halo.kwargs['alpha_Rs']
+                    Einstein_radius = np.sqrt(theta_E_bar**2
+                                              + halo.kwargs['alpha_Rs']**2)
 
                     attempt += 1
                     if attempt > 100:
                         raise RuntimeWarning("I seem to have difficulties to\
                                              reach the required Einstein radius.")
+                self.Einstein_radii.append(Einstein_radius)
 
                 halo_kwargs = halo.kwargs #for i in range(self.number_of_images)]
                 baryon_kwargs = baryons.return_kwargs(data_type='mass') #for i in range(self.number_of_images)]

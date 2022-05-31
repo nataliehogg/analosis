@@ -11,8 +11,9 @@ class Halo():
     def __init__(self,
                  mass_baryons, # in solar masses
                  redshifts,
+                 distances,
                  util,
-                 sigma_offset,
+                 sigma_offset, # in pc
                  model_mass='NFW_ELLIPSE',
                  ):
         """
@@ -46,15 +47,21 @@ class Halo():
         e1 = np.random.normal(0.0, 0.2)
         e2 = np.random.normal(0.0, 0.2)
 
-        # offset with respect to light centre [arcsec]
-        x_offset = np.random.normal(0.0, sigma_offset)
-        y_offset = np.random.normal(0.0, sigma_offset)
-
+        # offset with respect to light centre (careful with pc -> arcsec)
+        d_od = distances['od'] # in Mpc
+        offset = {'x': 0, 'y': 0}
+        for key in offset:
+            component = np.random.normal(0.0, sigma_offset) # pc
+            component *= 1e-6 # Mpc
+            component /= d_od # rad
+            component = util.angle_conversion(component, 'to arcsecs') # arcsec
+            offset[key] = component
+        
         # Save kwargs
         self.kwargs['Rs'] = Rs
         self.kwargs['alpha_Rs'] = alpha_Rs
-        self.kwargs['x_nfw'] = x_offset
-        self.kwargs['y_nfw'] = y_offset
+        self.kwargs['x_nfw'] = offset['x']
+        self.kwargs['y_nfw'] = offset['y']
         self.kwargs['e1_nfw'] = e1
         self.kwargs['e2_nfw'] = e2
 

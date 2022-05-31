@@ -42,8 +42,8 @@ class Plots:
         cmap.set_bad(color='k', alpha=1.)
         cmap.set_under('k')
 
-        v_min = -4
-        v_max = 3
+        v_min = -3
+        v_max = 1
 
 
         if number_of_images == 1:

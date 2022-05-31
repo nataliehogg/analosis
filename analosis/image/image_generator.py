@@ -15,7 +15,7 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
-    def generate_image(self, settings, baryons, halo, los, lens_light, source, path):
+    def generate_image(self, settings, baryons, halo, los, lens_light, source, Einstein_radii, path):
 
         image_list = []
         data = []
@@ -33,9 +33,22 @@ class Image:
         for i in range(settings['number_of_images']):
 
             # telescope settings (HST)
-            kwargs_data = sim_util.data_configure_simple(50, 0.08, 5400, 0.005)
+            deltaPix = 0.08 # size of a pixel in arcsec
+            exp_time = 5400 # exposition time in sec
+            background_rms = 0.01 # background noise rms
+            fwhm = 0.15 # width of the PSF in pixels
+            
+            # tune the size of the image
+            theta_E = Einstein_radii[i]
+            beta = np.sqrt(kwargs_sl[i]['center_x']**2
+                           + kwargs_sl[i]['center_y']**2) # source offset
+            Rs = kwargs_sl[i]['R_sersic']# source half-light radius
+            size_image = max(2 * (theta_E + 4 * Rs), 2 * (beta + 4 * Rs)) # in arcsec
+            numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
+            
+            kwargs_data = sim_util.data_configure_simple(numPix, deltaPix, exp_time, background_rms)
             data_class = ImageData(**kwargs_data)
-            kwargs_psf = {'psf_type': 'GAUSSIAN', 'fwhm': 0.15, 'pixel_size': 0.08, 'truncation': 3}
+            kwargs_psf = {'psf_type': 'GAUSSIAN', 'fwhm': fwhm, 'pixel_size': deltaPix, 'truncation': 3}
             psf_class = PSF(**kwargs_psf)
             kwargs_numerics = {'supersampling_factor': 1, 'supersampling_convolution': False}
 
@@ -67,8 +80,8 @@ class Image:
             else:
                 print('You need to select lens light True or False.')
 
-            poisson = image_util.add_poisson(image_model, exp_time = 5400)
-            bkg = image_util.add_background(image_model, sigma_bkd = 0.005)
+            poisson = image_util.add_poisson(image_model, exp_time=exp_time)
+            bkg = image_util.add_background(image_model, sigma_bkd=background_rms)
             image_real = image_model + poisson + bkg
 
             data_class.update_data(image_real)

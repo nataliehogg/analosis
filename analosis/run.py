@@ -56,6 +56,9 @@ class Run:
 
             # get the dictionary of kwargs from the mock generator
             kwargs_dict = self.mocks.draw_kwargs()
+            
+            # get the list of Einstein radii (useful for pictures)
+            Einstein_radii = self.mocks.Einstein_radii
 
             # convert these into individual dataframes
             # these are what will get passed around in the code
@@ -111,6 +114,7 @@ class Run:
                                                                          los,
                                                                          lens_light,
                                                                          source,
+                                                                         Einstein_radii,
                                                                          path)
 
         if settings['MCMC'] == True:
