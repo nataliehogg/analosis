@@ -213,7 +213,9 @@ class MCMC:
 
             sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
-            print('the number of walkers in this chain is', len(param_mcmc)*walker_ratio)
+            number_of_walkers = len(param_mcmc)*walker_ratio
+
+            print('the number of walkers in this chain is', number_of_walkers)
 
             output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
             output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
