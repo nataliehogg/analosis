@@ -93,7 +93,8 @@ class Mocks:
 
                 # source
                 source = Source(redshifts, distances, self.util,
-                                maximum_source_offset_factor=self.maximum_source_offset_factor)
+                                maximum_source_offset_factor=self.maximum_source_offset_factor,
+                                Einstein_radius=Einstein_radius)
                 source_kwargs = source.kwargs
 
                 kwargs['baryons'].append(baryon_kwargs)

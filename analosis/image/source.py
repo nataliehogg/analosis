@@ -11,6 +11,7 @@ class Source:
                  distances,
                  util,
                  maximum_source_offset_factor=1,
+                 Einstein_radius=10,
                  model='SERSIC_ELLIPSE',
                  amplitude_reference=100):
       """
@@ -36,7 +37,8 @@ class Source:
       n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
 
       # position
-      r_sq_max = (maximum_source_offset_factor * R_sersic)**2 #[arcsec^2]
+      r_max = min(maximum_source_offset_factor * R_sersic, Einstein_radius)
+      r_sq_max = r_max**2 #[arcsec^2]
       r_sq = np.random.uniform(0, r_sq_max)
       r = np.sqrt(r_sq)
       phi = phi_sl = np.random.uniform(0, 2*np.pi)
