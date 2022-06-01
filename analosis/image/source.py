@@ -12,6 +12,7 @@ class Source:
                  util,
                  maximum_source_offset_factor=1,
                  Einstein_radius=10,
+                 lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE',
                  amplitude_reference=100):
       """
@@ -41,9 +42,9 @@ class Source:
       r_sq_max = r_max**2 #[arcsec^2]
       r_sq = np.random.uniform(0, r_sq_max)
       r = np.sqrt(r_sq)
-      phi = phi_sl = np.random.uniform(0, 2*np.pi)
-      x = r * np.cos(phi)
-      y = r * np.sin(phi)
+      phi = np.random.uniform(0, 2*np.pi)
+      x = lens_mass_centre['x'] + r * np.cos(phi)
+      y = lens_mass_centre['y'] + r * np.sin(phi)
 
       # ellipticity
       e1 = np.random.normal(0, 0.2)

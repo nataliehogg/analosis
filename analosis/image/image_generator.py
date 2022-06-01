@@ -35,7 +35,7 @@ class Image:
             # telescope settings (HST)
             deltaPix = 0.08 # size of a pixel in arcsec
             exp_time = 5400 # exposition time in sec
-            background_rms = 0.01 # background noise rms
+            background_rms = 0.005 # background noise rms
             fwhm = 0.15 # width of the PSF in pixels
             
             # tune the size of the image
@@ -43,7 +43,7 @@ class Image:
             beta = np.sqrt(kwargs_sl[i]['center_x']**2
                            + kwargs_sl[i]['center_y']**2) # source offset
             Rs = kwargs_sl[i]['R_sersic']# source half-light radius
-            size_image = max(2 * (theta_E + 4 * Rs), 2 * (beta + 4 * Rs)) # in arcsec
+            size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
             numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
             
             kwargs_data = sim_util.data_configure_simple(numPix, deltaPix, exp_time, background_rms)

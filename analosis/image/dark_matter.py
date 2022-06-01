@@ -33,14 +33,14 @@ class Halo():
         # Reasonable by could be more realistic
         # Freely inspired from:
         # https://www.aanda.org/articles/aa/pdf/2020/02/aa36329-19.pdf
-        virial_mass = mass_baryons * ratio_DM_baryons
+        self.virial_mass = mass_baryons * ratio_DM_baryons
 
         # concentration freely inspired from https://arxiv.org/pdf/1312.0945.pdf
         mean_concentration = 10**0.9
         concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
 
         # scale radius and displacement angle [arcsec]
-        Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=virial_mass,
+        Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=self.virial_mass,
                                                      c=concentration)
 
         # ellipticity

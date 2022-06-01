@@ -12,14 +12,14 @@ cosmology = {'id': 'planck18', 'H0': 67.4, 'Om': 0.315}
 settings = {'scenario': 'composite lens',
             'complexity': 'perfect minimal',
             'lens_light': False,
-            'number_of_images': 1,
-            'MCMC': False,
-            'n_burn': 1,
-            'n_run': 1}
+            'number_of_images': 60,
+            'MCMC': True,
+            'n_burn': 1000,
+            'n_run': 2000}
 
 parameters = {'maximum_shear': 0.03,
               'Einstein_radius_min': 0.5, # arcsec
-              'maximum_source_offset_factor': 1,
+              'maximum_source_offset_factor': 2,
               'sigma_halo_offset': 300} # pc
 
 result = Run(cosmology, settings, parameters)
@@ -28,4 +28,6 @@ p = Plots()
 
 path = result.pathfinder()
 
-p.image_plot(path, settings['number_of_images'], number_of_columns=10, save=True, show=False)
+p.image_plot(path, settings['number_of_images'],
+             number_of_columns=10,
+             save=True, show=False)

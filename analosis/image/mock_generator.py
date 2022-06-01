@@ -87,6 +87,14 @@ class Mocks:
                 baryon_kwargs = baryons.return_kwargs(data_type='mass') #for i in range(self.number_of_images)]
                 lens_light_kwargs = baryons.return_kwargs(data_type='light') #for i in range(self.number_of_images)]
 
+                # centre of mass of the main lens
+                lens_mass_centre = {}
+                mass_tot = halo.virial_mass + baryons.mass
+                lens_mass_centre['x'] = (halo.virial_mass * halo.kwargs['x_nfw']
+                                         + baryons.mass * baryons.kwargs['x']) / mass_tot
+                lens_mass_centre['y'] = (halo.virial_mass * halo.kwargs['y_nfw']
+                                         + baryons.mass * baryons.kwargs['y']) / mass_tot
+
                 # LOS effects
                 los = LOS(util=self.util, gamma_max=self.gamma_max)
                 los_kwargs = los.kwargs # for i in range(self.number_of_images)]
@@ -94,7 +102,8 @@ class Mocks:
                 # source
                 source = Source(redshifts, distances, self.util,
                                 maximum_source_offset_factor=self.maximum_source_offset_factor,
-                                Einstein_radius=Einstein_radius)
+                                Einstein_radius=Einstein_radius,
+                                lens_mass_centre=lens_mass_centre)
                 source_kwargs = source.kwargs
 
                 kwargs['baryons'].append(baryon_kwargs)
