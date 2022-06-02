@@ -6,6 +6,7 @@ from analosis.image.source import Source
 from analosis.image.los import LOS
 from analosis.image.baryons import Baryons
 from analosis.image.dark_matter import Halo
+from lenstronomy.LensModel.lens_model import LensModel
 
 class Mocks:
     """
@@ -71,12 +72,19 @@ class Mocks:
                                 util=self.util,
                                 sigma_offset=self.sigma_halo_offset)
 
-                    # estimate the Einstein radius in arcsec
+                    # Estimate the Einstein radius in arcsec
+                    # start with the baryons as if they were a point lens
                     theta_E_bar = self.util.Einstein_radius_point_lens(
                         mass=baryons.mass, distances=distances)
-                    Einstein_radius = np.sqrt(theta_E_bar**2
-                                              + halo.kwargs['alpha_Rs']**2)
-
+                    # displacement angle of NFW at that position
+                    spherical_halo_class = LensModel(lens_model_list='NFW')
+                    alpha_x, alpha_y = spherical_halo_class.derivatives(x=theta_E_bar,
+                                                                        y=0,
+                                                                        Rs=halo.kwargs['Rs'],
+                                                                        alpha_Rs=halo.kwargs['alpha_Rs'])
+                    # sum the contribution of baryons and NFW
+                    Einstein_radius = theta_E_bar + alpha_x
+                    
                     attempt += 1
                     if attempt > 100:
                         raise RuntimeWarning("I seem to have difficulties to\
