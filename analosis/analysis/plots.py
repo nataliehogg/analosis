@@ -32,8 +32,9 @@ class Plots:
 
         return plot
 
-    def image_plot(self, path, number_of_images, number_of_columns=5, quality_cut=0, save=True, show=True):
+    def image_plot(self, path, settings, number_of_columns=5, quality_cut=0, save=True, show=True):
         print('Preparing image plot...')
+        number_of_images = settings['number_of_images']
         if number_of_images > 10:
             print('The plotter is slow but the result looks soooo good. Patience, my young padawan!')
 
@@ -84,7 +85,7 @@ class Plots:
 
         return None
 
-    def input_output_plot(self, path, number_of_images, n_burn, quality_cut=0, show_not_converged=True, save=True, show=True):
+    def input_output_plot(self, path, settings, quality_cut=0, show_not_converged=True, save=True, show=True):
 
         in_kwargs = pd.read_csv(path + '/datasets/input_kwargs.csv')
 
@@ -100,10 +101,10 @@ class Plots:
         # in_gamma1 = [item for sublist in in_gammas1 for item in sublist]
         # in_gamma2 = [item for sublist in in_gammas2 for item in sublist]
 
-        for i in range(number_of_images):
-            chain = path + '/chains/' + 'fit_image_' + str(i) + '.h5'
+        for i in range(settings['number_of_images']):
+            chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
-            samples = reader.get_chain(discard = n_burn, flat = True, thin = thin)
+            samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
             c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
         summary = c.analysis.get_summary()
 

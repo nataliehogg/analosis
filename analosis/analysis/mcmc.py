@@ -206,7 +206,7 @@ class MCMC:
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': 1.,
-                                     'backup_filename': str(path) + '/chains/fit_image_'+ str(i) + '.h5'}]]
+                                     'backup_filename': str(path) + '/chains/'+ str(settings['job_name']) + '_' + str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())
