@@ -36,7 +36,7 @@ class MCMC:
         kwargs_bar = baryons.to_dict('records')
         kwargs_nfw = halo.to_dict('records')
         kwargs_sl  = source.to_dict('records')
-        kwargs_ll = lens_light.to_dict('records')
+        kwargs_ll  = lens_light.to_dict('records')
 
         kwargs_likelihood = {'source_marg': True}
 
@@ -44,11 +44,19 @@ class MCMC:
 
         chain_list = []
         kwargs_result = []
-        output_gamma1_od = []
-        output_gamma2_od = []
-        output_gamma1_los = []
-        output_gamma2_los = []
-        output_omega_los = []
+        if settings['complexity'] == 'perfect':
+            output_gamma1_os = []
+            output_gamma2_os = []
+            output_gamma1_od = []
+            output_gamma2_od = []
+            output_gamma1_ds = []
+            output_gamma2_ds = []
+        else:
+            output_gamma1_od = []
+            output_gamma2_od = []
+            output_gamma1_los = []
+            output_gamma2_los = []
+            output_omega_los = []
 
 
         for i in range(settings['number_of_images']):
@@ -65,30 +73,56 @@ class MCMC:
             # explored, choose their initial value, step size, lower and higher limits
 
             # Line-of-sight parameters
-            # omega_LOS should not be fixed! the LOS shears in combination induce a small rotation
-            # allowing for freedom in omega_LOS accounts for this and prevents bias in the shears
-            fixed_lens.append({'kappa_od': 0.0, 'kappa_los': 0.0, 'omega_od': 0.0}) #, 'omega_los':0.0})
-
-            kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'], 'gamma2_od': kwargs_los[i]['gamma2_od'],
-                                     'gamma1_los': kwargs_los[i]['gamma1_los'], 'gamma2_los': kwargs_los[i]['gamma2_los'],
-                                     'omega_los': kwargs_los[i]['omega_los']})
-
+            # we have to have a big if/else for perfect vs perfect minimal models
+            # common prior boundaries and step sizes
             gamma_sigma = 0.001
             omega_sigma = 0.0001
             gamma_prior = 0.15
             omega_prior = 0.01
 
-            kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
-                                      'gamma1_los': gamma_sigma, 'gamma2_los': gamma_sigma,
-                                      'omega_los': omega_sigma})
+            if settings['complexity'] == 'perfect':
+                # notice that we can't just append to the already existing fixed_lens object
+                # this creates a structure like [{}, {}]
+                # whereas it needs to be [{,}]
+                fixed_lens.append({'kappa_od': 0.0, 'kappa_os': 0.0, 'kappa_ds': 0.0,
+                                   'omega_od': 0.0, 'omega_os': 0.0, 'omega_ds': 0.0})
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'], 'gamma2_od': kwargs_los[i]['gamma2_od'],
+                                         'gamma1_os': kwargs_los[i]['gamma1_os'], 'gamma2_os': kwargs_los[i]['gamma2_os'],
+                                         'gamma1_ds': kwargs_los[i]['gamma1_ds'], 'gamma2_ds': kwargs_los[i]['gamma2_ds']})
 
-            kwargs_lower_lens.append({'gamma1_od': -gamma_prior, 'gamma2_od': -gamma_prior,
-                                      'gamma1_los': -gamma_prior, 'gamma2_los': -gamma_prior,
-                                      'omega_los': -omega_prior})
+                kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
+                                          'gamma1_os': gamma_sigma, 'gamma2_os': gamma_sigma,
+                                          'gamma1_ds': gamma_sigma, 'gamma2_ds': gamma_sigma})
 
-            kwargs_upper_lens.append({'gamma1_od': gamma_prior, 'gamma2_od': gamma_prior,
-                                      'gamma1_los': gamma_prior, 'gamma2_los': gamma_prior,
-                                      'omega_los': omega_prior})
+                kwargs_lower_lens.append({'gamma1_od': -gamma_prior, 'gamma2_od': -gamma_prior,
+                                          'gamma1_os': -gamma_prior, 'gamma2_os': -gamma_prior,
+                                          'gamma1_ds': -gamma_prior, 'gamma2_ds': -gamma_prior})
+
+                kwargs_upper_lens.append({'gamma1_od': gamma_prior, 'gamma2_od': gamma_prior,
+                                          'gamma1_os': gamma_prior, 'gamma2_os': gamma_prior,
+                                          'gamma1_ds': gamma_prior, 'gamma2_ds': gamma_prior})
+
+            else:
+                # minimal model params
+                # omega_LOS should not be fixed! the LOS shears in combination induce a small rotation
+                # allowing for freedom in omega_LOS accounts for this and prevents bias in the shears
+                fixed_lens.append({'kappa_od': 0.0, 'kappa_los': 0.0, 'omega_od': 0.0}) #, 'omega_los':0.0})
+
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'], 'gamma2_od': kwargs_los[i]['gamma2_od'],
+                                         'gamma1_los': kwargs_los[i]['gamma1_los'], 'gamma2_los': kwargs_los[i]['gamma2_los'],
+                                         'omega_los': kwargs_los[i]['omega_los']})
+
+                kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
+                                          'gamma1_los': gamma_sigma, 'gamma2_los': gamma_sigma,
+                                          'omega_los': omega_sigma})
+
+                kwargs_lower_lens.append({'gamma1_od': -gamma_prior, 'gamma2_od': -gamma_prior,
+                                          'gamma1_los': -gamma_prior, 'gamma2_los': -gamma_prior,
+                                          'omega_los': -omega_prior})
+
+                kwargs_upper_lens.append({'gamma1_od': gamma_prior, 'gamma2_od': gamma_prior,
+                                          'gamma1_los': gamma_prior, 'gamma2_los': gamma_prior,
+                                          'omega_los': omega_prior})
 
             # SERSIC_ELLIPSE_POTENTIAL
             fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
@@ -230,20 +264,39 @@ class MCMC:
 
             print('the number of walkers in this chain is', number_of_walkers)
 
-            output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
-            output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
-            output_gamma1_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_los'])
-            output_gamma2_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_los'])
-            output_omega_los.append(kwargs_result[i]['kwargs_lens'][0]['omega_los'])
+            if settings['complexity'] == 'perfect':
+                output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
+                output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
+                output_gamma1_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_os'])
+                output_gamma2_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_os'])
+                output_gamma1_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_ds'])
+                output_gamma2_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_ds'])
 
-        output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
-                                                              'gamma1_los', 'gamma2_los', 'omega_los'])
+                output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
+                                                                      'gamma1_os', 'gamma2_os',
+                                                                      'gamma1_ds', 'gamma2_ds'])
 
-        output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
-        output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
-        output_los_kwargs_dataframe['gamma1_los'] = output_gamma1_los
-        output_los_kwargs_dataframe['gamma2_los'] = output_gamma2_los
-        output_los_kwargs_dataframe['omega_los'] = output_omega_los
+                output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
+                output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
+                output_los_kwargs_dataframe['gamma1_os'] = output_gamma1_os
+                output_los_kwargs_dataframe['gamma2_os'] = output_gamma2_os
+                output_los_kwargs_dataframe['gamma1_ds'] = output_gamma1_ds
+                output_los_kwargs_dataframe['gamma2_ds'] = output_gamma2_ds
+            else:
+                output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
+                output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
+                output_gamma1_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_los'])
+                output_gamma2_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_los'])
+                output_omega_los.append(kwargs_result[i]['kwargs_lens'][0]['omega_los'])
+
+                output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
+                                                                      'gamma1_los', 'gamma2_los', 'omega_los'])
+
+                output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
+                output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
+                output_los_kwargs_dataframe['gamma1_los'] = output_gamma1_los
+                output_los_kwargs_dataframe['gamma2_los'] = output_gamma2_los
+                output_los_kwargs_dataframe['omega_los'] = output_omega_los
 
 
         # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
