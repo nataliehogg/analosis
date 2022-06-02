@@ -27,8 +27,10 @@ class MCMC:
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         elif settings['complexity'] == 'perfect minimal':
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        elif settings['complexity'] == 'minimal spherical halo':
+            lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         else:
-            print('I didn\'t implement that setting yet.')
+            raise ValueError('I didn\'t implement that setting yet.')
 
         kwargs_los = los.to_dict('records')
         kwargs_bar = baryons.to_dict('records')
@@ -73,7 +75,7 @@ class MCMC:
 
             gamma_sigma = 0.001
             omega_sigma = 0.0001
-            gamma_prior = 0.1
+            gamma_prior = 0.15
             omega_prior = 0.01
 
             kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
@@ -97,26 +99,37 @@ class MCMC:
             kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
                                       'e1': 0.01, 'e2': 0.01})
 
-            kwargs_lower_lens.append({'k_eff': -0.5, 'R_sersic': -10.0, 'n_sersic': 1.0,
-                                      'e1': -0.5, 'e2': -0.5})
+            kwargs_lower_lens.append({'k_eff': 0, 'R_sersic': 0.0, 'n_sersic': 1.0,
+                                      'e1': -1, 'e2': -1})
 
-            kwargs_upper_lens.append({'k_eff': 0.5, 'R_sersic': 10.0, 'n_sersic': 5.0,
-                                      'e1': 0.5, 'e2': 0.5})
+            kwargs_upper_lens.append({'k_eff': 0.5, 'R_sersic': 1.0, 'n_sersic': 8.0,
+                                      'e1': 1, 'e2': 1})
 
             # NFW
-            fixed_lens.append({})
-            kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                     'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
-                                     'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
-            kwargs_lens_sigma.append({'Rs': 0.01, 'alpha_Rs': 0.01,
-                                      'center_x': 0.01, 'center_y': 0.01,
-                                      'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_lens.append({'Rs': 0.0, 'alpha_Rs': 0.0,
-                                      'center_x': -1.0, 'center_y': -1.0,
-                                      'e1': -0.5, 'e2': -0.5})
-            kwargs_upper_lens.append({'Rs': 5.0, 'alpha_Rs': 5.0,
-                                      'center_x': 1.0, 'center_y': 1.0,
-                                      'e1': 0.5, 'e2': 0.5})
+            if settings['complexity'] == 'minimal spherical halo':
+                fixed_lens.append({'e1': 0.0, 'e2': 0.0})
+                kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
+                                         'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
+                kwargs_lens_sigma.append({'Rs': 0.01, 'alpha_Rs': 0.01,
+                                          'center_x': 0.01, 'center_y': 0.01})
+                kwargs_lower_lens.append({'Rs': 0.0, 'alpha_Rs': 0.0,
+                                          'center_x': -0.2, 'center_y': -0.2})
+                kwargs_upper_lens.append({'Rs': 15.0, 'alpha_Rs': 2.0,
+                                          'center_x': 0.2, 'center_y': 0.2})
+            else:
+                fixed_lens.append({})
+                kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
+                                         'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
+                                         'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
+                kwargs_lens_sigma.append({'Rs': 0.01, 'alpha_Rs': 0.01,
+                                          'center_x': 0.01, 'center_y': 0.01,
+                                          'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_lens.append({'Rs': 0.0, 'alpha_Rs': 0.0,
+                                          'center_x': -0.2, 'center_y': -0.2,
+                                          'e1': -1, 'e2': -1})
+                kwargs_upper_lens.append({'Rs': 15.0, 'alpha_Rs': 2.0,
+                                          'center_x': 0.2, 'center_y': 0.2,
+                                          'e1': 1, 'e2': 1})
 
             lens_params = [kwargs_lens_init,
                            kwargs_lens_sigma,
@@ -144,12 +157,12 @@ class MCMC:
             kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
                                         'center_x': 0.01, 'center_y': 0.01,
                                         'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_source.append({'R_sersic': 0.001, 'n_sersic': 0.5,
-                                        'center_x': -0.1, 'center_y': -0.1,
-                                        'e1': -0.5, 'e2': -0.5})
-            kwargs_upper_source.append({'R_sersic': 10, 'n_sersic': 5.0,
-                                         'center_x': 0.1, 'center_y': 0.1,
-                                         'e1': 0.5, 'e2': 0.5})
+            kwargs_lower_source.append({'R_sersic': 0.001, 'n_sersic': 2.0,
+                                        'center_x': -1, 'center_y': -1,
+                                        'e1': -1, 'e2': -1})
+            kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
+                                         'center_x': 1, 'center_y': 1,
+                                         'e1': 1, 'e2': 1})
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -169,8 +182,8 @@ class MCMC:
                 kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
                                                'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
                 kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens_light.append({'R_sersic': -10.0, 'n_sersic': 0.5,   'e1': -0.5, 'e2': -0.5,})
-                kwargs_upper_lens_light.append({'R_sersic': 10.0,  'n_sersic': 5.0,   'e1': 0.5,  'e2': 0.5})
+                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -1.0, 'e2': -1.0,})
+                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 1.0,  'e2': 1.0})
 
                 lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                     fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
