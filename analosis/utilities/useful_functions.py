@@ -144,10 +144,11 @@ class Utilities:
         d_os = distances['os']
         d_ds = distances['ds']
 
-        theta_E = np.sqrt(2 * rS_sun * d_ds / d_os / d_od) # in rad
+        theta_E = np.sqrt(2 * rS_sun * mass * d_ds / d_os / d_od) # in rad
         theta_E = self.angle_conversion(theta_E, 'to arcsecs')
 
         return theta_E
+
 
     def get_dataframe(self, kwargs_dict):
 

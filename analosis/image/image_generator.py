@@ -35,7 +35,7 @@ class Image:
             # telescope settings (HST)
             deltaPix = 0.08 # size of a pixel in arcsec
             exp_time = 5400 # exposition time in sec
-            background_rms = 0.005 # background noise rms
+            background_rms = 0.01 # background noise rms
             fwhm = 0.15 # width of the PSF in pixels
             
             # tune the size of the image

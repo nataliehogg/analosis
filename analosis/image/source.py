@@ -14,7 +14,7 @@ class Source:
                  Einstein_radius=10,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE',
-                 amplitude_reference=100):
+                 amplitude_reference=1000):
       """
       Creates the source light with Sérsic profile.
       This could later be generalised to other profiles.

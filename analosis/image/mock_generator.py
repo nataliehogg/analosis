@@ -41,24 +41,23 @@ class Mocks:
         row of a dataframe.
         """
 
-        # redshifts
-        redshifts = {}
-        redshifts['lens'] = np.random.uniform(low=0.4, high=0.6)
-        redshifts['source'] = np.random.uniform(low=1.5, high=2.5)
-        # TODO: save the redshifts in dataframe?
-
-        # distances
-        distances = {}
-        distances['os'] = self.util.dA(0, redshifts['source'])
-        distances['od'] = self.util.dA(0, redshifts['lens'])
-        distances['ds'] = self.util.dA(redshifts['lens'], redshifts['source'])
-
-
         if self.scenario == 'composite lens':
 
             kwargs = {'baryons': [], 'halo':[], 'los':[], 'lens_light':[], 'source': []}
 
             for i in range(self.number_of_images):
+                
+                # redshifts
+                redshifts = {}
+                redshifts['lens'] = np.random.uniform(low=0.4, high=0.6)
+                redshifts['source'] = np.random.uniform(low=1.5, high=2.5)
+                # TODO: save the redshifts in dataframe?
+
+                # distances
+                distances = {}
+                distances['os'] = self.util.dA(0, redshifts['source'])
+                distances['od'] = self.util.dA(0, redshifts['lens'])
+                distances['ds'] = self.util.dA(redshifts['lens'], redshifts['source'])
 
                 # main lens
                 Einstein_radius = 0
@@ -74,14 +73,15 @@ class Mocks:
 
                     # Estimate the Einstein radius in arcsec
                     # start with the baryons as if they were a point lens
-                    theta_E_bar = self.util.Einstein_radius_point_lens(
-                        mass=baryons.mass, distances=distances)
+                    theta_E_bar = self.util.Einstein_radius_point_lens(mass=baryons.mass,
+                                                                       distances=distances)
                     # displacement angle of NFW at that position
-                    spherical_halo_class = LensModel(lens_model_list='NFW')
-                    alpha_x, alpha_y = spherical_halo_class.derivatives(x=theta_E_bar,
-                                                                        y=0,
-                                                                        Rs=halo.kwargs['Rs'],
-                                                                        alpha_Rs=halo.kwargs['alpha_Rs'])
+                    spherical_halo_class = LensModel(lens_model_list=['NFW'])
+                    kwargs_spherical_halo = [{'Rs': halo.kwargs['Rs'],
+                                              'alpha_Rs': halo.kwargs['alpha_Rs']}]
+                    alpha_x, alpha_y = spherical_halo_class.alpha(x=theta_E_bar,
+                                                                  y=0,
+                                                                  kwargs= kwargs_spherical_halo)
                     # sum the contribution of baryons and NFW
                     Einstein_radius = theta_E_bar + alpha_x
                     

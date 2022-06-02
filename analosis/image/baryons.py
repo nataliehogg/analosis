@@ -14,7 +14,7 @@ class Baryons():
                  util,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
-                 amplitude_reference=100, # amplitude for a source with mean mass at z=1
+                 amplitude_reference=1000, # amplitude for a source with mean mass at z=1
                  ):
         """
         Create the baryonic component of the main lens with Sérsic profile.
@@ -29,7 +29,7 @@ class Baryons():
 
         # mass and size
         # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
-        mean_mass = 1e11 # mean total baryonic mass [solar masses]
+        mean_mass = 6e10 # mean total baryonic mass [solar masses]
         # yes, we consider quite large masses here
         self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
         # this ensures that 95% of the events have a mass that is at most

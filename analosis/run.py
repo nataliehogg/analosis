@@ -59,6 +59,7 @@ class Run:
             
             # get the list of Einstein radii (useful for pictures)
             Einstein_radii = self.mocks.Einstein_radii
+            Einstein_radii_dataframe = util.get_dataframe({'estimated theta_E [arcsec]': Einstein_radii})
 
             # convert these into individual dataframes
             # these are what will get passed around in the code
@@ -69,7 +70,7 @@ class Run:
             source = util.get_dataframe(kwargs_dict['source'])
 
             # combine the dataframes for saving to file
-            complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source])
+            complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
             util.save_input_kwargs(complete_data)
 
             # rename the dataframe columns for lenstronomy
