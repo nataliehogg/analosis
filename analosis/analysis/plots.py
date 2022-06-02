@@ -11,6 +11,9 @@ import emcee
 from chainconsumer import ChainConsumer
 c = ChainConsumer()
 
+# common thinning setting (takes every nth sample in chain to ensure independence of samples)
+thin = 10
+
 # colours for plots
 LOS         = ['#a6dba0','#5aae61','#1b7837']
 LOS_minimal = ['#c2a5cf', '#9970ab', '#762a83']
@@ -100,7 +103,7 @@ class Plots:
         for i in range(number_of_images):
             chain = path + '/chains/' + 'fit_image_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
-            samples = reader.get_chain(discard = n_burn, flat = True)#, thin = 10)
+            samples = reader.get_chain(discard = n_burn, flat = True, thin = thin)
             c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
         summary = c.analysis.get_summary()
 
