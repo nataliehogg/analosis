@@ -8,6 +8,7 @@ import pickle
 import copy
 import math
 import emcee
+import os
 from chainconsumer import ChainConsumer
 c = ChainConsumer()
 
@@ -39,12 +40,12 @@ class Plots:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
         # Define the quality of images (the criterion is very empirical here)
-        kwargs = pd.read_csv(str(path) + '/datasets/input_kwargs.csv')
+        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name'])+ '_input_kwargs.csv')
         R_s = kwargs['R_sersic_sl'].to_numpy()
         beta = np.sqrt(kwargs['x_sl']**2. + kwargs['y_sl']**2.).to_numpy()
         quality = 1 / (1 + (beta/3/R_s)**2)
 
-        filename = str(path) + '/datasets/image_list.pickle'
+        filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
         infile.close()
@@ -79,7 +80,7 @@ class Plots:
         # fig.tight_layout()
 
         if save:
-            plt.savefig(str(path) + '/plots/image.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_image.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
@@ -87,7 +88,17 @@ class Plots:
 
     def input_output_plot(self, path, settings, quality_cut=0, show_not_converged=True, save=True, show=True):
 
-        in_kwargs = pd.read_csv(path + '/datasets/input_kwargs.csv')
+        chain_directory_contents = os.listdir(path + '/chains/')
+        chain_directory_contents.remove('.gitkeep')
+
+        # check to see if the directory is empty
+        # you could break this by having non-*.h5 files in there but that shouldn't happen
+        if len(chain_directory_contents) == 0:
+            raise Exception('You need chain files in your {} directory to make this plot.'.format(str(path + '/chains/')))
+        else:
+            pass
+
+        in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
 
         # define the quality
         R_s = in_kwargs['R_sersic_sl'].to_numpy()
@@ -187,7 +198,7 @@ class Plots:
         plt.legend(frameon=False)
 
         if save:
-            plt.savefig(str(path) + '/plots/input_output.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 

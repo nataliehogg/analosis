@@ -125,7 +125,7 @@ class Image:
             image_list.append(image_real)
 
             # save the image data (list of arrays) to file for plotting
-            filename = str(path) +'/datasets/image_list.pickle'
+            filename = str(path) +'/datasets/' + str(settings['job_name']) + '_image_list.pickle'
             outfile = open(filename,'wb')
             pickle.dump(image_list, outfile)
             outfile.close()

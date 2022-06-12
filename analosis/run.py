@@ -74,7 +74,7 @@ class Run:
 
             # combine the dataframes for saving to file
             complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
-            util.save_input_kwargs(complete_data)
+            util.save_input_kwargs(settings, complete_data)
 
             # rename the dataframe columns for lenstronomy
             # we want them to have distinguishable names when we save the dataset above

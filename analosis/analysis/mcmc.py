@@ -300,7 +300,7 @@ class MCMC:
 
 
         # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
-        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/output_kwargs.csv', index = False)
+        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) +'_output_kwargs.csv', index = False)
 
 
         return None

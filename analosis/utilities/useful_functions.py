@@ -162,10 +162,10 @@ class Utilities:
 
         return dataframe
 
-    def save_input_kwargs(self, dataframe):
+    def save_input_kwargs(self, settings, dataframe):
         '''
         saves input kwargs dataframe to file
         '''
 
-        dataframe.to_csv(str(self.path) + '/datasets/input_kwargs.csv',
+        dataframe.to_csv(str(self.path) + '/datasets/'+str(settings['job_name'])+'_input_kwargs.csv',
                               index = False)
