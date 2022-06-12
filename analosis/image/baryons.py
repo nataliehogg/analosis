@@ -30,7 +30,7 @@ class Baryons():
         # mass and size
         # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
         # mean_mass = 6e10 # mean total baryonic mass [solar masses]
-        mean_mass = 5e11
+        mean_mass = 5e11 # larger means bigger Einstein radius and nicer rings
         # yes, we consider quite large masses here
         self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
         # this ensures that 95% of the events have a mass that is at most
@@ -44,8 +44,12 @@ class Baryons():
         n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
 
         # ellipticity
-        e1 = np.random.normal(0, 0.2)
-        e2 = np.random.normal(0, 0.2)
+        # e1 = np.random.normal(0, 0.2)
+        # e2 = np.random.normal(0, 0.2)
+
+        orientation_angle = np.random.uniform(0.0, 2*np.pi)
+        aspect_ratio      = np.random.uniform(0.9, 1.0)
+        e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
         # convergence at half-light radius
         effective_convergence = util.get_effective_convergence(
@@ -66,8 +70,8 @@ class Baryons():
         self.kwargs['k_eff'] = effective_convergence
         self.kwargs['e1'] = e1
         self.kwargs['e2'] = e2
-        self.kwargs['x'] = 0
-        self.kwargs['y'] = 0
+        self.kwargs['x'] = 0.0
+        self.kwargs['y'] = 0.0
         self.kwargs['magnitude'] = magnitude
         # self.kwargs['amp'] = amplitude
 

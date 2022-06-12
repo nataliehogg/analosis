@@ -55,7 +55,7 @@ class Plots:
         cmap.set_under('k')
 
         v_min = -3
-        v_max = 0.5
+        v_max = 0
 
         rows = int(math.ceil(number_of_images/number_of_columns))
 

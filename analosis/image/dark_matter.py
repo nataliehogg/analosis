@@ -44,8 +44,13 @@ class Halo():
                                                           c=concentration)
 
         # ellipticity
-        e1 = np.random.normal(0.0, 0.2)
-        e2 = np.random.normal(0.0, 0.2)
+        # e1 = np.random.normal(0.0, 0.2)
+        # e2 = np.random.normal(0.0, 0.2)
+
+        # I think those ellipticities were way too strong!
+        orientation_angle = np.random.uniform(0.0, 2*np.pi)
+        aspect_ratio      = np.random.uniform(0.9, 1.0)
+        e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
         # offset with respect to light centre (careful with pc -> arcsec)
         d_od = distances['od'] # in Mpc

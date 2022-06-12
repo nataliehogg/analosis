@@ -71,9 +71,6 @@ class Image:
             sim = SimAPI(numpix = numPix, kwargs_single_band = kwargs_WFC3_F160W, kwargs_model = kwargs_model)
             imSim = sim.image_model_class(kwargs_numerics)
 
-            # print('\nkwargs_ll')
-            # print(kwargs_ll)
-
             # this also necessarily returns the point source kwargs, though we don't need them...
             # also the mag2amp function doesn't take lists of dicts so we necessarily have to iterate
             ll, sl, ps = sim.magnitude2amplitude([kwargs_ll[i]], [kwargs_sl[i]])
@@ -87,9 +84,6 @@ class Image:
             # maybe there's a better way that I'm not aware of also
             kwargs_lens_light.append(ll[0])
             kwargs_source.append(sl[0])
-
-        # print('\nkwargs_lens_light')
-        # print(kwargs_lens_light)
 
         for i in range(settings['number_of_images']):
 
