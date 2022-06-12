@@ -29,7 +29,8 @@ class Baryons():
 
         # mass and size
         # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
-        mean_mass = 6e10 # mean total baryonic mass [solar masses]
+        # mean_mass = 6e10 # mean total baryonic mass [solar masses]
+        mean_mass = 5e11
         # yes, we consider quite large masses here
         self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
         # this ensures that 95% of the events have a mass that is at most
@@ -52,9 +53,12 @@ class Baryons():
             d_os=distances['os'], d_od=distances['od'], d_ds=distances['ds'])
 
         # amplitude of the lens light: taken to be proportional to the mass
-        amplitude = (amplitude_reference
-                     * self.mass / mean_mass
-                     * (2 / (1 + redshifts['lens']))**4)
+        # amplitude = (amplitude_reference
+        #              * self.mass / mean_mass
+        #              * (2 / (1 + redshifts['lens']))**4)
+
+        # pick a magnitude for the lens light
+        magnitude = np.random.normal(25.0, 0.1)
 
         # Save the kwargs as attributes
         self.kwargs['R_sersic'] = R_sersic
@@ -64,12 +68,14 @@ class Baryons():
         self.kwargs['e2'] = e2
         self.kwargs['x'] = 0
         self.kwargs['y'] = 0
-        self.kwargs['amp'] = amplitude
+        self.kwargs['magnitude'] = magnitude
+        # self.kwargs['amp'] = amplitude
 
     def return_kwargs(self, data_type):
         if data_type == 'mass':
             bk = copy.copy(self.kwargs)
-            bk.pop('amp')
+            # bk.pop('amp')
+            bk.pop('magnitude')
             kwargs = {k + '_bar': v for k, v in bk.items()}
         elif data_type == 'light':
             lk = copy.copy(self.kwargs)

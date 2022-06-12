@@ -36,7 +36,7 @@ class Run:
 
         path = (Path(__file__).parent/'results/').resolve()
 
-        print('Running the {} case with the following settings:\n\nModel: {}\nNumber of runs: {}\nLens light: {}'
+        print('Running the {} case with the following settings:\n\nModel: {}\nNumber of images: {}\nLens light: {}'
               .format(settings['scenario'], settings['complexity'],
                       settings['number_of_images'], settings['lens_light']))
 
@@ -56,10 +56,13 @@ class Run:
 
             # get the dictionary of kwargs from the mock generator
             kwargs_dict = self.mocks.draw_kwargs()
-            
+
             # get the list of Einstein radii (useful for pictures)
             Einstein_radii = self.mocks.Einstein_radii
-            Einstein_radii_dataframe = util.get_dataframe({'estimated theta_E [arcsec]': Einstein_radii})
+            # I renamed the column because it gets saved as a csv
+            # which treats spaces as delimiters
+            # so 'estimated theta_E [arcsec]' gets saved as three separate columns
+            Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
 
             # convert these into individual dataframes
             # these are what will get passed around in the code
@@ -91,7 +94,7 @@ class Run:
                                                       'e1_nfw': 'e1',
                                                       'e2_nfw': 'e2'})
 
-            lens_light = lens_light.rename(index = str, columns = {'amp_ll': 'amp',
+            lens_light = lens_light.rename(index = str, columns = {'magnitude_ll': 'magnitude',
                                                                   'R_sersic_ll': 'R_sersic',
                                                                   'n_sersic_ll': 'n_sersic',
                                                                   'x_ll': 'center_x',
@@ -99,7 +102,7 @@ class Run:
                                                                   'e1_ll': 'e1',
                                                                   'e2_ll': 'e2'})
 
-            source = source.rename(index = str, columns = {'amp_sl': 'amp',
+            source = source.rename(index = str, columns = {'magnitude_sl': 'magnitude',
                                                           'R_sersic_sl': 'R_sersic',
                                                           'n_sersic_sl': 'n_sersic',
                                                           'x_sl': 'center_x',

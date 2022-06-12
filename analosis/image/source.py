@@ -51,10 +51,14 @@ class Source:
       e2 = np.random.normal(0, 0.2)
 
       # amplitude of light
-      amplitude = amplitude_reference * (2 / (1 + redshifts['source']))**4
+      # amplitude = amplitude_reference * (2 / (1 + redshifts['source']))**4
+
+      # pick a magnitude for the source
+      magnitude = np.random.normal(25.0, 0.1)
 
       # Save kwargs
-      self.kwargs['amp_sl'] = amplitude
+      # self.kwargs['amp_sl'] = amplitude
+      self.kwargs['magnitude_sl'] = magnitude
       self.kwargs['R_sersic_sl'] = R_sersic
       self.kwargs['n_sersic_sl'] = n_sersic
       self.kwargs['x_sl'] = x

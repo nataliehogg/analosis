@@ -41,7 +41,7 @@ class Halo():
 
         # scale radius and displacement angle [arcsec]
         Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=self.virial_mass,
-                                                     c=concentration)
+                                                          c=concentration)
 
         # ellipticity
         e1 = np.random.normal(0.0, 0.2)
@@ -56,7 +56,7 @@ class Halo():
             component /= d_od # rad
             component = util.angle_conversion(component, 'to arcsecs') # arcsec
             offset[key] = component
-        
+
         # Save kwargs
         self.kwargs['Rs'] = Rs
         self.kwargs['alpha_Rs'] = alpha_Rs

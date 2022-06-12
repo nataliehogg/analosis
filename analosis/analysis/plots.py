@@ -36,7 +36,7 @@ class Plots:
         print('Preparing image plot...')
         number_of_images = settings['number_of_images']
         if number_of_images > 10:
-            print('The plotter is slow but the result looks soooo good. Patience, my young padawan!')
+            print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
         # Define the quality of images (the criterion is very empirical here)
         kwargs = pd.read_csv(str(path) + '/datasets/input_kwargs.csv')
@@ -55,7 +55,7 @@ class Plots:
         cmap.set_under('k')
 
         v_min = -3
-        v_max = 2
+        v_max = 0.5
 
         rows = int(math.ceil(number_of_images/number_of_columns))
 
