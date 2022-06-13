@@ -75,10 +75,10 @@ class MCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
-            gamma_sigma = 0.001
-            omega_sigma = 0.0001
-            gamma_prior = 0.15
-            omega_prior = 0.01
+            gamma_sigma = 0.0001
+            omega_sigma = 0.00001
+            gamma_prior = 0.1
+            omega_prior = 0.001
 
             if settings['complexity'] == 'perfect':
                 # notice that we can't just append to the already existing fixed_lens object
@@ -133,37 +133,55 @@ class MCMC:
             kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
                                       'e1': 0.01, 'e2': 0.01})
 
-            kwargs_lower_lens.append({'k_eff': 0, 'R_sersic': 0.0, 'n_sersic': 1.0,
-                                      'e1': -1, 'e2': -1})
+            kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
+                                      'e1': -0.1, 'e2': -0.1})
 
-            kwargs_upper_lens.append({'k_eff': 0.5, 'R_sersic': 1.0, 'n_sersic': 8.0,
-                                      'e1': 1, 'e2': 1})
+            kwargs_upper_lens.append({'k_eff': 2.0, 'R_sersic': 1.0, 'n_sersic': 8.0,
+                                      'e1': 0.1, 'e2': 0.1})
 
             # NFW
+            # common priors and step sizes
+            Rs_sigma = 0.01
+            Rs_prior_lower = 5.0
+            Rs_prior_upper = 20.0
+            alpha_sigma = 0.01
+            alpha_prior_lower = 1.0
+            alpha_prior_upper = 4.0
+            center_nfw_sigma = 0.01
+            center_nfw_prior = 0.2
+            e_nfw_sigma = 0.01
+            e_nfw_prior = 0.1
+
             if settings['complexity'] == 'minimal spherical halo':
                 fixed_lens.append({'e1': 0.0, 'e2': 0.0})
                 kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
                                          'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
-                kwargs_lens_sigma.append({'Rs': 0.01, 'alpha_Rs': 0.01,
-                                          'center_x': 0.01, 'center_y': 0.01})
-                kwargs_lower_lens.append({'Rs': 0.0, 'alpha_Rs': 0.0,
-                                          'center_x': -0.2, 'center_y': -0.2})
-                kwargs_upper_lens.append({'Rs': 15.0, 'alpha_Rs': 2.0,
-                                          'center_x': 0.2, 'center_y': 0.2})
+
+                kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
+                                          'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma})
+
+                kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
+                                          'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior})
+
+                kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
+                                          'center_x': center_nfw_prior, 'center_y': center_nfw_prior})
             else:
                 fixed_lens.append({})
                 kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
                                          'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
                                          'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
-                kwargs_lens_sigma.append({'Rs': 0.01, 'alpha_Rs': 0.01,
-                                          'center_x': 0.01, 'center_y': 0.01,
-                                          'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens.append({'Rs': 0.0, 'alpha_Rs': 0.0,
-                                          'center_x': -0.2, 'center_y': -0.2,
-                                          'e1': -1, 'e2': -1})
-                kwargs_upper_lens.append({'Rs': 15.0, 'alpha_Rs': 2.0,
-                                          'center_x': 0.2, 'center_y': 0.2,
-                                          'e1': 1, 'e2': 1})
+
+                kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
+                                          'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma,
+                                          'e1': e_nfw_sigma, 'e2': e_nfw_sigma})
+
+                kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
+                                          'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior,
+                                          'e1': -e_nfw_prior, 'e2': -e_nfw_prior})
+
+                kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
+                                          'center_x': center_nfw_prior, 'center_y': center_nfw_prior,
+                                          'e1': e_nfw_prior, 'e2': e_nfw_prior})
 
             lens_params = [kwargs_lens_init,
                            kwargs_lens_sigma,
@@ -188,15 +206,18 @@ class MCMC:
             kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
                                        'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
                                        'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+
             kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
                                         'center_x': 0.01, 'center_y': 0.01,
                                         'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_source.append({'R_sersic': 0.001, 'n_sersic': 2.0,
-                                        'center_x': -1, 'center_y': -1,
-                                        'e1': -1, 'e2': -1})
+
+            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
+                                        'center_x': -0.5, 'center_y': -0.5,
+                                        'e1': -0.5, 'e2': -0.5})
+
             kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
-                                         'center_x': 1, 'center_y': 1,
-                                         'e1': 1, 'e2': 1})
+                                         'center_x': 0.5, 'center_y': 0.5,
+                                         'e1': 0.5, 'e2': 0.5})
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -216,8 +237,8 @@ class MCMC:
                 kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
                                                'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
                 kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -1.0, 'e2': -1.0,})
-                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 1.0,  'e2': 1.0})
+                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5,})
+                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
 
                 lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                     fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
