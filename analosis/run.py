@@ -73,7 +73,9 @@ class Run:
             source = util.get_dataframe(kwargs_dict['source'])
 
             # combine the dataframes for saving to file
-            complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
+            # in the same order as the params are put into the MCMC for future ease of plotting
+            # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
+            complete_data = util.combine_dataframes([los, baryons, halo, source, lens_light, Einstein_radii_dataframe])
             util.save_input_kwargs(settings, complete_data)
 
             # rename the dataframe columns for lenstronomy
