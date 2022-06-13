@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 from lenstronomy.Workflow.fitting_sequence import FittingSequence
-
+from multiprocessing import cpu_count
 from analosis.image.image_generator import Image
-im = Image()
 
+im = Image()
+ncpu = cpu_count()
 
 class MCMC:
 
@@ -274,6 +275,7 @@ class MCMC:
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': 1.,
+                                     'threadCount': ncpu,
                                      'backup_filename': str(path) + '/chains/'+ str(settings['job_name']) + '_' + str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
