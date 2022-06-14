@@ -67,9 +67,9 @@ class Image:
 
             # use the SimulationAPI module of lenstronomy to convert magnitudes to amplitudes
             # currently only set up for HST!
-            WFC3_F160W = HST(band = 'WFC3_F160W', psf_type = kwargs_psf['psf_type'])
+            WFC3_F160W = HST(band='WFC3_F160W', psf_type=kwargs_psf['psf_type'])
             kwargs_WFC3_F160W = WFC3_F160W.kwargs_single_band()
-            sim = SimAPI(numpix = numPix, kwargs_single_band = kwargs_WFC3_F160W, kwargs_model = kwargs_model)
+            sim = SimAPI(numpix=numPix, kwargs_single_band=kwargs_WFC3_F160W, kwargs_model=kwargs_model)
             imSim = sim.image_model_class(kwargs_numerics)
 
             # this also necessarily returns the point source kwargs, though we don't need them...

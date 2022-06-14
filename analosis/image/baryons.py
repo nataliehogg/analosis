@@ -14,7 +14,7 @@ class Baryons():
                  util,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
-                 amplitude_reference=1000, # amplitude for a source with mean mass at z=1
+                 #amplitude_reference=1000, # amplitude for a source with mean mass at z=1
                  ):
         """
         Create the baryonic component of the main lens with Sérsic profile.
@@ -55,6 +55,17 @@ class Baryons():
         effective_convergence = util.get_effective_convergence(
             mass=self.mass, R_sersic=R_sersic, n_sersic=n_sersic, e1=e1, e2=e2,
             d_os=distances['os'], d_od=distances['od'], d_ds=distances['ds'])
+        
+        # absolute magnitude
+        mass_to_light = 1 # baryonic mass-to-light ratio
+        absolute_magnitude_sun = 4.74 # absolute magnitude of the Sun
+        absolute_magnitude = (absolute_magnitude_sun
+                              - 2.5 * np.log10(self.mass / mass_to_light))
+        # for a mass of 5e10 [solar masses], we have Mag = -22
+        
+        # apparent magnitude
+        D = (1 + redshifts['od'])**2 * distances['od'] # luminosity distance to d [Mpc]
+        magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
         # amplitude of the lens light: taken to be proportional to the mass
         # amplitude = (amplitude_reference
@@ -62,7 +73,7 @@ class Baryons():
         #              * (2 / (1 + redshifts['lens']))**4)
 
         # pick a magnitude for the lens light
-        magnitude = np.random.normal(24.0, 0.1)
+        #magnitude = np.random.normal(24.0, 0.1)
 
         # Save the kwargs as attributes
         self.kwargs['R_sersic'] = R_sersic
