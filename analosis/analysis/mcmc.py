@@ -9,12 +9,12 @@ ncpu = cpu_count()
 
 class MCMC:
 
-    def __init__(self, settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path):
+    def __init__(self, settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
         rings_to_rule_them_all = 1
 
-        self.mcmc(settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path)
+        self.mcmc(settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
 
-    def mcmc(self, settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path):
+    def mcmc(self, settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
 
         if settings['scenario'] == 'distributed haloes':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
@@ -261,7 +261,7 @@ class MCMC:
             else:
                 print('Something went wrong with the lens light settings.')
 
-            multi_band_list = [[kwargs_data, kwargs_psf, kwargs_numerics]]
+            multi_band_list = [[kwargs_data_list[i], kwargs_psf, kwargs_numerics]]
 
             kwargs_data_joint = {'multi_band_list': multi_band_list,
                                  'multi_band_type': 'multi-linear'}

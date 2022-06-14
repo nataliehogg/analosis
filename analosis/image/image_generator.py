@@ -20,6 +20,7 @@ class Image:
     def generate_image(self, settings, baryons, halo, los, lens_light, source, Einstein_radii, path):
 
         image_list = []
+        kwargs_data_list = []
         data = []
         psf = []
 
@@ -48,7 +49,7 @@ class Image:
             # size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
             # numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
 
-            numPix = 100
+            numPix = 50
             psf = 'GAUSSIAN'
             background_rms = 0.01 # background noise rms # NH: where did this come from?
 
@@ -128,7 +129,10 @@ class Image:
             data_class.update_data(image_real)
             kwargs_data['image_data'] = image_real
 
+            print('kwargs_data in image gen', kwargs_data)
+
             image_list.append(image_real)
+            kwargs_data_list.append(kwargs_data)
 
             # save the image data (list of arrays) to file for plotting
             filename = str(path) +'/datasets/' + str(settings['job_name']) + '_image_list.pickle'
@@ -136,4 +140,4 @@ class Image:
             pickle.dump(image_list, outfile)
             outfile.close()
 
-        return kwargs_data, kwargs_psf, kwargs_numerics
+        return kwargs_data_list, kwargs_psf, kwargs_numerics

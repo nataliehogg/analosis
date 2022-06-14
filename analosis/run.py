@@ -114,7 +114,7 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            kwargs_data, kwargs_psf, kwargs_numerics = im.generate_image(settings,
+            kwargs_data_list, kwargs_psf, kwargs_numerics = im.generate_image(settings,
                                                                          baryons,
                                                                          halo,
                                                                          los,
@@ -124,7 +124,7 @@ class Run:
                                                                          path)
 
         if settings['MCMC'] == True:
-            chain = MCMC(settings, baryons, halo, los, lens_light, source, kwargs_data, kwargs_psf, kwargs_numerics, path)
+            chain = MCMC(settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
         elif settings['MCMC'] == False:
             print('MCMC will not be run.')
         else:
