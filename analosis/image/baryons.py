@@ -66,6 +66,7 @@ class Baryons():
         # apparent magnitude
         D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
         magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
+        print('magnitude lens = ', magnitude)
 
         # amplitude of the lens light: taken to be proportional to the mass
         # amplitude = (amplitude_reference

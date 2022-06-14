@@ -27,10 +27,10 @@ class Source:
       # half-light radius size
       # (freely inspired from https://arxiv.org/abs/1904.10992)
       mean_radius = 2e-3 #[Mpc]
-      R_sersic = np.random.lognormal(np.log(mean_radius), np.log(2)/2)
+      radius = np.random.lognormal(np.log(mean_radius), np.log(2)/2)
       # this ensures that 95% of the events have a mass that is at most
       # a factor two larger or smaller than the mean mass.
-      R_sersic /= distances['os'] # [rad]
+      R_sersic = radius / distances['os'] # [rad]
       R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
 
       # Sérsic index
@@ -57,11 +57,12 @@ class Source:
       # absolute magnitude: assume that the luminosity is proportional to the
       # galaxy's area; for r = mean_radius we have M = reference_magnitude
       reference_magnitude = -21
-      absolute_magnitude = reference_magnitude - 5 * np.log10(R_sersic / mean_radius)
+      absolute_magnitude = reference_magnitude - 5 * np.log10(radius / mean_radius)
       
       # apparent magnitude
       D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
       magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
+      print('magnitude source = ', magnitude)
       #magnitude = np.random.normal(25.0, 0.1)
 
       # Save kwargs
