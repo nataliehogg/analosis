@@ -51,6 +51,7 @@ class Image:
             beta = np.sqrt(kwargs_sl[i]['center_x']**2
                            + kwargs_sl[i]['center_y']**2) # source offset
             Rs = kwargs_sl[i]['R_sersic']# source half-light radius
+            # print(Rs)
             size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
             numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
 

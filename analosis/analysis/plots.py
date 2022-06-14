@@ -121,9 +121,9 @@ class Plots:
 
         # Remove the images under a certain quality
         if quality_cut is not None:
-            summary = [s for i,s in enumerate(summary) if quality[i]>quality_cut]
-            in_gamma1 = [g for i, g in enumerate(in_gamma1) if quality[i]>quality_cut]
-            in_gamma2 = [g for i, g in enumerate(in_gamma2) if quality[i]>quality_cut]
+            summary   = [s for i, s in enumerate(summary)   if quality[i] > quality_cut]
+            in_gamma1 = [g for i, g in enumerate(in_gamma1) if quality[i] > quality_cut]
+            in_gamma2 = [g for i, g in enumerate(in_gamma2) if quality[i] > quality_cut]
 
         # Isolate the cases where the MCMC did not converge
         #summary_converged = [s for s in summary if s['gamma1_los'][0] is not None]

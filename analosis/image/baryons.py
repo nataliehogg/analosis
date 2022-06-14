@@ -29,10 +29,10 @@ class Baryons():
 
         # mass and size
         # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
-        # mean_mass = 6e10 # mean total baryonic mass [solar masses]
-        mean_mass = 5e11 # larger means bigger Einstein radius and nicer rings
+        mean_mass = 6e10 # mean total baryonic mass [solar masses]
         # yes, we consider quite large masses here
         self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
+        print('baryon mass = {:.1e}'.format(self.mass))
         # this ensures that 95% of the events have a mass that is at most
         # a factor two larger or smaller than the mean mass.
         R_sersic = (self.mass / mean_mass) * 2e-3 # Sérsic half-light radius [Mpc]
@@ -62,7 +62,7 @@ class Baryons():
         #              * (2 / (1 + redshifts['lens']))**4)
 
         # pick a magnitude for the lens light
-        magnitude = np.random.normal(25.0, 0.1)
+        magnitude = np.random.normal(24.0, 0.1)
 
         # Save the kwargs as attributes
         self.kwargs['R_sersic'] = R_sersic

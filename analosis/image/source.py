@@ -47,6 +47,7 @@ class Source:
       y = lens_mass_centre['y'] + r * np.sin(phi)
 
       # ellipticity
+      # NH: maybe this should be further limited too?
       e1 = np.random.normal(0, 0.2)
       e2 = np.random.normal(0, 0.2)
 
