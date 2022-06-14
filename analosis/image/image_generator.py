@@ -40,38 +40,31 @@ class Image:
 
         for i in range(settings['number_of_images']):
 
-            # telescope settings (HST)
-            deltaPix = 0.08 # size of a pixel in arcsec
-            exp_time = 5400 # exposition time in sec
-            background_rms = 0.01 # background noise rms
-            fwhm = 0.15 # width of the PSF in pixels
+            # # tune the size of the image
+            # theta_E = Einstein_radii[i]
+            # beta = np.sqrt(kwargs_sl[i]['center_x']**2
+            #                + kwargs_sl[i]['center_y']**2) # source offset
+            # Rs = kwargs_sl[i]['R_sersic']# source half-light radius
+            # size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
+            # numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
 
-            # tune the size of the image
-            theta_E = Einstein_radii[i]
-            beta = np.sqrt(kwargs_sl[i]['center_x']**2
-                           + kwargs_sl[i]['center_y']**2) # source offset
-            Rs = kwargs_sl[i]['R_sersic']# source half-light radius
-            # print(Rs)
-            size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
-            numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
-
-            kwargs_data = sim_util.data_configure_simple(numPix, deltaPix, exp_time, background_rms)
-            data_class = ImageData(**kwargs_data)
-            kwargs_psf = {'psf_type': 'GAUSSIAN', 'fwhm': fwhm, 'pixel_size': deltaPix, 'truncation': 3}
-            psf_class = PSF(**kwargs_psf)
-            kwargs_numerics = {'supersampling_factor': 1, 'supersampling_convolution': False}
+            numPix = 100
+            psf = 'GAUSSIAN'
+            background_rms = 0.01 # background noise rms # NH: where did this come from?
 
             kwargs_model = {'lens_model_list': lens_model_list,
                             'lens_light_model_list': lens_light_model_list,
                             'source_light_model_list': source_model_list}
 
-            # use the SimulationAPI module of lenstronomy to convert magnitudes to amplitudes
-            # currently only set up for HST!
-            WFC3_F160W = HST(band='WFC3_F160W', psf_type=kwargs_psf['psf_type'])
+            kwargs_numerics = {'supersampling_factor': 1, 'supersampling_convolution': False}
+
+            # use the SimulationAPI module of lenstronomy to get the HST settings
+            WFC3_F160W = HST(band = 'WFC3_F160W', psf_type = psf)
             kwargs_WFC3_F160W = WFC3_F160W.kwargs_single_band()
-            sim = SimAPI(numpix=numPix, kwargs_single_band=kwargs_WFC3_F160W, kwargs_model=kwargs_model)
+            sim = SimAPI(numpix = numPix, kwargs_single_band = kwargs_WFC3_F160W, kwargs_model = kwargs_model)
             imSim = sim.image_model_class(kwargs_numerics)
 
+            # convert apparent magnitudes to amplitudes
             # this also necessarily returns the point source kwargs, though we don't need them...
             # also the mag2amp function doesn't take lists of dicts so we necessarily have to iterate
             ll, sl, ps = sim.magnitude2amplitude([kwargs_ll[i]], [kwargs_sl[i]])
@@ -85,6 +78,21 @@ class Image:
             # maybe there's a better way that I'm not aware of also
             kwargs_lens_light.append(ll[0])
             kwargs_source.append(sl[0])
+
+            # telescope settings (HST)
+            deltaPix = kwargs_WFC3_F160W['pixel_scale'] # size of a pixel in arcsec
+            exp_time = kwargs_WFC3_F160W['exposure_time'] # exposition time in sec
+
+            # copying the comment from HST.py here:
+            # the fwhm is set equal to the approx pixel size for drizzled PSF.
+            # Note that undrizzled PSF FWHM ~ 0.15" (Windhorst et al 2011)
+            fwhm = kwargs_WFC3_F160W['seeing'] # width of the PSF in pixels
+
+            kwargs_data = sim_util.data_configure_simple(numPix, deltaPix, exp_time, background_rms)
+            data_class = ImageData(**kwargs_data)
+            kwargs_psf = {'psf_type': psf, 'fwhm': fwhm, 'pixel_size': deltaPix, 'truncation': 3}
+            psf_class = PSF(**kwargs_psf)
+
 
         for i in range(settings['number_of_images']):
 
