@@ -13,8 +13,8 @@ class Source:
                  maximum_source_offset_factor=1,
                  Einstein_radius=10,
                  lens_mass_centre={'x':0, 'y':0},
-                 model='SERSIC_ELLIPSE',
-                 amplitude_reference=1000):
+                 model='SERSIC_ELLIPSE'
+                 ):
       """
       Creates the source light with Sérsic profile.
       This could later be generalised to other profiles.
@@ -54,8 +54,15 @@ class Source:
       # amplitude of light
       # amplitude = amplitude_reference * (2 / (1 + redshifts['source']))**4
 
-      # pick a magnitude for the source
-      magnitude = np.random.normal(25.0, 0.1)
+      # absolute magnitude: assume that the luminosity is proportional to the
+      # galaxy's area; for r = mean_radius we have M = reference_magnitude
+      reference_magnitude = -21
+      absolute_magnitude = reference_magnitude - 5 * np.log10(R_sersic / mean_radius)
+      
+      # apparent magnitude
+      D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
+      magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
+      #magnitude = np.random.normal(25.0, 0.1)
 
       # Save kwargs
       # self.kwargs['amp_sl'] = amplitude

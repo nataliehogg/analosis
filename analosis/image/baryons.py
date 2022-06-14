@@ -64,7 +64,7 @@ class Baryons():
         # for a mass of 5e10 [solar masses], we have Mag = -22
         
         # apparent magnitude
-        D = (1 + redshifts['od'])**2 * distances['od'] # luminosity distance to d [Mpc]
+        D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
         magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
         # amplitude of the lens light: taken to be proportional to the mass
