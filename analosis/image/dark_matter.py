@@ -34,7 +34,7 @@ class Halo():
         # Freely inspired from:
         # https://www.aanda.org/articles/aa/pdf/2020/02/aa36329-19.pdf
         self.virial_mass = mass_baryons * ratio_DM_baryons
-        print('halo mass = {:.1e}'.format(self.virial_mass))
+        #print('halo mass = {:.1e}'.format(self.virial_mass))
         # self.virial_mass = 1e12
 
         # concentration freely inspired from https://arxiv.org/pdf/1312.0945.pdf
@@ -42,7 +42,7 @@ class Halo():
         # concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
         concentration = np.random.normal(17.0, 4.0)
 
-        print('halo concentration = {:.2f}'.format(concentration))
+        #print('halo concentration = {:.2f}'.format(concentration))
 
         # scale radius and displacement angle [arcsec]
         Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=self.virial_mass,

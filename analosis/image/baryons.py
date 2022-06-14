@@ -32,7 +32,7 @@ class Baryons():
         mean_mass = 6e10 # mean total baryonic mass [solar masses]
         # yes, we consider quite large masses here
         self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
-        print('baryon mass = {:.1e}'.format(self.mass))
+        #print('baryon mass = {:.1e}'.format(self.mass))
         # this ensures that 95% of the events have a mass that is at most
         # a factor two larger or smaller than the mean mass.
         R_sersic = (self.mass / mean_mass) * 2e-3 # Sérsic half-light radius [Mpc]
