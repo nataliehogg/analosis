@@ -57,16 +57,17 @@ class Baryons():
             d_os=distances['os'], d_od=distances['od'], d_ds=distances['ds'])
         
         # absolute magnitude
-        mass_to_light = 1 # baryonic mass-to-light ratio
+        mass_to_light = 2 # baryonic mass-to-light ratio
         absolute_magnitude_sun = 4.74 # absolute magnitude of the Sun
         absolute_magnitude = (absolute_magnitude_sun
                               - 2.5 * np.log10(self.mass / mass_to_light))
-        # for a mass of 5e10 [solar masses], we have Mag = -22
+        # for a mass of 5e10 [solar masses], and a mass-to-light ratio of 1,
+        # we have absolute_magnitude = -22
         
         # apparent magnitude
         D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
         magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
-        print('magnitude lens = ', magnitude)
+        #print('magnitude lens = ', magnitude)
 
         # amplitude of the lens light: taken to be proportional to the mass
         # amplitude = (amplitude_reference

@@ -62,7 +62,7 @@ class Source:
       # apparent magnitude
       D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
       magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
-      print('magnitude source = ', magnitude)
+      #print('magnitude source = ', magnitude)
       #magnitude = np.random.normal(25.0, 0.1)
 
       # Save kwargs

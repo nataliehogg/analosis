@@ -33,7 +33,7 @@ class Plots:
 
         return plot
 
-    def image_plot(self, path, settings, number_of_columns=5, quality_cut=0, save=True, show=True):
+    def image_plot(self, path, settings, number_of_columns=5, u_max=1, save=True, show=True):
         print('Preparing image plot...')
         number_of_images = settings['number_of_images']
         if number_of_images > 10:
@@ -41,9 +41,9 @@ class Plots:
 
         # Define the quality of images (the criterion is very empirical here)
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name'])+ '_input_kwargs.csv')
-        R_s = kwargs['R_sersic_sl'].to_numpy()
         beta = np.sqrt(kwargs['x_sl']**2. + kwargs['y_sl']**2.).to_numpy()
-        quality = 1 / (1 + (beta/3/R_s)**2)
+        theta_E = kwargs['theta_E'].to_numpy()
+        u = beta / theta_E # reduced impact parameter
 
         filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
         infile = open(filename,'rb')
@@ -56,7 +56,7 @@ class Plots:
         cmap.set_under('k')
 
         v_min = -3
-        v_max = 0
+        v_max = -1
 
         rows = int(math.ceil(number_of_images/number_of_columns))
 
@@ -67,12 +67,12 @@ class Plots:
         for n in range(number_of_images):
             ax = fig.add_subplot(gs[n])
             im = ax.matshow(np.log10(image_list[n]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
-            if quality[n] < quality_cut:
-                ax.set_title('{:.2f}'.format(quality[n]), color='red', fontsize=8)
+            if u[n] > u_max:
+                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8)
                 ax.plot([0,1],[0,1], color='red')
                 ax.plot([0,1],[1,0], color='red')
             else:
-                ax.set_title('{:.2f}'.format(quality[n]), fontsize=8)
+                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             ax.autoscale(False)
@@ -86,7 +86,7 @@ class Plots:
 
         return None
 
-    def input_output_plot(self, path, settings, quality_cut=0, show_not_converged=True, save=True, show=True):
+    def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, save=True, show=True):
 
         chain_directory_contents = os.listdir(path + '/chains/')
         chain_directory_contents.remove('.gitkeep')
@@ -101,9 +101,9 @@ class Plots:
         in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
 
         # define the quality
-        R_s = in_kwargs['R_sersic_sl'].to_numpy()
         beta = np.sqrt(in_kwargs['x_sl']**2. + in_kwargs['y_sl']**2.).to_numpy()
-        quality = 1 / (1 + (beta/3/R_s)**2)
+        theta_E = in_kwargs['theta_E'].to_numpy()
+        u = beta / theta_E
 
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
@@ -120,10 +120,10 @@ class Plots:
         summary = c.analysis.get_summary()
 
         # Remove the images under a certain quality
-        if quality_cut is not None:
-            summary   = [s for i, s in enumerate(summary)   if quality[i] > quality_cut]
-            in_gamma1 = [g for i, g in enumerate(in_gamma1) if quality[i] > quality_cut]
-            in_gamma2 = [g for i, g in enumerate(in_gamma2) if quality[i] > quality_cut]
+        if u_max is not None:
+            summary   = [s for i, s in enumerate(summary)   if u[i] < u_max]
+            in_gamma1 = [g for i, g in enumerate(in_gamma1) if u[i] < u_max]
+            in_gamma2 = [g for i, g in enumerate(in_gamma2) if u[i] < u_max]
 
         # Isolate the cases where the MCMC did not converge
         #summary_converged = [s for s in summary if s['gamma1_los'][0] is not None]
@@ -192,8 +192,8 @@ class Plots:
         ax.set_xlim(lims)
         ax.set_ylim(lims)
 
-        if quality_cut is not None:
-            plt.title(r"$Q > {}$".format(quality_cut))
+        if u_max is not None:
+            plt.title(r"$u < {}$".format(u_max))
 
         plt.legend(frameon=False)
 
