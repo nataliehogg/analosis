@@ -93,9 +93,6 @@ class Image:
             kwargs_psf = {'psf_type': psf, 'fwhm': fwhm, 'pixel_size': deltaPix, 'truncation': 3}
             psf_class = PSF(**kwargs_psf)
 
-
-        for i in range(settings['number_of_images']):
-
             if settings['lens_light'] == True:
                 imageModel = ImageModel(data_class, psf_class,
                                         lens_model_class = LensModel(lens_model_list),
