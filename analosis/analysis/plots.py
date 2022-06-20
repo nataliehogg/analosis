@@ -205,6 +205,111 @@ class Plots:
         return None
 
 
-    def contour_plot(self, path):
+    def contour_plot(self, path, settings, chain_number, plot_params, size, draft=True, save=True, show=True):
 
-        return plot
+        # get the chain name
+        filename = str(settings['job_name']) + '_' + str(chain_number) +'.h5'
+
+        # read in the input kwargs for the chain of interest
+        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
+
+        # get the indices corresponding to the params of interest
+        param_inds = [input_kwargs.columns.get_loc(c) for c in plot_params]# if c in input_kwargs]
+
+        reader = emcee.backends.HDFBackend(filename, name='lenstronomy_mcmc_emcee')
+
+        samples = reader.get_chain(discard=settings['n_burn'], flat=True, thin=thin)
+
+        # get the list of LaTeX strings for our params
+        labels = self.get_labels(plot_params)
+
+        c.add_chain([samples[:,ind] for ind in param_inds],
+                     walkers = np.shape(samples)[0],
+                     parameters = [labels[ind] for ind in param_inds])
+
+        # get the expected values for this chain and parameters
+        expected_values = input_kwargs.iloc[chain_number][param_inds].to_list()
+
+        if settings['complexity'] == 'perfect':
+            color = '#d7301f'
+        elif settings['complexity'] == 'perfect minimal':
+            color = '#253494'
+        else:
+            # use default mpl colours
+            color = None
+
+        c.configure(smooth = True, flip = False, summary = True,
+                    spacing = 1.0, max_ticks = 4,
+                    colors = color, shade = True, shade_gradient = 0.4,
+                    bar_shade = True, linewidths= [3.0],
+                    tick_font_size=10, label_font_size=10,
+                    usetex = True, serif = True)
+
+        fig = c.plotter.plot(truth=expected_values, figsize = size)
+
+        fig.patch.set_facecolor('white')
+
+        if draft:
+            # add a plot title with the job name
+            fig.suptitle(job_name.replace('_', '\_'))
+
+        if save:
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours.pdf', dpi=300, bbox_inches='tight')
+        if show:
+            plt.show()
+
+        return None
+
+    def get_labels(self, plot_params):
+        '''
+        provides a dict to convert the kwarg strings to LaTeX for plotting
+        '''
+
+        param_dict = {# LOS
+                      'kappa_od': r'$\kappa^{\rm od}$',
+                      'omega_od': r'$\omega^{\rm od}$',
+                      'gamma1_od': r'$\gamma_1^{\rm od}$',
+                      'gamma2_od': r'$\gamma_2^{\rm od}$',
+                      'kappa_os': r'$\kappa^{\rm os}$',
+                      'omega_os': r'$\omega^{\rm os}$',
+                      'gamma1_os': r'$\gamma_1^{\rm os}$',
+                      'gamma2_os': r'$\gamma_2^{\rm os}$',
+                      'kappa_ds': r'$\kappa^{\rm ds}$',
+                      'omega_ds': r'$\omega^{\rm ds}$',
+                      'gamma1_ds': r'$\gamma_1^{\rm ds}$',
+                      'gamma2_ds': r'$\gamma_2^{\rm ds}$',
+                      'kappa_los': r'$\kappa^{\rm LOS}$',
+                      'omega_los': r'$\omega^{\rm LOS}$',
+                      'gamma1_los': r'$\gamma_1^{\rm LOS}$',
+                      'gamma2_los': r'$\gamma_2^{\rm LOS}$',
+                      # baryons
+                      'k_eff_bar': r'$k_{\rm eff}$',
+                      'R_sersic_bar': r'$R_{\rm S\acute{e}rsic, bar}$',
+                      'n_sersic_bar': r'$n_{\rm S\acute{e}rsic, bar}$',
+                      'e1_bar': r'$e_{1, \rm bar}$',
+                      'e2_bar': r'$e_{2, \rm bar}$',
+                      # DM
+                      'R_s': r'$R_s$',
+                      'alpha_Rs': r'$\alpha_{R_s}$',
+                      'x_nfw': r'$x_{\rm DM}$',
+                      'y_nfw': r'$y_{\rm DM}$',
+                      'e1_nfw': r'$e_{1, \rm DM}$',
+                      'e2_nfw': r'$e_{2, \rm DM}$',
+                      # source
+                      'R_sersic_sl': r'$R_{\rm S\acute{e}rsic, source}$',
+                      'n_sersic_sl': r'$n_{\rm S\acute{e}rsic, source}$',
+                      'e1_sl': r'$e_{1, \rm source}$',
+                      'e2_sl': r'$e_{2, \rm source}$',
+                      'x_sl': r'$x_{\rm source}$',
+                      'y_sl': r'$y_{\rm source}$',
+                      # lens light
+                      'R_sersic_ll': r'$R_{\rm S\acute{e}rsic, lens light}$',
+                      'n_sersic_ll': r'$n_{\rm S\acute{e}rsic, lens light}$',
+                      'e1_ll': r'$e_{1, \rm lens light}$',
+                      'e2_ll': r'$e_{2, \rm lens light}$',
+                      'x_ll': r'$x_{\rm lens light}$',
+                      'y_ll': r'$y_{\rm lens light}$'}
+
+        tex_list = [param_dict[p] for p in plot_params]
+
+        return tex_list
