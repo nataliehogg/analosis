@@ -26,7 +26,7 @@ class MCMC:
             # but not having the non-minimal LOS parameters defined
             # currently you get a key error regarding kappa_os if you run this setting
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        elif settings['complexity'] == 'perfect minimal':
+        elif settings['complexity'] in ['perfect minimal', 'missing foreground shear']:
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         elif settings['complexity'] == 'minimal spherical halo':
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
@@ -102,7 +102,26 @@ class MCMC:
                 kwargs_upper_lens.append({'gamma1_od': gamma_prior, 'gamma2_od': gamma_prior,
                                           'gamma1_os': gamma_prior, 'gamma2_os': gamma_prior,
                                           'gamma1_ds': gamma_prior, 'gamma2_ds': gamma_prior})
+                
+            elif settings['complexity'] == 'missing foreground shear':
+                fixed_lens.append({'kappa_od': 0.0, 'gamma1_od':0.0, 'gamma2_od':0.0,
+                                   'kappa_los': 0.0, 'omega_od': 0.0})
 
+                kwargs_lens_init.append({'gamma1_los': kwargs_los[i]['gamma1_los'],
+                                         'gamma2_los': kwargs_los[i]['gamma2_los'],
+                                         'omega_los': kwargs_los[i]['omega_los']})
+
+                kwargs_lens_sigma.append({'gamma1_los': gamma_sigma,
+                                          'gamma2_los': gamma_sigma,
+                                          'omega_los': omega_sigma})
+
+                kwargs_lower_lens.append({'gamma1_los': -gamma_prior,
+                                          'gamma2_los': -gamma_prior,
+                                          'omega_los': -omega_prior})
+
+                kwargs_upper_lens.append({'gamma1_los': gamma_prior,
+                                          'gamma2_los': gamma_prior,
+                                          'omega_los': omega_prior})
             else:
                 # minimal model params
                 # omega_LOS should not be fixed! the LOS shears in combination induce a small rotation
