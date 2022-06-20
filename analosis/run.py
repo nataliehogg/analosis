@@ -124,7 +124,8 @@ class Run:
                                                                          path)
 
         if settings['MCMC'] == True:
-            chain = MCMC(settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
+            chain = MCMC(settings, baryons, halo, los, lens_light, Einstein_radii,
+                         source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
         elif settings['MCMC'] == False:
             print('MCMC will not be run.')
         else:

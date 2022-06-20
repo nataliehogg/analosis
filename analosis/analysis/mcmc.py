@@ -9,12 +9,15 @@ ncpu = cpu_count()
 
 class MCMC:
 
-    def __init__(self, settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
+    def __init__(self, settings, baryons, halo, los, lens_light, Einstein_radii,
+                 source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
         rings_to_rule_them_all = 1
 
-        self.mcmc(settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
+        self.mcmc(settings, baryons, halo, los, lens_light, Einstein_radii,
+                  source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
 
-    def mcmc(self, settings, baryons, halo, los, lens_light, source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
+    def mcmc(self, settings, baryons, halo, los, lens_light, Einstein_radii,
+             source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
 
         if settings['scenario'] == 'distributed haloes':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
@@ -26,7 +29,10 @@ class MCMC:
             # but not having the non-minimal LOS parameters defined
             # currently you get a key error regarding kappa_os if you run this setting
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        elif settings['complexity'] == 'power law':
+            lens_fit_list = ['LOS_MINIMAL', 'EPL']
         elif settings['complexity'] in ['perfect minimal',
+                                        'missing offset',
                                         'missing foreground shear',
                                         'missing halo ellipticity']:
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
@@ -143,65 +149,93 @@ class MCMC:
                 kwargs_upper_lens.append({'gamma1_od': gamma_prior, 'gamma2_od': gamma_prior,
                                           'gamma1_los': gamma_prior, 'gamma2_los': gamma_prior,
                                           'omega_los': omega_prior})
-
-            # SERSIC_ELLIPSE_POTENTIAL
-            fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
-
-            kwargs_lens_init.append({'k_eff': kwargs_bar[i]['k_eff'], 'R_sersic': kwargs_bar[i]['R_sersic'],
-                                      'n_sersic': kwargs_bar[i]['n_sersic'], 'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
-
-            kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
-                                      'e1': 0.01, 'e2': 0.01})
-
-            kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
-                                      'e1': -0.1, 'e2': -0.1})
-
-            kwargs_upper_lens.append({'k_eff': 2.0, 'R_sersic': 1.0, 'n_sersic': 8.0,
-                                      'e1': 0.1, 'e2': 0.1})
-
-            # NFW
-            # common priors and step sizes
-            Rs_sigma = 0.01
-            Rs_prior_lower = 5.0
-            Rs_prior_upper = 20.0
-            alpha_sigma = 0.01
-            alpha_prior_lower = 1.0
-            alpha_prior_upper = 4.0
-            center_nfw_sigma = 0.01
-            center_nfw_prior = 0.2
-            e_nfw_sigma = 0.01
-            e_nfw_prior = 0.1
-
-            if settings['complexity'] == 'missing halo ellipticity':
-                fixed_lens.append({'e1': 0.0, 'e2': 0.0})
-                kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                         'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
-
-                kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
-                                          'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma})
-
-                kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
-                                          'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior})
-
-                kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
-                                          'center_x': center_nfw_prior, 'center_y': center_nfw_prior})
+            
+            
+            if settings['complexity'] == 'power law':
+                fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
+                kwargs_lens_init.append({'theta_E': Einstein_radii[i], 'gamma': 2.0,
+                                         'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
+                kwargs_lens_sigma.append({'theta_E': 0.001, 'gamma': 0.01,
+                                         'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
+                                         'e1': -0.1, 'e2': -0.1})
+                kwargs_upper_lens.append({'theta_E': 3.0, 'gamma': 3.0,
+                                         'e1': -0.1, 'e2': -0.1})
+                
             else:
-                fixed_lens.append({})
-                kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                         'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
-                                         'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
-
-                kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
-                                          'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma,
-                                          'e1': e_nfw_sigma, 'e2': e_nfw_sigma})
-
-                kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
-                                          'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior,
-                                          'e1': -e_nfw_prior, 'e2': -e_nfw_prior})
-
-                kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
-                                          'center_x': center_nfw_prior, 'center_y': center_nfw_prior,
-                                          'e1': e_nfw_prior, 'e2': e_nfw_prior})
+                # SERSIC_ELLIPSE_POTENTIAL
+                fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
+    
+                kwargs_lens_init.append({'k_eff': kwargs_bar[i]['k_eff'], 'R_sersic': kwargs_bar[i]['R_sersic'],
+                                          'n_sersic': kwargs_bar[i]['n_sersic'], 'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
+    
+                kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
+                                          'e1': 0.01, 'e2': 0.01})
+    
+                kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
+                                          'e1': -0.1, 'e2': -0.1})
+    
+                kwargs_upper_lens.append({'k_eff': 2.0, 'R_sersic': 1.0, 'n_sersic': 8.0,
+                                          'e1': 0.1, 'e2': 0.1})
+    
+                # NFW
+                # common priors and step sizes
+                Rs_sigma = 0.01
+                Rs_prior_lower = 5.0
+                Rs_prior_upper = 20.0
+                alpha_sigma = 0.01
+                alpha_prior_lower = 1.0
+                alpha_prior_upper = 4.0
+                center_nfw_sigma = 0.01
+                center_nfw_prior = 0.2
+                e_nfw_sigma = 0.01
+                e_nfw_prior = 0.1
+    
+                if settings['complexity'] == 'missing halo ellipticity':
+                    fixed_lens.append({'e1': 0.0, 'e2': 0.0})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
+                                             'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
+    
+                    kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
+                                              'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma})
+    
+                    kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
+                                              'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior})
+    
+                    kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
+                                              'center_x': center_nfw_prior, 'center_y': center_nfw_prior})
+                    
+                elif settings['complexity'] == 'missing offset':
+                    fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
+                                             'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
+    
+                    kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
+                                              'e1': e_nfw_sigma, 'e2': e_nfw_sigma})
+    
+                    kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
+                                              'e1': -e_nfw_prior, 'e2': -e_nfw_prior})
+    
+                    kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
+                                              'e1': e_nfw_prior, 'e2': e_nfw_prior})
+                    
+                else:
+                    fixed_lens.append({})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
+                                             'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
+                                             'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
+    
+                    kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
+                                              'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma,
+                                              'e1': e_nfw_sigma, 'e2': e_nfw_sigma})
+    
+                    kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower,
+                                              'center_x': -center_nfw_prior, 'center_y': -center_nfw_prior,
+                                              'e1': -e_nfw_prior, 'e2': -e_nfw_prior})
+    
+                    kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
+                                              'center_x': center_nfw_prior, 'center_y': center_nfw_prior,
+                                              'e1': e_nfw_prior, 'e2': e_nfw_prior})
 
             lens_params = [kwargs_lens_init,
                            kwargs_lens_sigma,
