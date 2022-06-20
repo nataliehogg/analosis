@@ -26,9 +26,9 @@ class MCMC:
             # but not having the non-minimal LOS parameters defined
             # currently you get a key error regarding kappa_os if you run this setting
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        elif settings['complexity'] in ['perfect minimal', 'missing foreground shear']:
-            lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        elif settings['complexity'] == 'minimal spherical halo':
+        elif settings['complexity'] in ['perfect minimal',
+                                        'missing foreground shear',
+                                        'missing halo ellipticity']:
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         else:
             raise ValueError('I didn\'t implement that setting yet.')
@@ -172,7 +172,7 @@ class MCMC:
             e_nfw_sigma = 0.01
             e_nfw_prior = 0.1
 
-            if settings['complexity'] == 'minimal spherical halo':
+            if settings['complexity'] == 'missing halo ellipticity':
                 fixed_lens.append({'e1': 0.0, 'e2': 0.0})
                 kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
                                          'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
