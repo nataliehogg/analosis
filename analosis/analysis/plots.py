@@ -86,7 +86,7 @@ class Plots:
 
         return None
 
-    def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, save=True, show=True):
+    def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
         chain_directory_contents = os.listdir(path + '/chains/')
         chain_directory_contents.remove('.gitkeep')
@@ -155,47 +155,119 @@ class Plots:
         gamma2_lower = [np.abs(s['gamma2_los'][0] - s['gamma2_los'][1]) for s in summary_converged]
         gamma2_upper = [np.abs(s['gamma2_los'][2] - s['gamma2_los'][1]) for s in summary_converged]
 
-        fig, ax = plt.subplots(1, 1, figsize = (7,7), sharex=True, sharey=True)
+        if use_colourmap == True:
 
-        plt.errorbar(in_gamma1_converged, out_gamma1, yerr = [gamma1_lower, gamma1_upper],
-                     ls = ' ', marker = '.', color = LOS[1], label = r'$\gamma_1^{\rm LOS}$')
+            fig, ax = plt.subplots(1, 2, figsize = (11,5), sharex=True, sharey=True)
 
-        plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [gamma2_lower, gamma2_upper],
-                     ls = ' ', marker = '.', color = LOS_minimal[1], label = r'$\gamma_2^{\rm LOS}$')
+            # maybe this should be user-definable but I personally think this is best for our use case
+            cmap = 'copper'
+
+            # make the main plot and color bars
+            g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
+            ax[0].text(-0.05, 0.05, '$\gamma_1^{\\rm LOS}$')
+            colorbar(g1, None, 'vertical')
+
+            g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
+            ax[1].text(-0.05, 0.05, '$\gamma_2^{\\rm LOS}$')
+            colorbar(g2, '$u$', 'vertical')
+
+            # now get the cbar colours for the error bars
+            norm = matplotlib.colors.Normalize(vmin = min(u), vmax = max(u))
+            mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
+            u_colour = np.array([(mapper.to_rgba(v)) for v in u])
+
+            # loop over each point to get the right colour for each error bar
+            for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, u_colour):
+                ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+
+            for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, u_colour):
+                ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+
+            if show_not_converged and len(indices_not_converged) > 0:
+                # plot the non-converged ones with crosses and without error bars
+                in_gamma1_not_converged = [in_gamma1[i] for i in indices_not_converged]
+                in_gamma2_not_converged = [in_gamma2[i] for i in indices_not_converged]
+
+                out_gamma1_not_converged = [s['gamma1_los'][1] for s in summary_not_converged]
+                out_gamma2_not_converged = [s['gamma2_los'][1] for s in summary_not_converged]
+
+                # I need some unconverged chains to test this but it should work
+                # maybe an ax.text or some kind of artist to say what the x's represent? fiddly...
+
+                ax[0].scatter(in_gamma1_not_converged, out_gamma1_not_converged,
+                              c = u, marker = 'x', vmin = min(u), vmax = max(u), cmap = cmap)
+
+                ax[1].scatter(in_gamma2_not_converged, out_gamma2_not_converged,
+                              c = u, marker = 'x', vmin = min(u), vmax = max(u), cmap = cmap)
+
+            fig.supxlabel('Input $\gamma_{\\rm LOS}$')
+            fig.supylabel('Output $\gamma_{\\rm LOS}$')
+
+            # make an x = y line for the range of our plot
+            # min/max should be the same for gamma1 and gamma2
+            # for full generality we could generate separate lines for each subplot...
+            lims = [
+                np.min([ax[0].get_xlim(), ax[0].get_ylim()]),  # min of both axes
+                np.max([ax[0].get_xlim(), ax[0].get_ylim()]),  # max of both axes
+                ]
+
+            for a in ax:
+                a.plot(lims, lims, color = 'black', ls = '--', alpha=0.3, zorder=0)
+                a.set_aspect('equal')
+                a.set_xlim(lims)
+                a.set_ylim(lims)
+
+            if u_max is not None:
+                fig.suptitle(r"$u < {}$".format(u_max))
+
+        if save:
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output_cmap.pdf', dpi=300, bbox_inches='tight')
+        if show:
+            plt.show()
+
+        else:
+
+            fig, ax = plt.subplots(1, 1, figsize = (7,7), sharex=True, sharey=True)
+
+            plt.errorbar(in_gamma1_converged, out_gamma1, yerr = [gamma1_lower, gamma1_upper],
+                         ls = ' ', marker = '.', color = LOS[1], label = r'$\gamma_1^{\rm LOS}$')
+
+            plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [gamma2_lower, gamma2_upper],
+                         ls = ' ', marker = '.', color = LOS_minimal[1], label = r'$\gamma_2^{\rm LOS}$')
 
 
-        if show_not_converged and len(indices_not_converged) > 0:
-            # plot the non-converged ones with crosses and without error bars
-            in_gamma1_not_converged = [in_gamma1[i] for i in indices_not_converged]
-            in_gamma2_not_converged = [in_gamma2[i] for i in indices_not_converged]
+            if show_not_converged and len(indices_not_converged) > 0:
+                # plot the non-converged ones with crosses and without error bars
+                in_gamma1_not_converged = [in_gamma1[i] for i in indices_not_converged]
+                in_gamma2_not_converged = [in_gamma2[i] for i in indices_not_converged]
 
-            out_gamma1 = [s['gamma1_los'][1] for s in summary_not_converged]
-            out_gamma2 = [s['gamma2_los'][1] for s in summary_not_converged]
+                out_gamma1 = [s['gamma1_los'][1] for s in summary_not_converged]
+                out_gamma2 = [s['gamma2_los'][1] for s in summary_not_converged]
 
-            plt.plot(in_gamma1_not_converged, out_gamma1,
-                     ls = ' ', marker = 'x', markersize=10, color = LOS[1], label = r'non-converged chains')
+                plt.plot(in_gamma1_not_converged, out_gamma1,
+                         ls = ' ', marker = 'x', markersize=10, color = LOS[1], label = r'non-converged chains')
 
-            plt.plot(in_gamma2_not_converged, out_gamma2,
-                     ls = ' ', marker = 'x', markersize=10, color = LOS_minimal[1])
+                plt.plot(in_gamma2_not_converged, out_gamma2,
+                         ls = ' ', marker = 'x', markersize=10, color = LOS_minimal[1])
 
-        ax.set_xlabel('Input $\gamma_{\\rm LOS}$')
-        ax.set_ylabel('Output $\gamma_{\\rm LOS}$')
+            ax.set_xlabel('Input $\gamma_{\\rm LOS}$')
+            ax.set_ylabel('Output $\gamma_{\\rm LOS}$')
 
-        # make an x = y line for the range of our plot
-        lims = [
-            np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
-            np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
-            ]
+            # make an x = y line for the range of our plot
+            lims = [
+                np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+                np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+                ]
 
-        ax.plot(lims, lims, color = 'black', ls = '--', alpha=0.3, zorder=0)
-        ax.set_aspect('equal')
-        ax.set_xlim(lims)
-        ax.set_ylim(lims)
+            ax.plot(lims, lims, color = 'black', ls = '--', alpha=0.3, zorder=0)
+            ax.set_aspect('equal')
+            ax.set_xlim(lims)
+            ax.set_ylim(lims)
 
-        if u_max is not None:
-            plt.title(r"$u < {}$".format(u_max))
+            if u_max is not None:
+                plt.title(r"$u < {}$".format(u_max))
 
-        plt.legend(frameon=False)
+            plt.legend(frameon=False)
 
         if save:
             plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output.pdf', dpi=300, bbox_inches='tight')
