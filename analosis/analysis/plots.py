@@ -160,7 +160,7 @@ class Plots:
         plt.errorbar(in_gamma1_converged, out_gamma1, yerr = [gamma1_lower, gamma1_upper],
                      ls = ' ', marker = '.', color = LOS[1], label = r'$\gamma_1^{\rm LOS}$')
 
-        plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [gamma1_lower, gamma1_upper],
+        plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [gamma2_lower, gamma2_upper],
                      ls = ' ', marker = '.', color = LOS_minimal[1], label = r'$\gamma_2^{\rm LOS}$')
 
 
