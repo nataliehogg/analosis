@@ -23,8 +23,8 @@ class LOS:
                         gamma_sq = np.random.uniform(0, gamma_max**2)
                         gamma = np.sqrt(gamma_sq)
                         phi = np.random.uniform(0, np.pi)
-                        self.kwargs['gamma1'+interval] = gamma * np.cos(phi)
-                        self.kwargs['gamma2'+interval] = gamma * np.sin(phi)
+                        self.kwargs['gamma1'+interval] = gamma * np.cos(2 * phi)
+                        self.kwargs['gamma2'+interval] = gamma * np.sin(2 * phi)
                     else:
                         self.kwargs[distortion + interval] = 0
 
