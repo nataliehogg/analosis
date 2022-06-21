@@ -11,7 +11,7 @@ class Source:
                  distances,
                  util,
                  maximum_source_offset_factor=1,
-                 Einstein_radius=10,
+                 Einstein_radius=1,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE'
                  ):

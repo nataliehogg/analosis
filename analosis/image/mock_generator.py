@@ -10,7 +10,8 @@ from lenstronomy.LensModel.lens_model import LensModel
 
 class Mocks:
     """
-    This class handles the creation of a certain number of images by drawing their parameters randomly.
+    This class handles the creation of a certain number of images, and allows
+    to draw their parameters randomly.
     """
 
     def __init__(self,
@@ -81,7 +82,7 @@ class Mocks:
                                               'alpha_Rs': halo.kwargs['alpha_Rs']}]
                     alpha_x, alpha_y = spherical_halo_class.alpha(x=theta_E_bar,
                                                                   y=0,
-                                                                  kwargs= kwargs_spherical_halo)
+                                                                  kwargs=kwargs_spherical_halo)
                     # sum the contribution of baryons and NFW
                     Einstein_radius = theta_E_bar + alpha_x
                     
