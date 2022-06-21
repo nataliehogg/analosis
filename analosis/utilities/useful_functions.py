@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from lenstronomy.LensModel.Profiles.sersic_utils import SersicUtil
 
 class Utilities:
@@ -30,14 +32,14 @@ class Utilities:
         return e1, e2
 
 
-    def colorbar(self, mappable):
+    def colorbar(self, mappable, lab, ori):
         # thanks to Joseph Long! https://joseph-long.com/writing/colorbars/
         last_axes = plt.gca()
         ax = mappable.axes
         fig = ax.figure
         divider = make_axes_locatable(ax)
         cax = divider.append_axes('right', size = '5%', pad = 0.05)
-        cbar = fig.colorbar(mappable, cax = cax)
+        cbar = fig.colorbar(mappable, cax = cax, label=lab, orientation=ori)
         plt.sca(last_axes)
         return cbar
 

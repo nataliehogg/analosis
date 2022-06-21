@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib
-from matplotlib import rc, gridspec
+from matplotlib import rc, gridspec, cm
 import matplotlib.pyplot as plt
+# import matplotlib.cm as cm
 import seaborn as sns
 import pickle
 import copy
@@ -11,6 +12,8 @@ import emcee
 import os
 from chainconsumer import ChainConsumer
 c = ChainConsumer()
+
+from analosis.utilities.useful_functions import Utilities
 
 # common thinning setting (takes every nth sample in chain to ensure independence of samples)
 thin = 10
@@ -26,8 +29,10 @@ matplotlib.rcParams.update({'font.size': 18})
 
 class Plots:
 
-    def __init__(self):
-        rings_to_bind_them_all = 1
+    def __init__(self, cosmo, path):
+
+        self.util = Utilities(cosmo, path)
+
 
     def lens_mass_plot(self, path):
 
@@ -88,16 +93,6 @@ class Plots:
 
     def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
-        chain_directory_contents = os.listdir(path + '/chains/')
-        chain_directory_contents.remove('.gitkeep')
-
-        # check to see if the directory is empty
-        # you could break this by having non-*.h5 files in there but that shouldn't happen
-        if len(chain_directory_contents) == 0:
-            raise Exception('You need chain files in your {} directory to make this plot.'.format(str(path + '/chains/')))
-        else:
-            pass
-
         in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
 
         # define the quality
@@ -108,11 +103,7 @@ class Plots:
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
 
-        # # flatten the lists
-        # in_gamma1 = [item for sublist in in_gammas1 for item in sublist]
-        # in_gamma2 = [item for sublist in in_gammas2 for item in sublist]
-
-        for i in range(settings['number_of_images']):
+        for i in range(len(in_kwargs)):
             chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
@@ -126,12 +117,12 @@ class Plots:
             in_gamma2 = [g for i, g in enumerate(in_gamma2) if u[i] < u_max]
 
         # Isolate the cases where the MCMC did not converge
-        #summary_converged = [s for s in summary if s['gamma1_los'][0] is not None]
-        #summary_not_converged = [s for s in summary if s['gamma1_los'][0] is None]
         summary_converged = []
         indices_converged = []
         summary_not_converged = []
         indices_not_converged = []
+
+
         for i in range(len(summary)):
             s = summary[i]
             if (s['gamma1_los'][0] is None
@@ -159,17 +150,17 @@ class Plots:
 
             fig, ax = plt.subplots(1, 2, figsize = (11,5), sharex=True, sharey=True)
 
-            # maybe this should be user-definable but I personally think this is best for our use case
+            # maybe this should be user-definable but I personally think this cmap is best for our use case
             cmap = 'copper'
 
             # make the main plot and color bars
             g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
             ax[0].text(-0.05, 0.05, '$\gamma_1^{\\rm LOS}$')
-            colorbar(g1, None, 'vertical')
+            self.util.colorbar(g1, None, 'vertical')
 
             g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
             ax[1].text(-0.05, 0.05, '$\gamma_2^{\\rm LOS}$')
-            colorbar(g2, '$u$', 'vertical')
+            self.util.colorbar(g2, '$u$', 'vertical')
 
             # now get the cbar colours for the error bars
             norm = matplotlib.colors.Normalize(vmin = min(u), vmax = max(u))
