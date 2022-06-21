@@ -11,6 +11,7 @@ class MCMC:
 
     def __init__(self, settings, baryons, halo, los, lens_light, Einstein_radii,
                  source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
+        
         rings_to_rule_them_all = 1
 
         self.mcmc(settings, baryons, halo, los, lens_light, Einstein_radii,
@@ -336,7 +337,7 @@ class MCMC:
 
             sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
-            number_of_walkers = len(param_mcmc)*walker_ratio
+            number_of_walkers = len(param_mcmc) * walker_ratio
 
             print('the number of walkers in this chain is', number_of_walkers)
 

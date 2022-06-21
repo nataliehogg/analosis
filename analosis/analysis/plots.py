@@ -11,7 +11,6 @@ import math
 import emcee
 import os
 from chainconsumer import ChainConsumer
-c = ChainConsumer()
 
 from analosis.utilities.useful_functions import Utilities
 
@@ -32,6 +31,7 @@ class Plots:
     def __init__(self, cosmo, path):
 
         self.util = Utilities(cosmo, path)
+        self.c = ChainConsumer()
 
 
     def lens_mass_plot(self, path):
@@ -107,8 +107,8 @@ class Plots:
             chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
-            c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
-        summary = c.analysis.get_summary()
+            self.c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
+        summary = self.c.analysis.get_summary()
 
         # Remove the images under a certain quality
         if u_max is not None:
@@ -286,7 +286,7 @@ class Plots:
         # get the list of LaTeX strings for our params
         labels = self.get_labels(plot_params)
 
-        c.add_chain([samples[:,ind] for ind in param_inds],
+        self.c.add_chain([samples[:,ind] for ind in param_inds],
                      walkers = np.shape(samples)[0],
                      parameters = [labels[ind] for ind in param_inds])
 
@@ -301,14 +301,14 @@ class Plots:
             # use default mpl colours
             color = None
 
-        c.configure(smooth = True, flip = False, summary = True,
+        self.c.configure(smooth = True, flip = False, summary = True,
                     spacing = 1.0, max_ticks = 4,
                     colors = color, shade = True, shade_gradient = 0.4,
                     bar_shade = True, linewidths= [3.0],
                     tick_font_size=10, label_font_size=10,
                     usetex = True, serif = True)
 
-        fig = c.plotter.plot(truth=expected_values, figsize = size)
+        fig = self.c.plotter.plot(truth=expected_values, figsize = size)
 
         fig.patch.set_facecolor('white')
 

@@ -73,12 +73,6 @@ class Image:
                            + kwargs_sl[i]['center_y']**2) # source offset
             image_size = 3 * (theta_E + beta)
             numpix = int(image_size / pixel_size)
-            # beta = np.sqrt(kwargs_sl[i]['center_x']**2
-            #                + kwargs_sl[i]['center_y']**2) # source offset
-            # Rs = kwargs_sl[i]['R_sersic']# source half-light radius
-            # size_image = max(2 * (theta_E + 5 * Rs), 2 * (beta + 5 * Rs)) # in arcsec
-            # numPix = int(size_image / deltaPix) # total number of pixels is numPix**2
-            #background_rms = 0.01 # background noise rms # NH: where did this come from?
 
             # simulation API
             sim = SimAPI(numpix=numpix,
