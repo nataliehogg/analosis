@@ -31,12 +31,12 @@ class Plots:
     def __init__(self, cosmo, path):
 
         self.util = Utilities(cosmo, path)
-        self.c = ChainConsumer()
 
-
+    
     def lens_mass_plot(self, path):
 
         return plot
+
 
     def image_plot(self, path, settings, number_of_columns=5, u_max=1, save=True, show=True):
         print('Preparing image plot...')
@@ -91,6 +91,7 @@ class Plots:
 
         return None
 
+
     def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
         in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
@@ -103,12 +104,13 @@ class Plots:
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
 
+        c = ChainConsumer()
         for i in range(len(in_kwargs)):
             chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
-            self.c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
-        summary = self.c.analysis.get_summary()
+            c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
+        summary = c.analysis.get_summary()
 
         # Remove the images under a certain quality
         if u_max is not None:
@@ -285,8 +287,8 @@ class Plots:
 
         # get the list of LaTeX strings for our params
         labels = self.get_labels(plot_params)
-
-        self.c.add_chain([samples[:,ind] for ind in param_inds],
+        c = ChainConsumer()
+        c.add_chain([samples[:,ind] for ind in param_inds],
                      walkers = np.shape(samples)[0],
                      parameters = [labels[ind] for ind in param_inds])
 
@@ -301,14 +303,14 @@ class Plots:
             # use default mpl colours
             color = None
 
-        self.c.configure(smooth = True, flip = False, summary = True,
+        c.configure(smooth = True, flip = False, summary = True,
                     spacing = 1.0, max_ticks = 4,
                     colors = color, shade = True, shade_gradient = 0.4,
                     bar_shade = True, linewidths= [3.0],
                     tick_font_size=10, label_font_size=10,
                     usetex = True, serif = True)
 
-        fig = self.c.plotter.plot(truth=expected_values, figsize = size)
+        fig = c.plotter.plot(truth=expected_values, figsize = size)
 
         fig.patch.set_facecolor('white')
 
