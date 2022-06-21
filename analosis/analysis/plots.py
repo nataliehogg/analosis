@@ -32,7 +32,7 @@ class Plots:
 
         self.util = Utilities(cosmo, path)
 
-    
+
     def lens_mass_plot(self, path):
 
         return plot
@@ -279,18 +279,20 @@ class Plots:
         input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
 
         # get the indices corresponding to the params of interest
-        param_inds = [input_kwargs.columns.get_loc(c) for c in plot_params]# if c in input_kwargs]
+        param_inds = [input_kwargs.columns.get_loc(col) for col in plot_params]
 
-        reader = emcee.backends.HDFBackend(filename, name='lenstronomy_mcmc_emcee')
+        reader = emcee.backends.HDFBackend(str(path) + '/chains/' + filename, name='lenstronomy_mcmc_emcee')
 
         samples = reader.get_chain(discard=settings['n_burn'], flat=True, thin=thin)
 
         # get the list of LaTeX strings for our params
         labels = self.get_labels(plot_params)
+
         c = ChainConsumer()
+
         c.add_chain([samples[:,ind] for ind in param_inds],
                      walkers = np.shape(samples)[0],
-                     parameters = [labels[ind] for ind in param_inds])
+                     parameters = labels)
 
         # get the expected values for this chain and parameters
         expected_values = input_kwargs.iloc[chain_number][param_inds].to_list()
@@ -316,7 +318,7 @@ class Plots:
 
         if draft:
             # add a plot title with the job name
-            fig.suptitle(job_name.replace('_', '\_'))
+            fig.suptitle(settings['job_name'].replace('_', '\_'))
 
         if save:
             plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours.pdf', dpi=300, bbox_inches='tight')
