@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from lenstronomy.Workflow.fitting_sequence import FittingSequence
 from multiprocessing import cpu_count
 from analosis.image.image_generator import Image
@@ -68,6 +69,16 @@ class MCMC:
 
 
         for i in range(settings['number_of_images']):
+
+            # check if the file with the custom starting index already exists
+            if settings['starting_index'] > 0:
+                test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(i + settings['starting_index']) + '.h5'
+                if os.path.exists(test_file):
+                    raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
+                else:
+                    pass
+            else:
+                print('\nYour {} chains will be overwritten.\n'.format(settings['job_name']))
 
             # Initialise the lists of parameters
             fixed_lens = []
@@ -330,7 +341,9 @@ class MCMC:
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': 1.,
                                      'threadCount': ncpu,
-                                     'backup_filename': str(path) + '/chains/'+ str(settings['job_name']) + '_' + str(i) + '.h5'}]]
+                                     'backup_filename': str(path) + '/chains/'
+                                                       + str(settings['job_name']) + '_'
+                                                       + str(i + settings['starting_index']) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())
@@ -339,9 +352,6 @@ class MCMC:
 
             np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
-
-            # sampled_parameters_dataframe = pd.DataFrame(columns = param_mcmc)
-            # sampled_parameters_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) +'_sampled_params.csv', index = False)
 
             if settings['complexity'] == 'perfect':
                 output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
