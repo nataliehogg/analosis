@@ -9,6 +9,7 @@ import pickle
 import copy
 import math
 import emcee
+import h5py
 import os
 from chainconsumer import ChainConsumer
 
@@ -275,11 +276,31 @@ class Plots:
         # get the chain name
         filename = str(settings['job_name']) + '_' + str(chain_number) +'.h5'
 
-        # read in the input kwargs for the chain of interest
-        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
+        # look at the raw chain file to get the number of walkers
+        raw_chain = h5py.File(str(path) + '/chains/'+ filename, 'r')
+        group = raw_chain['lenstronomy_mcmc_emcee']
+        nwalkers = group.attrs['nwalkers']
+
+        # read in the parameters which were sampled in the mcmc
+        # (expected_values contains ALL params, including ones which were kept fixed)
+        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(settings['job_name'])+ '_sampled_params.csv', dtype='str')
+
+        # rename the columns of sampled parameters to match plot_params
+        # this could be condensed into a loop but whatever
+        # unnested loops preserve interpretability!
+        renamed_lens0 = [name.replace('_lens0', '') for name in sampled_parameters]
+        renamed_lens1 = [name.replace('lens1', 'bar') for name in renamed_lens0]
+        renamed_lens2 = [name.replace('lens2', 'nfw') for name in renamed_lens1]
+        renamed_sl = [name.replace('source_light0', 'sl') for name in renamed_lens2]
+
+        if any('lens_light0' in s for s in renamed_sl):
+            # rename the lens light if it's present
+            renamed = [name.replace('lens_light0', 'll') for name in renamed_sl]
+        else:
+            renamed = renamed_sl
 
         # get the indices corresponding to the params of interest
-        param_inds = [input_kwargs.columns.get_loc(col) for col in plot_params]
+        param_inds = [renamed.index(p) for p in plot_params]
 
         reader = emcee.backends.HDFBackend(str(path) + '/chains/' + filename, name='lenstronomy_mcmc_emcee')
 
@@ -291,10 +312,13 @@ class Plots:
         c = ChainConsumer()
 
         c.add_chain([samples[:,ind] for ind in param_inds],
-                     walkers = np.shape(samples)[0],
+                     walkers = nwalkers,
                      parameters = labels)
 
-        # get the expected values for this chain and parameters
+        # read in the input kwargs for this set of jobs
+        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
+
+        # get the expected values for the chain and parameters of interest as a list
         expected_values = input_kwargs.iloc[chain_number][param_inds].to_list()
 
         if settings['complexity'] == 'perfect':
@@ -302,14 +326,14 @@ class Plots:
         elif settings['complexity'] == 'perfect minimal':
             color = '#253494'
         else:
-            # use default mpl colours
+            # use default mpl colours; to be updated
             color = None
 
         c.configure(smooth = True, flip = False, summary = True,
                     spacing = 1.0, max_ticks = 4,
                     colors = color, shade = True, shade_gradient = 0.4,
-                    bar_shade = True, linewidths= [3.0],
-                    tick_font_size=10, label_font_size=10,
+                    bar_shade = True, linewidths = [3.0],
+                    tick_font_size=18, label_font_size=18,
                     usetex = True, serif = True)
 
         fig = c.plotter.plot(truth=expected_values, figsize = size)
@@ -318,7 +342,7 @@ class Plots:
 
         if draft:
             # add a plot title with the job name
-            fig.suptitle(settings['job_name'].replace('_', '\_'))
+            fig.suptitle(settings['job_name'].replace('_', '\_'), fontsize=18)
 
         if save:
             plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours.pdf', dpi=300, bbox_inches='tight')
@@ -351,31 +375,31 @@ class Plots:
                       'gamma2_los': r'$\gamma_2^{\rm LOS}$',
                       # baryons
                       'k_eff_bar': r'$k_{\rm eff}$',
-                      'R_sersic_bar': r'$R_{\rm S\acute{e}rsic, bar}$',
-                      'n_sersic_bar': r'$n_{\rm S\acute{e}rsic, bar}$',
-                      'e1_bar': r'$e_{1, \rm bar}$',
-                      'e2_bar': r'$e_{2, \rm bar}$',
+                      'R_sersic_bar': r'$R_{\rm S\acute{e}rsic}^{\rm bar}$',
+                      'n_sersic_bar': r'$n_{\rm S\acute{e}rsic}^{\rm bar}$',
+                      'e1_bar': r'$e_1^{\rm bar}$',
+                      'e2_bar': r'$e_2{\rm bar}$',
                       # DM
                       'R_s': r'$R_s$',
                       'alpha_Rs': r'$\alpha_{R_s}$',
-                      'x_nfw': r'$x_{\rm DM}$',
-                      'y_nfw': r'$y_{\rm DM}$',
-                      'e1_nfw': r'$e_{1, \rm DM}$',
-                      'e2_nfw': r'$e_{2, \rm DM}$',
+                      'x_nfw': r'$x^{\rm DM}$',
+                      'y_nfw': r'$y^{\rm DM}$',
+                      'e1_nfw': r'$e_1^{\rm DM}$',
+                      'e2_nfw': r'$e_2^{\rm DM}$',
                       # source
-                      'R_sersic_sl': r'$R_{\rm S\acute{e}rsic, source}$',
-                      'n_sersic_sl': r'$n_{\rm S\acute{e}rsic, source}$',
-                      'e1_sl': r'$e_{1, \rm source}$',
-                      'e2_sl': r'$e_{2, \rm source}$',
-                      'x_sl': r'$x_{\rm source}$',
-                      'y_sl': r'$y_{\rm source}$',
+                      'R_sersic_sl': r'$R_{\rm S\acute{e}rsic}^{\rm source}$',
+                      'n_sersic_sl': r'$n_{\rm S\acute{e}rsic}^{\rm source}$',
+                      'e1_sl': r'$e_1^{\rm source}$',
+                      'e2_sl': r'$e_2^{\rm source}$',
+                      'x_sl': r'$x^{\rm source}$',
+                      'y_sl': r'$y^{\rm source}$',
                       # lens light
-                      'R_sersic_ll': r'$R_{\rm S\acute{e}rsic, lens light}$',
-                      'n_sersic_ll': r'$n_{\rm S\acute{e}rsic, lens light}$',
-                      'e1_ll': r'$e_{1, \rm lens light}$',
-                      'e2_ll': r'$e_{2, \rm lens light}$',
-                      'x_ll': r'$x_{\rm lens light}$',
-                      'y_ll': r'$y_{\rm lens light}$'}
+                      'R_sersic_ll': r'$R_{\rm S\acute{e}rsic}^{\rm lens\ light}$',
+                      'n_sersic_ll': r'$n_{\rm S\acute{e}rsic}^{\rm lens\ light}$',
+                      'e1_ll': r'$e_1^{\rm lens\ light}$',
+                      'e2_ll': r'$e_2^{\rm lens\ light}$',
+                      'x_ll': r'$x^{\rm lens\ light}$',
+                      'y_ll': r'$y^{\rm lens\ light}$'}
 
         tex_list = [param_dict[p] for p in plot_params]
 
