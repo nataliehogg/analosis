@@ -171,3 +171,33 @@ class Utilities:
 
         dataframe.to_csv(str(self.path) + '/datasets/'+str(settings['job_name'])+'_input_kwargs.csv',
                               index = False)
+
+    def append_from_starting_index(self, path, settings, dataframe):
+        '''
+        appends new dataframe from custom starting index to original dataframe
+
+        use at your own peril!
+        '''
+
+        original_input_kwargs_dataframe = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+
+        # check the starting index is on a blank row
+        # this could be broken by trying to fill a gap in the df which is too small for your new df to fit
+        # in that case you'd end up overwriting stuff lower down in the df
+        # never mind, it doesn't work... to be implemented... maybe
+        # if pd.isnull(original_input_kwargs_dataframe.at[settings['starting_index'], 'kappa_os']) == True:
+        #     pass
+        # else:
+        #     raise ValueError('That row isn\'t empty.')
+
+        # compute the total number of rows the input kwargs df with blank rows should have
+        # the starting index + number of new rows - number of rows in df to be appended
+        total_rows_new_df = settings['starting_index'] + settings['number_of_images'] - dataframe.shape[0]
+
+        # add the requisite number of blank rows to the og df
+        original_df_blanks = original_input_kwargs_dataframe.reindex(list(range(0, total_rows_new_df))).reset_index(drop=True)
+
+        # append the new df to the df with blanks
+        final_df = pd.concat([original_df_blanks, dataframe], ignore_index = True)
+
+        return final_df

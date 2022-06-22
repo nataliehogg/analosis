@@ -73,7 +73,12 @@ class Run:
             # in the same order as the params are put into the MCMC for future ease of plotting
             # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
             complete_data = util.combine_dataframes([los, baryons, halo, source, lens_light, Einstein_radii_dataframe])
-            util.save_input_kwargs(settings, complete_data)
+
+            if settings['starting_index'] == 0:
+                util.save_input_kwargs(settings, complete_data)
+            else:
+                starting_index_dataframe = util.append_from_starting_index(path, settings, complete_data)
+                util.save_input_kwargs(settings, starting_index_dataframe)
 
             # rename the dataframe columns for lenstronomy
             # we want them to have distinguishable names when we save the dataset above

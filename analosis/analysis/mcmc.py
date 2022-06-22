@@ -70,6 +70,16 @@ class MCMC:
 
         for i in range(settings['number_of_images']):
 
+            # check if the file with the custom starting index already exists
+            if settings['starting_index'] > 0:
+                test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(i + settings['starting_index']) + '.h5'
+                if os.path.exists(test_file):
+                    raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
+                else:
+                    pass
+            else:
+                print('\n{} chains will be overwritten.\n'.format(settings['job_name']))
+
             # Initialise the lists of parameters
             fixed_lens = []
             kwargs_lens_init = []
@@ -333,7 +343,7 @@ class MCMC:
                                      'threadCount': ncpu,
                                      'backup_filename': str(path) + '/chains/'
                                                        + str(settings['job_name']) + '_'
-                                                       + str(i) + '.h5'}]]
+                                                       + str(i + settings['starting_index']) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())

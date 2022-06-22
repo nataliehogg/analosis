@@ -41,7 +41,7 @@ class Plots:
 
     def image_plot(self, path, settings, number_of_columns=5, u_max=1, save=True, show=True):
         print('Preparing image plot...')
-        number_of_images = settings['number_of_images']
+        number_of_images = settings['number_of_images'] #+ settings['starting_index']
         if number_of_images > 10:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
