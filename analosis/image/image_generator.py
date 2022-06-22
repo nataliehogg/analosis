@@ -36,12 +36,12 @@ class Image:
         else:
             lens_light_model_list = []
         source_model_list = ['SERSIC_ELLIPSE']
-        
+
         # lens model
         kwargs_model = {'lens_model_list': lens_model_list,
                         'lens_light_model_list': lens_light_model_list,
                         'source_light_model_list': source_model_list}
-        
+
         # telescope settings (HST)
         psf = 'GAUSSIAN'
         band = HST(band='WFC3_F160W', psf_type=psf)
@@ -51,14 +51,14 @@ class Image:
                       'fwhm': kwargs_band['seeing'],
                       'pixel_size': pixel_size,
                       'truncation': 3}
-        
+
         # numerics
         kwargs_numerics = {'supersampling_factor': 1,
                            'supersampling_convolution': False}
-        
-        
+
+
         for i in range(settings['number_of_images']):
-            
+
             # define kwargs for the lens, source, image
             kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
             kwargs_source = [kwargs_sl[i]]
@@ -66,7 +66,7 @@ class Image:
                 kwargs_lens_light = [kwargs_ll[i]]
             else:
                 kwargs_lens_light = None
-            
+
             # compute the size of the image from the Einstein radius
             theta_E = Einstein_radii[i] # in arcsec
             beta = np.sqrt(kwargs_sl[i]['center_x']**2
@@ -78,12 +78,12 @@ class Image:
             sim = SimAPI(numpix=numpix,
                          kwargs_single_band=kwargs_band,
                          kwargs_model=kwargs_model)
-            
+
             # convert magnitudes into amplitudes
             kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(
                 kwargs_lens_light_mag=kwargs_lens_light,
                 kwargs_source_mag=kwargs_source)
-            
+
             # generate image with noise
             imSim = sim.image_model_class(kwargs_numerics)
             image = imSim.image(kwargs_lens=kwargs_lens,
@@ -93,11 +93,11 @@ class Image:
             image_list.append(image)
 
             # save the image data (list of arrays) to file for plotting
-            filename = str(path) +'/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+            filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(settings['starting_index'])+'.pickle'
             outfile = open(filename,'wb')
             pickle.dump(image_list, outfile)
             outfile.close()
-            
+
             # extract data kwargs
             kwargs_data = sim.kwargs_data
             kwargs_data_list.append(kwargs_data)

@@ -46,12 +46,17 @@ class Plots:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
         # Define the quality of images (the criterion is very empirical here)
-        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name'])+ '_input_kwargs.csv')
-        beta = np.sqrt(kwargs['x_sl']**2. + kwargs['y_sl']**2.).to_numpy()
-        theta_E = kwargs['theta_E'].to_numpy()
+        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
+
+        x = kwargs['x_sl'].loc[settings['starting_index']:,].to_numpy()
+        y = kwargs['y_sl'].loc[settings['starting_index']:,].to_numpy()
+        theta_E = kwargs['theta_E'].loc[settings['starting_index']:,].to_numpy()
+
+        beta = np.sqrt(x**2. + y**2.)
+
         u = beta / theta_E # reduced impact parameter
 
-        filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+        filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_'+str(settings['starting_index'])+'.pickle'
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
         infile.close()
