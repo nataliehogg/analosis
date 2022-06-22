@@ -319,7 +319,7 @@ class Plots:
         input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
 
         # get the expected values for the chain and parameters of interest as a list
-        expected_values = input_kwargs.iloc[chain_number][param_inds].to_list()
+        expected_values = input_kwargs.iloc[chain_number][plot_params].to_list()
 
         if settings['complexity'] == 'perfect':
             color = '#d7301f'
