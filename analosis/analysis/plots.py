@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib
 from matplotlib import rc, gridspec, cm
 import matplotlib.pyplot as plt
-# import matplotlib.cm as cm
+from matplotlib.offsetbox import AnchoredText
 import seaborn as sns
 import pickle
 import copy
@@ -180,11 +180,13 @@ class Plots:
 
         # make the main plot and color bars
         g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u_g1, marker='.', vmin = min(u_g1), vmax = max(u_g1), cmap = cmap)
-        ax[0].text(-0.05, 0.05, '$\gamma_1^{\\rm LOS}$')
+        g1_text = AnchoredText('$\gamma_1^{\\rm LOS}$', loc=2, frameon=False)
+        ax[0].add_artist(g1_text)
         self.util.colorbar(g1, None, 'vertical')
 
         g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u_g2, marker='.', vmin = min(u_g2), vmax = max(u_g2), cmap = cmap)
-        ax[1].text(-0.05, 0.05, '$\gamma_2^{\\rm LOS}$')
+        g2_text = AnchoredText('$\gamma_2^{\\rm LOS}$', loc=2, frameon=False)
+        ax[1].add_artist(g2_text)
         self.util.colorbar(g2, '$u$', 'vertical')
 
         # now get the cbar colours for the error bars
@@ -211,7 +213,7 @@ class Plots:
             ax[0].plot(in_gamma1_not_converged, out_gamma1_not_converged, marker = 'o', ls = '',
                        markeredgecolor = 'black', markerfacecolor='None')
 
-        elif show_not_converged and len(g2_indices_not_converged) > 0:
+        if show_not_converged and len(g2_indices_not_converged) > 0:
 
             in_gamma2_not_converged = [in_gamma2[i] for i in g2_indices_not_converged]
 
