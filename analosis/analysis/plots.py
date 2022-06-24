@@ -110,8 +110,13 @@ class Plots:
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
 
+        # # flatten the lists
+        # in_gamma1 = [item for sublist in in_gammas1 for item in sublist]
+        # in_gamma2 = [item for sublist in in_gammas2 for item in sublist]
+
         c = ChainConsumer()
-        for i in range(len(in_kwargs)):
+
+        for i in range(settings['number_of_images']):
             chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
@@ -125,99 +130,115 @@ class Plots:
             in_gamma2 = [g for i, g in enumerate(in_gamma2) if u[i] < u_max]
 
         # Isolate the cases where the MCMC did not converge
-        summary_converged = []
-        indices_converged = []
-        summary_not_converged = []
-        indices_not_converged = []
+        g1_summary_converged = []
+        g1_indices_converged = []
+        g1_summary_not_converged = []
+        g1_indices_not_converged = []
 
-
+        g2_summary_converged = []
+        g2_indices_converged = []
+        g2_summary_not_converged = []
+        g2_indices_not_converged = []
         for i in range(len(summary)):
             s = summary[i]
             if (s['gamma1_los'][0] is None
-                or s['gamma1_los'][2] is None
-                or s['gamma2_los'][0] is None
-                or s['gamma2_los'][2] is None):
-                indices_not_converged.append(i)
-                summary_not_converged.append(s)
+                or s['gamma1_los'][2] is None):
+                g1_indices_not_converged.append(i)
+                g1_summary_not_converged.append(s)
             else:
-                indices_converged.append(i)
-                summary_converged.append(s)
+                g1_indices_converged.append(i)
+                g1_summary_converged.append(s)
+
+        for i in range(len(summary)):
+            s = summary[i]
+            if (s['gamma2_los'][0] is None
+                or s['gamma2_los'][2] is None):
+                g2_indices_not_converged.append(i)
+                g2_summary_not_converged.append(s)
+            else:
+                g2_indices_converged.append(i)
+                g2_summary_converged.append(s)
+
 
         # plot the converged ones with error bars
-        in_gamma1_converged = [in_gamma1[i] for i in indices_converged]
-        in_gamma2_converged = [in_gamma2[i] for i in indices_converged]
+        in_gamma1_converged = [in_gamma1[i] for i in g1_indices_converged]
+        in_gamma2_converged = [in_gamma2[i] for i in g2_indices_converged]
+        u_g1                = [u[i] for i in range(len(in_gamma1_converged))]
+        u_g2                = [u[i] for i in range(len(in_gamma2_converged))]
 
-        out_gamma1 = [s['gamma1_los'][1] for s in summary_converged]
-        out_gamma2 = [s['gamma2_los'][1] for s in summary_converged]
-        gamma1_lower = [np.abs(s['gamma1_los'][0] - s['gamma1_los'][1]) for s in summary_converged]
-        gamma1_upper = [np.abs(s['gamma1_los'][2] - s['gamma1_los'][1]) for s in summary_converged]
-        gamma2_lower = [np.abs(s['gamma2_los'][0] - s['gamma2_los'][1]) for s in summary_converged]
-        gamma2_upper = [np.abs(s['gamma2_los'][2] - s['gamma2_los'][1]) for s in summary_converged]
 
-        if use_colourmap == True:
+        out_gamma1 = [s['gamma1_los'][1] for s in g1_summary_converged]
+        out_gamma2 = [s['gamma2_los'][1] for s in g2_summary_converged]
+        gamma1_lower = [np.abs(s['gamma1_los'][0] - s['gamma1_los'][1]) for s in g1_summary_converged]
+        gamma1_upper = [np.abs(s['gamma1_los'][2] - s['gamma1_los'][1]) for s in g1_summary_converged]
+        gamma2_lower = [np.abs(s['gamma2_los'][0] - s['gamma2_los'][1]) for s in g2_summary_converged]
+        gamma2_upper = [np.abs(s['gamma2_los'][2] - s['gamma2_los'][1]) for s in g2_summary_converged]
 
-            fig, ax = plt.subplots(1, 2, figsize = (11,5), sharex=True, sharey=True)
+        fig, ax = plt.subplots(1, 2, figsize = (11,5), sharex=True, sharey=True)
 
-            # maybe this should be user-definable but I personally think this cmap is best for our use case
-            cmap = 'copper'
+        cmap = 'copper'
 
-            # make the main plot and color bars
-            g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
-            ax[0].text(-0.05, 0.05, '$\gamma_1^{\\rm LOS}$')
-            self.util.colorbar(g1, None, 'vertical')
+        # make the main plot and color bars
+        g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u_g1, marker='.', vmin = min(u_g1), vmax = max(u_g1), cmap = cmap)
+        ax[0].text(-0.05, 0.05, '$\gamma_1^{\\rm LOS}$')
+        self.util.colorbar(g1, None, 'vertical')
 
-            g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u, marker='.', vmin = min(u), vmax = max(u), cmap = cmap)
-            ax[1].text(-0.05, 0.05, '$\gamma_2^{\\rm LOS}$')
-            self.util.colorbar(g2, '$u$', 'vertical')
+        g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u_g2, marker='.', vmin = min(u_g2), vmax = max(u_g2), cmap = cmap)
+        ax[1].text(-0.05, 0.05, '$\gamma_2^{\\rm LOS}$')
+        self.util.colorbar(g2, '$u$', 'vertical')
 
-            # now get the cbar colours for the error bars
-            norm = matplotlib.colors.Normalize(vmin = min(u), vmax = max(u))
-            mapper = cm.ScalarMappable(norm=norm, cmap=cmap)
-            u_colour = np.array([(mapper.to_rgba(v)) for v in u])
+        # now get the cbar colours for the error bars
+        norm_g1 = matplotlib.colors.Normalize(vmin = min(u_g1), vmax = max(u_g1))
+        mapper_g1 = cm.ScalarMappable(norm=norm_g1, cmap=cmap)
+        u_colour_g1 = np.array([(mapper_g1.to_rgba(v)) for v in u_g1])
 
-            # loop over each point to get the right colour for each error bar
-            for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, u_colour):
-                ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+        norm_g2 = matplotlib.colors.Normalize(vmin = min(u_g2), vmax = max(u_g2))
+        mapper_g2 = cm.ScalarMappable(norm=norm_g2, cmap=cmap)
+        u_colour_g2 = np.array([(mapper_g2.to_rgba(v)) for v in u_g2])
 
-            for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, u_colour):
-                ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+        # loop over each point to get the right colour for each error bar
+        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, u_colour_g1):
+            ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
 
-            if show_not_converged and len(indices_not_converged) > 0:
-                # plot the non-converged ones with crosses and without error bars
-                in_gamma1_not_converged = [in_gamma1[i] for i in indices_not_converged]
-                in_gamma2_not_converged = [in_gamma2[i] for i in indices_not_converged]
+        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, u_colour_g2):
+            ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
 
-                out_gamma1_not_converged = [s['gamma1_los'][1] for s in summary_not_converged]
-                out_gamma2_not_converged = [s['gamma2_los'][1] for s in summary_not_converged]
+        if show_not_converged and len(g1_indices_not_converged) > 0:
+            # plot the non-converged ones with crosses and without error bars
+            in_gamma1_not_converged = [in_gamma1[i] for i in g1_indices_not_converged]
+            out_gamma1_not_converged = [s['gamma1_los'][1] for s in g1_summary_not_converged]
 
-                # I need some unconverged chains to test this but it should work
-                # maybe an ax.text or some kind of artist to say what the x's represent? fiddly...
+            ax[0].plot(in_gamma1_not_converged, out_gamma1_not_converged, marker = 'o', ls = '',
+                       markeredgecolor = 'black', markerfacecolor='None')
 
-                ax[0].scatter(in_gamma1_not_converged, out_gamma1_not_converged,
-                              c = u, marker = 'x', vmin = min(u), vmax = max(u), cmap = cmap)
+        elif show_not_converged and len(g2_indices_not_converged) > 0:
 
-                ax[1].scatter(in_gamma2_not_converged, out_gamma2_not_converged,
-                              c = u, marker = 'x', vmin = min(u), vmax = max(u), cmap = cmap)
+            in_gamma2_not_converged = [in_gamma2[i] for i in g2_indices_not_converged]
 
-            fig.supxlabel('Input $\gamma_{\\rm LOS}$')
-            fig.supylabel('Output $\gamma_{\\rm LOS}$')
+            out_gamma2_not_converged = [s['gamma2_los'][1] for s in g2_summary_not_converged]
 
-            # make an x = y line for the range of our plot
-            # min/max should be the same for gamma1 and gamma2
-            # for full generality we could generate separate lines for each subplot...
-            lims = [
-                np.min([ax[0].get_xlim(), ax[0].get_ylim()]),  # min of both axes
-                np.max([ax[0].get_xlim(), ax[0].get_ylim()]),  # max of both axes
-                ]
+            ax[1].plot(in_gamma2_not_converged, out_gamma2_not_converged,  marker = 'o', ls = '',
+                       markeredgecolor = 'black', markerfacecolor='None')
 
-            for a in ax:
-                a.plot(lims, lims, color = 'black', ls = '--', alpha=0.3, zorder=0)
-                a.set_aspect('equal')
-                a.set_xlim(lims)
-                a.set_ylim(lims)
+        fig.supxlabel('Input $\gamma_{\\rm LOS}$')
+        fig.supylabel('Output $\gamma_{\\rm LOS}$')
 
-            if u_max is not None:
-                fig.suptitle(r"$u < {}$".format(u_max))
+        # make an x = y line for the range of our plot
+        # min/max should be the same for gamma1 and gamma2
+        # for full generality we could generate separate lines for each subplot...
+        lims = [
+            np.min([ax[0].get_xlim(), ax[0].get_ylim()]),  # min of both axes
+            np.max([ax[0].get_xlim(), ax[0].get_ylim()]),  # max of both axes
+            ]
+
+        for a in ax:
+            a.plot(lims, lims, color = 'black', ls = '--', alpha=0.3, zorder=0)
+            a.set_aspect('equal')
+            a.set_xlim(lims)
+            a.set_ylim(lims)
+
+        if u_max is not None:
+            fig.suptitle(r"$u < {}$".format(u_max))
 
         if save:
             plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output_cmap.pdf', dpi=300, bbox_inches='tight')
