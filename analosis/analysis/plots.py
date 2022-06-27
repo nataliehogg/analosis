@@ -44,7 +44,7 @@ class Plots:
         number_of_images = settings['number_of_images'] #+ settings['starting_index']
         if number_of_images > 10:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
-            
+
         # Check if a starting index has been specified
         try:
             i_start = settings['starting_index']
@@ -52,7 +52,7 @@ class Plots:
         except KeyError:
             i_start = 0
             filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
-            
+
         # Define the quality of images from the impact parameter
         # normalised with the source half-light radius
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
@@ -61,7 +61,7 @@ class Plots:
         beta = np.sqrt(x**2. + y**2.)
         R_s = kwargs['R_sersic_sl'].loc[i_start:,].to_numpy()
         b = beta / R_s # normalised impact parameter
-        
+
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
         infile.close()
@@ -83,7 +83,7 @@ class Plots:
         for n in range(number_of_images):
             ax = fig.add_subplot(gs[n])
             im = ax.matshow(np.log10(image_list[n]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
-            
+
             if b_max is not None and b[n] > b_max:
                 ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
                 ax.plot([0,1],[0,1], color='red')
@@ -115,10 +115,6 @@ class Plots:
 
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
-
-        # # flatten the lists
-        # in_gamma1 = [item for sublist in in_gammas1 for item in sublist]
-        # in_gamma2 = [item for sublist in in_gammas2 for item in sublist]
 
         c = ChainConsumer()
 
@@ -229,8 +225,8 @@ class Plots:
             ax[1].plot(in_gamma2_not_converged, out_gamma2_not_converged,  marker = 'o', ls = '',
                        markeredgecolor = 'black', markerfacecolor='None')
 
-        fig.supxlabel('Input $\gamma_{\\rm LOS}$')
-        fig.supylabel('Output $\gamma_{\\rm LOS}$')
+        fig.supxlabel('Input $\gamma^{\\rm LOS}$')
+        fig.supylabel('Output $\gamma^{\\rm LOS}$')
 
         # make an x = y line for the range of our plot
         # min/max should be the same for gamma1 and gamma2
@@ -279,8 +275,8 @@ class Plots:
                 plt.plot(in_gamma2_not_converged, out_gamma2,
                          ls = ' ', marker = 'x', markersize=10, color = LOS_minimal[1])
 
-            ax.set_xlabel('Input $\gamma_{\\rm LOS}$')
-            ax.set_ylabel('Output $\gamma_{\\rm LOS}$')
+            ax.set_xlabel('Input $\gamma^{\\rm LOS}$')
+            ax.set_ylabel('Output $\gamma^{\\rm LOS}$')
 
             # make an x = y line for the range of our plot
             lims = [
