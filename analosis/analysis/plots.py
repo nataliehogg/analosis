@@ -294,10 +294,10 @@ class Plots:
 
             plt.legend(frameon=False)
 
-        if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output.pdf', dpi=300, bbox_inches='tight')
-        if show:
-            plt.show()
+            if save:
+                plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output.pdf', dpi=300, bbox_inches='tight')
+            if show:
+                plt.show()
 
         return None
 
