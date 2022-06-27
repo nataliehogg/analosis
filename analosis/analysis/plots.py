@@ -39,24 +39,29 @@ class Plots:
         return plot
 
 
-    def image_plot(self, path, settings, number_of_columns=5, u_max=1, save=True, show=True):
+    def image_plot(self, path, settings, number_of_columns=5, b_max=None, save=True, show=True):
         print('Preparing image plot...')
         number_of_images = settings['number_of_images'] #+ settings['starting_index']
         if number_of_images > 10:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
-
-        # Define the quality of images (the criterion is very empirical here)
+            
+        # Check if a starting index has been specified
+        try:
+            i_start = settings['starting_index']
+            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_' + str(i_start) + '.pickle'
+        except KeyError:
+            i_start = 0
+            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+            
+        # Define the quality of images from the impact parameter
+        # normalised with the source half-light radius
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
-
-        x = kwargs['x_sl'].loc[settings['starting_index']:,].to_numpy()
-        y = kwargs['y_sl'].loc[settings['starting_index']:,].to_numpy()
-        theta_E = kwargs['theta_E'].loc[settings['starting_index']:,].to_numpy()
-
+        x = kwargs['x_sl'].loc[i_start:,].to_numpy()
+        y = kwargs['y_sl'].loc[i_start:,].to_numpy()
         beta = np.sqrt(x**2. + y**2.)
-
-        u = beta / theta_E # reduced impact parameter
-
-        filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_'+str(settings['starting_index'])+'.pickle'
+        R_s = kwargs['R_sersic_sl'].loc[i_start:,].to_numpy()
+        b = beta / R_s # normalised impact parameter
+        
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
         infile.close()
@@ -78,12 +83,13 @@ class Plots:
         for n in range(number_of_images):
             ax = fig.add_subplot(gs[n])
             im = ax.matshow(np.log10(image_list[n]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
-            if u[n] > u_max:
-                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8)
+            
+            if b_max is not None and b[n] > b_max:
+                ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
                 ax.plot([0,1],[0,1], color='red')
                 ax.plot([0,1],[1,0], color='red')
             else:
-                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8)
+                ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             ax.autoscale(False)
@@ -98,14 +104,14 @@ class Plots:
         return None
 
 
-    def input_output_plot(self, path, settings, u_max=1, show_not_converged=True, use_colourmap=True, save=True, show=True):
+    def input_output_plot(self, path, settings, b_max=None, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
         in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
 
-        # define the quality
+        # define the impact parameter normalised by the source half-light radius
         beta = np.sqrt(in_kwargs['x_sl']**2. + in_kwargs['y_sl']**2.).to_numpy()
-        theta_E = in_kwargs['theta_E'].to_numpy()
-        u = beta / theta_E
+        R_s = in_kwargs['R_sersic_sl'].to_numpy()
+        b = beta / R_s
 
         in_gamma1 = in_kwargs['gamma1_los']
         in_gamma2 = in_kwargs['gamma2_los']
@@ -124,10 +130,10 @@ class Plots:
         summary = c.analysis.get_summary()
 
         # Remove the images under a certain quality
-        if u_max is not None:
-            summary   = [s for i, s in enumerate(summary)   if u[i] < u_max]
-            in_gamma1 = [g for i, g in enumerate(in_gamma1) if u[i] < u_max]
-            in_gamma2 = [g for i, g in enumerate(in_gamma2) if u[i] < u_max]
+        if b_max is not None:
+            summary   = [s for i, s in enumerate(summary)   if b[i] < b_max]
+            in_gamma1 = [g for i, g in enumerate(in_gamma1) if b[i] < b_max]
+            in_gamma2 = [g for i, g in enumerate(in_gamma2) if b[i] < b_max]
 
         # Isolate the cases where the MCMC did not converge
         g1_summary_converged = []
@@ -163,8 +169,8 @@ class Plots:
         # plot the converged ones with error bars
         in_gamma1_converged = [in_gamma1[i] for i in g1_indices_converged]
         in_gamma2_converged = [in_gamma2[i] for i in g2_indices_converged]
-        u_g1                = [u[i] for i in range(len(in_gamma1_converged))]
-        u_g2                = [u[i] for i in range(len(in_gamma2_converged))]
+        b_g1                = [b[i] for i in range(len(in_gamma1_converged))]
+        b_g2                = [b[i] for i in range(len(in_gamma2_converged))]
 
 
         out_gamma1 = [s['gamma1_los'][1] for s in g1_summary_converged]
@@ -179,30 +185,31 @@ class Plots:
         cmap = 'copper'
 
         # make the main plot and color bars
-        g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c = u_g1, marker='.', vmin = min(u_g1), vmax = max(u_g1), cmap = cmap)
+        b_max_cb = max(max(b_g1), max(b_g2))
+        g1 = ax[0].scatter(in_gamma1_converged, out_gamma1, c=b_g1, marker='.', vmin=0, vmax=b_max_cb, cmap=cmap)
         g1_text = AnchoredText('$\gamma_1^{\\rm LOS}$', loc=2, frameon=False)
         ax[0].add_artist(g1_text)
         self.util.colorbar(g1, None, 'vertical')
 
-        g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c = u_g2, marker='.', vmin = min(u_g2), vmax = max(u_g2), cmap = cmap)
+        g2 = ax[1].scatter(in_gamma2_converged, out_gamma2, c=b_g2, marker='.', vmin=0, vmax=b_max_cb, cmap=cmap)
         g2_text = AnchoredText('$\gamma_2^{\\rm LOS}$', loc=2, frameon=False)
         ax[1].add_artist(g2_text)
-        self.util.colorbar(g2, '$u$', 'vertical')
+        self.util.colorbar(g2, r'$b=\beta/R_{\rm source}$', 'vertical')
 
         # now get the cbar colours for the error bars
-        norm_g1 = matplotlib.colors.Normalize(vmin = min(u_g1), vmax = max(u_g1))
+        norm_g1 = matplotlib.colors.Normalize(vmin=0, vmax=b_max_cb)
         mapper_g1 = cm.ScalarMappable(norm=norm_g1, cmap=cmap)
-        u_colour_g1 = np.array([(mapper_g1.to_rgba(v)) for v in u_g1])
+        b_colour_g1 = np.array([(mapper_g1.to_rgba(b)) for b in b_g1])
 
-        norm_g2 = matplotlib.colors.Normalize(vmin = min(u_g2), vmax = max(u_g2))
+        norm_g2 = matplotlib.colors.Normalize(vmin=0, vmax=b_max_cb)
         mapper_g2 = cm.ScalarMappable(norm=norm_g2, cmap=cmap)
-        u_colour_g2 = np.array([(mapper_g2.to_rgba(v)) for v in u_g2])
+        b_colour_g2 = np.array([(mapper_g2.to_rgba(b)) for b in b_g2])
 
         # loop over each point to get the right colour for each error bar
-        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, u_colour_g1):
+        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, b_colour_g1):
             ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
 
-        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, u_colour_g2):
+        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, b_colour_g2):
             ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
 
         if show_not_converged and len(g1_indices_not_converged) > 0:
@@ -239,8 +246,8 @@ class Plots:
             a.set_xlim(lims)
             a.set_ylim(lims)
 
-        if u_max is not None:
-            fig.suptitle(r"$u < {}$".format(u_max))
+        if b_max is not None:
+            fig.suptitle(r"$b < {}$".format(b_max))
 
         if save:
             plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output_cmap.pdf', dpi=300, bbox_inches='tight')
@@ -286,8 +293,8 @@ class Plots:
             ax.set_xlim(lims)
             ax.set_ylim(lims)
 
-            if u_max is not None:
-                plt.title(r"$u < {}$".format(u_max))
+            if b_max is not None:
+                plt.title(r"$b < {}$".format(b_max))
 
             plt.legend(frameon=False)
 
