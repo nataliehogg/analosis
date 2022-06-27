@@ -172,7 +172,7 @@ class MCMC:
                 kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
                                          'e1': -0.1, 'e2': -0.1})
                 kwargs_upper_lens.append({'theta_E': 3.0, 'gamma': 3.0,
-                                         'e1': -0.1, 'e2': -0.1})
+                                         'e1': 0.1, 'e2': 0.1})
 
             else:
                 # SERSIC_ELLIPSE_POTENTIAL

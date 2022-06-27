@@ -40,12 +40,20 @@ class Run:
         colcos.setCosmology(cpars['id'])
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
         util = Utilities(cosmo, path)
+        self.settings = settings
+        #todo: save the settings in file
+        
+        # set the starting index to zero if not specified
+        try:
+            assert 'starting_index' in self.settings.keys()
+        except AssertionError:
+            self.settings['starting_index'] = 0
 
         if settings['scenario'] == 'composite lens':
             self.mocks = Mocks(util=util,
-                                 scenario=settings['scenario'],
+                                 scenario=self.settings['scenario'],
                                  path=path,
-                                 number_of_images=settings['number_of_images'],
+                                 number_of_images=self.settings['number_of_images'],
                                  Einstein_radius_min=parameters['Einstein_radius_min'],
                                  gamma_max=parameters['maximum_shear'],
                                  sigma_halo_offset=parameters['sigma_halo_offset'],
@@ -73,12 +81,12 @@ class Run:
             # in the same order as the params are put into the MCMC for future ease of plotting
             # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
             complete_data = util.combine_dataframes([los, baryons, halo, source, lens_light, Einstein_radii_dataframe])
-
-            if settings['starting_index'] == 0:
-                util.save_input_kwargs(settings, complete_data)
+                
+            if self.settings['starting_index'] == 0:
+                util.save_input_kwargs(self.settings, complete_data)
             else:
-                starting_index_dataframe = util.append_from_starting_index(path, settings, complete_data)
-                util.save_input_kwargs(settings, starting_index_dataframe)
+                starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
+                util.save_input_kwargs(self.settings, starting_index_dataframe)
 
             # rename the dataframe columns for lenstronomy
             # we want them to have distinguishable names when we save the dataset above
@@ -116,7 +124,7 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            kwargs_data_list, kwargs_psf, kwargs_numerics = im.generate_image(settings,
+            kwargs_data_list, kwargs_psf, kwargs_numerics = im.generate_image(self.settings,
                                                                          baryons,
                                                                          halo,
                                                                          los,
@@ -125,12 +133,12 @@ class Run:
                                                                          Einstein_radii,
                                                                          path)
 
-        if settings['MCMC'] == True:
+        if self.settings['MCMC'] == True:
 
-            chain = MCMC(settings, baryons, halo, los, lens_light, Einstein_radii,
+            chain = MCMC(self.settings, baryons, halo, los, lens_light, Einstein_radii,
                          source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
 
-        elif settings['MCMC'] == False:
+        elif self.settings['MCMC'] == False:
             print('MCMC will not be run.')
 
         else:
