@@ -55,9 +55,9 @@ class Run:
                                  path=path,
                                  number_of_images=self.settings['number_of_images'],
                                  Einstein_radius_min=parameters['Einstein_radius_min'],
-                                 max_aspect_ratio_source = parameters['max_aspect_ratio_source'],
-                                 max_aspect_ratio_baryons = parameters['max_aspect_ratio_baryons'],
-                                 max_aspect_ratio_nfw = parameters['max_aspect_ratio_nfw'],
+                                 max_aspect_ratio_source=parameters['max_aspect_ratio_source'],
+                                 max_aspect_ratio_baryons=parameters['max_aspect_ratio_baryons'],
+                                 max_aspect_ratio_nfw=parameters['max_aspect_ratio_nfw'],
                                  gamma_max=parameters['maximum_shear'],
                                  sigma_halo_offset=parameters['sigma_halo_offset'],
                                  maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
@@ -65,12 +65,11 @@ class Run:
             # get the dictionary of kwargs from the mock generator
             kwargs_dict = self.mocks.draw_kwargs()
 
-            # get the list of Einstein radii (useful for pictures)
+            # extract Einstein radii and other useful parameters
             Einstein_radii = self.mocks.Einstein_radii
-            # I renamed the column because it gets saved as a csv
-            # which treats spaces as delimiters
-            # so 'estimated theta_E [arcsec]' gets saved as three separate columns
             Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
+            mass_bar_dataframe = util.get_dataframe({'mass_bar': self.mocks.masses_baryons})
+            mass_nfw_dataframe = util.get_dataframe({'virial_mass_nfw': self.mocks.masses_haloes})
 
             # convert these into individual dataframes
             # these are what will get passed around in the code
@@ -83,7 +82,9 @@ class Run:
             # combine the dataframes for saving to file
             # in the same order as the params are put into the MCMC for future ease of plotting
             # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
-            complete_data = util.combine_dataframes([los, baryons, halo, source, lens_light, Einstein_radii_dataframe])
+            complete_data = util.combine_dataframes(
+                [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
+                 source, lens_light, Einstein_radii_dataframe])
 
             if self.settings['starting_index'] == 0:
                 util.save_input_kwargs(self.settings, complete_data)
@@ -96,45 +97,51 @@ class Run:
             # otherwise we will not know which R_sersic or e1 or x or whatever
             # corresponds to which component
             # possibly we can make this step less clunky
-            baryons = baryons.rename(index = str, columns = {'k_eff_bar': 'k_eff',
-                                                             'R_sersic_bar': 'R_sersic',
-                                                             'n_sersic_bar': 'n_sersic',
-                                                             'x_bar': 'center_x',
-                                                             'y_bar': 'center_y',
-                                                             'e1_bar': 'e1',
-                                                             'e2_bar': 'e2'})
+            baryons = baryons.rename(
+                index=str, columns={
+                    'k_eff_bar': 'k_eff',
+                    'R_sersic_bar': 'R_sersic',
+                    'n_sersic_bar': 'n_sersic',
+                    'x_bar': 'center_x',
+                    'y_bar': 'center_y',
+                    'e1_bar': 'e1',
+                    'e2_bar': 'e2'})
 
-            halo = halo.rename(index = str, columns = {'x_nfw': 'center_x',
-                                                      'y_nfw': 'center_y',
-                                                      'e1_nfw': 'e1',
-                                                      'e2_nfw': 'e2'})
+            halo = halo.rename(
+                index=str, columns={
+                    'x_nfw': 'center_x',
+                    'y_nfw': 'center_y',
+                    'e1_nfw': 'e1',
+                    'e2_nfw': 'e2'})
 
-            lens_light = lens_light.rename(index = str, columns = {'magnitude_ll': 'magnitude',
-                                                                  'R_sersic_ll': 'R_sersic',
-                                                                  'n_sersic_ll': 'n_sersic',
-                                                                  'x_ll': 'center_x',
-                                                                  'y_ll': 'center_y',
-                                                                  'e1_ll': 'e1',
-                                                                  'e2_ll': 'e2'})
+            lens_light = lens_light.rename(
+                index=str, columns={
+                    'magnitude_ll': 'magnitude',
+                    'R_sersic_ll': 'R_sersic',
+                    'n_sersic_ll': 'n_sersic',
+                    'x_ll': 'center_x',
+                    'y_ll': 'center_y',
+                    'e1_ll': 'e1',
+                    'e2_ll': 'e2'})
 
-            source = source.rename(index = str, columns = {'magnitude_sl': 'magnitude',
-                                                          'R_sersic_sl': 'R_sersic',
-                                                          'n_sersic_sl': 'n_sersic',
-                                                          'x_sl': 'center_x',
-                                                          'y_sl': 'center_y',
-                                                          'e1_sl': 'e1',
-                                                          'e2_sl': 'e2'})
+            source = source.rename(
+                index=str, columns={
+                    'magnitude_sl': 'magnitude',
+                    'R_sersic_sl': 'R_sersic',
+                    'n_sersic_sl': 'n_sersic',
+                    'x_sl': 'center_x',
+                    'y_sl': 'center_y',
+                    'e1_sl': 'e1',
+                    'e2_sl': 'e2'})
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            kwargs_data_list, kwargs_psf, kwargs_numerics = im.generate_image(self.settings,
-                                                                         baryons,
-                                                                         halo,
-                                                                         los,
-                                                                         lens_light,
-                                                                         source,
-                                                                         Einstein_radii,
-                                                                         path)
+            (kwargs_data_list,
+             kwargs_psf,
+             kwargs_numerics) = im.generate_image(self.settings,
+                                                  baryons, halo,los,
+                                                  lens_light, source,
+                                                  Einstein_radii, path)
 
         if self.settings['MCMC'] == True:
 

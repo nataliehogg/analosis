@@ -37,6 +37,8 @@ class Mocks:
         self.max_aspect_ratio_baryons = max_aspect_ratio_baryons
         self.max_aspect_ratio_nfw = max_aspect_ratio_nfw
         self.Einstein_radii = []
+        self.masses_baryons = []
+        self.masses_haloes  = []
         self.gamma_max = gamma_max
         self.sigma_halo_offset = sigma_halo_offset
         self.maximum_source_offset_factor = maximum_source_offset_factor
@@ -71,18 +73,20 @@ class Mocks:
                 attempt = 0
                 while Einstein_radius < self.Einstein_radius_min:
 
-                    baryons = Baryons(redshifts, distances, self.util, max_aspect_ratio_baryons = self.max_aspect_ratio_baryons)
+                    baryons = Baryons(redshifts, distances, self.util,
+                                      max_aspect_ratio_baryons=self.max_aspect_ratio_baryons)
                     halo = Halo(mass_baryons=baryons.mass,
                                 redshifts=redshifts,
                                 distances=distances,
                                 util=self.util,
-                                max_aspect_ratio_nfw = self.max_aspect_ratio_nfw,
+                                max_aspect_ratio_nfw=self.max_aspect_ratio_nfw,
                                 sigma_offset=self.sigma_halo_offset)
 
                     # Estimate the Einstein radius in arcsec
                     # start with the baryons as if they were a point lens
-                    theta_E_bar = self.util.Einstein_radius_point_lens(mass=baryons.mass,
-                                                                       distances=distances)
+                    theta_E_bar = self.util.Einstein_radius_point_lens(
+                        mass=baryons.mass,
+                        distances=distances)
                     # displacement angle of NFW at that position
                     spherical_halo_class = LensModel(lens_model_list=['NFW'])
                     kwargs_spherical_halo = [{'Rs': halo.kwargs['Rs'],
@@ -98,6 +102,8 @@ class Mocks:
                         raise RuntimeWarning("I seem to have difficulties to\
                                              reach the required Einstein radius.")
                 self.Einstein_radii.append(Einstein_radius)
+                self.masses_baryons.append(baryons.mass)
+                self.masses_haloes.append(halo.virial_mass)
 
                 halo_kwargs = halo.kwargs #for i in range(self.number_of_images)]
                 baryon_kwargs = baryons.return_kwargs(data_type='mass') #for i in range(self.number_of_images)]

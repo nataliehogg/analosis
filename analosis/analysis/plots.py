@@ -56,11 +56,26 @@ class Plots:
         # Define the quality of images from the impact parameter
         # normalised with the source half-light radius
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
-        x = kwargs['x_sl'].loc[i_start:,].to_numpy()
-        y = kwargs['y_sl'].loc[i_start:,].to_numpy()
-        beta = np.sqrt(x**2. + y**2.)
+        # position of the lens centre of mass
+        try:
+            m_bar  = kwargs['mass_bar'].loc[i_start:,].to_numpy()
+            m_halo = kwargs['virial_mass_nfw'].loc[i_start:,].to_numpy()
+            x_bar  = kwargs['x_bar'].loc[i_start:,].to_numpy()
+            y_bar  = kwargs['y_bar'].loc[i_start:,].to_numpy()
+            x_nfw  = kwargs['x_nfw'].loc[i_start:,].to_numpy()
+            y_nfw  = kwargs['y_nfw'].loc[i_start:,].to_numpy()
+            x_cm = (m_bar * x_bar + m_halo * x_nfw) / (m_bar + m_halo)
+            y_cm = (m_bar * y_bar + m_halo * y_nfw) / (m_bar + m_halo)
+        except KeyError:
+            # this is for retrocompatibility before we had the masses in kwargs
+            # in this case we fix the centre of mass on the optical axis
+            x_cm = y_cm = 0
+        # position of the source
+        x_s = kwargs['x_sl'].loc[i_start:,].to_numpy()
+        y_s = kwargs['y_sl'].loc[i_start:,].to_numpy()
+        # normalised impact parameter to the centre of mass
         R_s = kwargs['R_sersic_sl'].loc[i_start:,].to_numpy()
-        b = beta / R_s # normalised impact parameter
+        b   = np.sqrt((x_s - x_cm)**2 + (y_s - y_cm)**2) / R_s
 
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
