@@ -11,6 +11,7 @@ class Source:
                  distances,
                  util,
                  maximum_source_offset_factor=1,
+                 max_aspect_ratio_source = 0.9,
                  Einstein_radius=1,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE'
@@ -47,9 +48,9 @@ class Source:
       y = lens_mass_centre['y'] + r * np.sin(phi)
 
       # ellipticity
-      # NH: maybe this should be further limited too?
-      e1 = np.random.normal(0, 0.2)
-      e2 = np.random.normal(0, 0.2)
+      orientation_angle = np.random.uniform(0.0, 2*np.pi)
+      aspect_ratio      = np.random.uniform(max_aspect_ratio_source, 1.0)
+      e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
       # amplitude of light
       # amplitude = amplitude_reference * (2 / (1 + redshifts['source']))**4
@@ -58,7 +59,7 @@ class Source:
       # galaxy's area; for r = mean_radius we have M = reference_magnitude
       reference_magnitude = -21
       absolute_magnitude = reference_magnitude - 5 * np.log10(radius / mean_radius)
-      
+
       # apparent magnitude
       D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
       magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)

@@ -20,6 +20,9 @@ class Mocks:
                  path='',
                  number_of_images=1,
                  Einstein_radius_min=0.5, # arcsec
+                 max_aspect_ratio_source = 0.9,
+                 max_aspect_ratio_baryons = 0.9,
+                 max_aspect_ratio_nfw = 0.9,
                  gamma_max=0.03,
                  sigma_halo_offset=300, # pc
                  maximum_source_offset_factor=2 # in units of source size
@@ -30,6 +33,9 @@ class Mocks:
         self.path = path
         self.number_of_images = number_of_images
         self.Einstein_radius_min = Einstein_radius_min
+        self.max_aspect_ratio_source = max_aspect_ratio_source
+        self.max_aspect_ratio_baryons = max_aspect_ratio_baryons
+        self.max_aspect_ratio_nfw = max_aspect_ratio_nfw
         self.Einstein_radii = []
         self.gamma_max = gamma_max
         self.sigma_halo_offset = sigma_halo_offset
@@ -47,7 +53,7 @@ class Mocks:
             kwargs = {'baryons': [], 'halo':[], 'los':[], 'lens_light':[], 'source': []}
 
             for i in range(self.number_of_images):
-                
+
                 # redshifts
                 redshifts = {}
                 redshifts['lens'] = np.random.uniform(low=0.4, high=0.6)
@@ -65,11 +71,12 @@ class Mocks:
                 attempt = 0
                 while Einstein_radius < self.Einstein_radius_min:
 
-                    baryons = Baryons(redshifts, distances, self.util)
+                    baryons = Baryons(redshifts, distances, self.util, max_aspect_ratio_baryons = self.max_aspect_ratio_baryons)
                     halo = Halo(mass_baryons=baryons.mass,
                                 redshifts=redshifts,
                                 distances=distances,
                                 util=self.util,
+                                max_aspect_ratio_nfw = self.max_aspect_ratio_nfw,
                                 sigma_offset=self.sigma_halo_offset)
 
                     # Estimate the Einstein radius in arcsec
@@ -85,7 +92,7 @@ class Mocks:
                                                                   kwargs=kwargs_spherical_halo)
                     # sum the contribution of baryons and NFW
                     Einstein_radius = theta_E_bar + alpha_x
-                    
+
                     attempt += 1
                     if attempt > 100:
                         raise RuntimeWarning("I seem to have difficulties to\
@@ -111,6 +118,7 @@ class Mocks:
                 # source
                 source = Source(redshifts, distances, self.util,
                                 maximum_source_offset_factor=self.maximum_source_offset_factor,
+                                max_aspect_ratio_source = self.max_aspect_ratio_source,
                                 Einstein_radius=Einstein_radius,
                                 lens_mass_centre=lens_mass_centre)
                 source_kwargs = source.kwargs

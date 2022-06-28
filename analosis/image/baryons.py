@@ -12,6 +12,7 @@ class Baryons():
                  redshifts,
                  distances, # in Mpc
                  util,
+                 max_aspect_ratio_baryons = 0.9,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
                  #amplitude_reference=1000, # amplitude for a source with mean mass at z=1
@@ -44,18 +45,15 @@ class Baryons():
         n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
 
         # ellipticity
-        # e1 = np.random.normal(0, 0.2)
-        # e2 = np.random.normal(0, 0.2)
-
         orientation_angle = np.random.uniform(0.0, 2*np.pi)
-        aspect_ratio      = np.random.uniform(0.9, 1.0)
+        aspect_ratio      = np.random.uniform(max_aspect_ratio_baryons, 1.0)
         e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
         # convergence at half-light radius
         effective_convergence = util.get_effective_convergence(
             mass=self.mass, R_sersic=R_sersic, n_sersic=n_sersic, e1=e1, e2=e2,
             d_os=distances['os'], d_od=distances['od'], d_ds=distances['ds'])
-        
+
         # absolute magnitude
         mass_to_light = 2 # baryonic mass-to-light ratio
         absolute_magnitude_sun = 4.74 # absolute magnitude of the Sun
@@ -63,7 +61,7 @@ class Baryons():
                               - 2.5 * np.log10(self.mass / mass_to_light))
         # for a mass of 5e10 [solar masses], and a mass-to-light ratio of 1,
         # we have absolute_magnitude = -22
-        
+
         # apparent magnitude
         D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
         magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)

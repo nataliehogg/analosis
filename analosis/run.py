@@ -42,7 +42,7 @@ class Run:
         util = Utilities(cosmo, path)
         self.settings = settings
         #todo: save the settings in file
-        
+
         # set the starting index to zero if not specified
         try:
             assert 'starting_index' in self.settings.keys()
@@ -55,6 +55,9 @@ class Run:
                                  path=path,
                                  number_of_images=self.settings['number_of_images'],
                                  Einstein_radius_min=parameters['Einstein_radius_min'],
+                                 max_aspect_ratio_source = parameters['max_aspect_ratio_source'],
+                                 max_aspect_ratio_baryons = parameters['max_aspect_ratio_baryons'],
+                                 max_aspect_ratio_nfw = parameters['max_aspect_ratio_nfw'],
                                  gamma_max=parameters['maximum_shear'],
                                  sigma_halo_offset=parameters['sigma_halo_offset'],
                                  maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
@@ -81,7 +84,7 @@ class Run:
             # in the same order as the params are put into the MCMC for future ease of plotting
             # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
             complete_data = util.combine_dataframes([los, baryons, halo, source, lens_light, Einstein_radii_dataframe])
-                
+
             if self.settings['starting_index'] == 0:
                 util.save_input_kwargs(self.settings, complete_data)
             else:
