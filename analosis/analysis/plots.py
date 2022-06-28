@@ -376,7 +376,7 @@ class Plots:
             fig.suptitle(settings['job_name'].replace('_', '\_'), fontsize=18)
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 

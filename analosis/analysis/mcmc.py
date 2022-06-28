@@ -49,6 +49,7 @@ class MCMC:
 
         kwargs_likelihood = {'source_marg': True}
 
+        # global setting for number of walkers per sampled parameter
         walker_ratio = 10
 
         chain_list = []
@@ -105,9 +106,9 @@ class MCMC:
                 # whereas it needs to be [{,}]
                 fixed_lens.append({'kappa_od': 0.0, 'kappa_os': 0.0, 'kappa_ds': 0.0,
                                    'omega_od': 0.0, 'omega_os': 0.0, 'omega_ds': 0.0})
-                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'], 'gamma2_od': kwargs_los[i]['gamma2_od'],
-                                         'gamma1_os': kwargs_los[i]['gamma1_os'], 'gamma2_os': kwargs_los[i]['gamma2_os'],
-                                         'gamma1_ds': kwargs_los[i]['gamma1_ds'], 'gamma2_ds': kwargs_los[i]['gamma2_ds']})
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, gamma_sigma), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, gamma_sigma),
+                                         'gamma1_os': kwargs_los[i]['gamma1_os'] + np.random.normal(0.0, gamma_sigma), 'gamma2_os': kwargs_los[i]['gamma2_os'] + np.random.normal(0.0, gamma_sigma),
+                                         'gamma1_ds': kwargs_los[i]['gamma1_ds'] + np.random.normal(0.0, gamma_sigma), 'gamma2_ds': kwargs_los[i]['gamma2_ds'] + np.random.normal(0.0, gamma_sigma)})
 
                 kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
                                           'gamma1_os': gamma_sigma, 'gamma2_os': gamma_sigma,
@@ -125,9 +126,9 @@ class MCMC:
                 fixed_lens.append({'kappa_od': 0.0, 'gamma1_od':0.0, 'gamma2_od':0.0,
                                    'kappa_los': 0.0, 'omega_od': 0.0})
 
-                kwargs_lens_init.append({'gamma1_los': kwargs_los[i]['gamma1_los'],
-                                         'gamma2_los': kwargs_los[i]['gamma2_los'],
-                                         'omega_los': kwargs_los[i]['omega_los']})
+                kwargs_lens_init.append({'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, gamma_sigma),
+                                         'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, gamma_sigma),
+                                         'omega_los': kwargs_los[i]['omega_los'] + np.random.normal(0.0, omega_sigma)})
 
                 kwargs_lens_sigma.append({'gamma1_los': gamma_sigma,
                                           'gamma2_los': gamma_sigma,
@@ -146,9 +147,9 @@ class MCMC:
                 # allowing for freedom in omega_LOS accounts for this and prevents bias in the shears
                 fixed_lens.append({'kappa_od': 0.0, 'kappa_los': 0.0, 'omega_od': 0.0}) #, 'omega_los':0.0})
 
-                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'], 'gamma2_od': kwargs_los[i]['gamma2_od'],
-                                         'gamma1_los': kwargs_los[i]['gamma1_los'], 'gamma2_los': kwargs_los[i]['gamma2_los'],
-                                         'omega_los': kwargs_los[i]['omega_los']})
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, gamma_sigma), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, gamma_sigma),
+                                         'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, gamma_sigma), 'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, gamma_sigma),
+                                         'omega_los': kwargs_los[i]['omega_los'] + np.random.normal(0.0, omega_sigma)})
 
                 kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
                                           'gamma1_los': gamma_sigma, 'gamma2_los': gamma_sigma,
@@ -165,8 +166,8 @@ class MCMC:
 
             if settings['complexity'] == 'power law':
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
-                kwargs_lens_init.append({'theta_E': Einstein_radii[i], 'gamma': 2.0,
-                                         'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
+                kwargs_lens_init.append({'theta_E': Einstein_radii[i] + np.random.normal(0.0, 0.001), 'gamma': 2.0 + np.random.normal(0.0, 0.01),
+                                         'e1': kwargs_bar[i]['e1'] + np.random.normal(0.0, 0.01), 'e2': kwargs_bar[i]['e2'] + np.random.normal(0.0, 0.01)})
                 kwargs_lens_sigma.append({'theta_E': 0.001, 'gamma': 0.01,
                                          'e1': 0.01, 'e2': 0.01})
                 kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
@@ -178,8 +179,9 @@ class MCMC:
                 # SERSIC_ELLIPSE_POTENTIAL
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
 
-                kwargs_lens_init.append({'k_eff': kwargs_bar[i]['k_eff'], 'R_sersic': kwargs_bar[i]['R_sersic'],
-                                          'n_sersic': kwargs_bar[i]['n_sersic'], 'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
+                kwargs_lens_init.append({'k_eff': kwargs_bar[i]['k_eff']+ np.random.normal(0.0, 0.01), 'R_sersic': kwargs_bar[i]['R_sersic']+ np.random.normal(0.0, 0.01),
+                                          'n_sersic': kwargs_bar[i]['n_sersic']+ np.random.normal(0.0, 0.01),
+                                          'e1': kwargs_bar[i]['e1']+ np.random.normal(0.0, 0.01), 'e2': kwargs_bar[i]['e2']+ np.random.normal(0.0, 0.01)})
 
                 kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
                                           'e1': 0.01, 'e2': 0.01})
@@ -205,8 +207,9 @@ class MCMC:
 
                 if settings['complexity'] == 'missing halo ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
-                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                             'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y']})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'] + np.random.normal(0.0, alpha_sigma),
+                                             'center_x': kwargs_nfw[i]['center_x'] + np.random.normal(0.0, center_nfw_sigma),
+                                             'center_y': kwargs_nfw[i]['center_y'] + np.random.normal(0.0, center_nfw_sigma)})
 
                     kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
                                               'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma})
@@ -219,8 +222,8 @@ class MCMC:
 
                 elif settings['complexity'] == 'missing offset':
                     fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
-                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                             'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']+ np.random.normal(0.0, alpha_sigma),
+                                             'e1': kwargs_nfw[i]['e1']+ np.random.normal(0.0, e_nfw_sigma), 'e2': kwargs_nfw[i]['e2']+ np.random.normal(0.0, e_nfw_sigma)})
 
                     kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
                                               'e1': e_nfw_sigma, 'e2': e_nfw_sigma})
@@ -233,9 +236,10 @@ class MCMC:
 
                 else:
                     fixed_lens.append({})
-                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
-                                             'center_x': kwargs_nfw[i]['center_x'], 'center_y': kwargs_nfw[i]['center_y'],
-                                             'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']+ np.random.normal(0.0, alpha_sigma),
+                                             'center_x': kwargs_nfw[i]['center_x']+ np.random.normal(0.0, center_nfw_sigma),
+                                             'center_y': kwargs_nfw[i]['center_y']+ np.random.normal(0.0, center_nfw_sigma),
+                                             'e1': kwargs_nfw[i]['e1']+ np.random.normal(0.0, e_nfw_sigma), 'e2': kwargs_nfw[i]['e2']+ np.random.normal(0.0, e_nfw_sigma)})
 
                     kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma,
                                               'center_x': center_nfw_sigma, 'center_y': center_nfw_sigma,
@@ -269,9 +273,9 @@ class MCMC:
 
             # Define parameters
             fixed_source.append({})
-            kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
-                                       'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
-                                       'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+            kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic']+ np.random.normal(0.0, 0.001), 'n_sersic': kwargs_sl[i]['n_sersic']+ np.random.normal(0.0, 0.001),
+                                       'center_x': kwargs_sl[i]['center_x']+ np.random.normal(0.0, 0.01), 'center_y': kwargs_sl[i]['center_y']+ np.random.normal(0.0, 0.01),
+                                       'e1': kwargs_sl[i]['e1']+ np.random.normal(0.0, 0.01), 'e2': kwargs_sl[i]['e2']+ np.random.normal(0.0, 0.01)})
 
             kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
                                         'center_x': 0.01, 'center_y': 0.01,
@@ -300,8 +304,8 @@ class MCMC:
 
                 # Define parameters
                 fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
-                kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
-                                               'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
+                kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic']+ np.random.normal(0.0, 0.001), 'n_sersic': kwargs_ll[i]['n_sersic']+ np.random.normal(0.0, 0.001),
+                                               'e1': kwargs_ll[i]['e1']+ np.random.normal(0.0, 0.01), 'e2': kwargs_ll[i]['e2']+ np.random.normal(0.0, 0.01)})
                 kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
                 kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5,})
                 kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
