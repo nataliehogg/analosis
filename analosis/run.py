@@ -134,19 +134,17 @@ class Run:
                     'e1_sl': 'e1',
                     'e2_sl': 'e2'})
 
+        if self.settings['generate_image'] == True:
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            (kwargs_data_list,
-             kwargs_psf,
-             kwargs_numerics) = im.generate_image(self.settings,
-                                                  baryons, halo,los,
-                                                  lens_light, source,
-                                                  Einstein_radii, path)
+            im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii,path)
+        else:
+            pass
 
         if self.settings['MCMC'] == True:
 
             chain = MCMC(self.settings, baryons, halo, los, lens_light, Einstein_radii,
-                         source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
+                         source, path)
 
         elif self.settings['MCMC'] == False:
             print('MCMC will not be run.')

@@ -20,7 +20,7 @@ class Image:
     def generate_image(self, settings, baryons, halo, los, lens_light, source, Einstein_radii, path):
 
         image_list = []
-        kwargs_data_list = []
+        hyper_list = []
 
         # convert the dfs to dicts for use with lenstronomy
         kwargs_los = los.to_dict('records')
@@ -93,13 +93,21 @@ class Image:
             image_list.append(image)
 
             # save the image data (list of arrays) to file for plotting
-            filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(settings['starting_index'])+'.pickle'
-            outfile = open(filename,'wb')
-            pickle.dump(image_list, outfile)
-            outfile.close()
+            image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(settings['starting_index'])+'.pickle'
+            image_outfile = open(image_filename,'wb')
+            pickle.dump(image_list, image_outfile)
+            image_outfile.close()
 
             # extract data kwargs
             kwargs_data = sim.kwargs_data
-            kwargs_data_list.append(kwargs_data)
 
-        return kwargs_data_list, kwargs_psf, kwargs_numerics
+            hyper_list.append([kwargs_data, kwargs_psf, kwargs_numerics])
+
+        # saving what I'm calling the hyper-data for each image so we can MCMC any previously generated image
+        hyper_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_hyperdata.pickle'
+        hyper_outfile = open(hyper_filename,'wb')
+        pickle.dump(hyper_list, hyper_outfile)
+        hyper_outfile.close()
+
+
+        return None

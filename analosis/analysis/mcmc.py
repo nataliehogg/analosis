@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import pickle
 from lenstronomy.Workflow.fitting_sequence import FittingSequence
 from multiprocessing import cpu_count
 from analosis.image.image_generator import Image
@@ -11,15 +12,15 @@ ncpu = cpu_count()
 class MCMC:
 
     def __init__(self, settings, baryons, halo, los, lens_light, Einstein_radii,
-                 source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
+                 source, path):
 
         rings_to_rule_them_all = 1
 
         self.mcmc(settings, baryons, halo, los, lens_light, Einstein_radii,
-                  source, kwargs_data_list, kwargs_psf, kwargs_numerics, path)
+                  source,path)
 
     def mcmc(self, settings, baryons, halo, los, lens_light, Einstein_radii,
-             source, kwargs_data_list, kwargs_psf, kwargs_numerics, path):
+             source, path):
 
         if settings['scenario'] == 'distributed haloes':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
@@ -27,9 +28,6 @@ class MCMC:
             pass
 
         if settings['complexity'] == 'perfect':
-            # we need to deal with the error that happens by selecting perfect
-            # but not having the non-minimal LOS parameters defined
-            # currently you get a key error regarding kappa_os if you run this setting
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         elif settings['complexity'] == 'power law':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
@@ -48,6 +46,12 @@ class MCMC:
         kwargs_ll  = lens_light.to_dict('records')
 
         kwargs_likelihood = {'source_marg': True}
+
+        # load the hyperdata
+        hyperfile = str(path)+'/datasets/'+str(settings['job_name'])+'_hyperdata.pickle'
+        infile = open(hyperfile,'rb')
+        hyper_data = pickle.load(infile)
+        infile.close()
 
         # global setting for number of walkers per sampled parameter
         walker_ratio = 10
@@ -330,7 +334,12 @@ class MCMC:
             else:
                 print('Something went wrong with the lens light settings.')
 
-            multi_band_list = [[kwargs_data_list[i], kwargs_psf, kwargs_numerics]]
+
+            kwargs_data = hyper_data[i][0]
+            kwargs_psf = hyper_data[i][1]
+            kwargs_numerics = hyper_data[i][2]
+
+            multi_band_list = [[kwargs_data, kwargs_psf, kwargs_numerics]]
 
             kwargs_data_joint = {'multi_band_list': multi_band_list,
                                  'multi_band_type': 'multi-linear'}
