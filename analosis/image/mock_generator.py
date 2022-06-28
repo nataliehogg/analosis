@@ -20,9 +20,9 @@ class Mocks:
                  path='',
                  number_of_images=1,
                  Einstein_radius_min=0.5, # arcsec
-                 max_aspect_ratio_source = 0.9,
-                 max_aspect_ratio_baryons = 0.9,
-                 max_aspect_ratio_nfw = 0.9,
+                 min_aspect_ratio_source = 0.9,
+                 min_aspect_ratio_baryons = 0.9,
+                 min_aspect_ratio_nfw = 0.9,
                  gamma_max=0.03,
                  sigma_halo_offset=300, # pc
                  maximum_source_offset_factor=2 # in units of source size
@@ -33,9 +33,9 @@ class Mocks:
         self.path = path
         self.number_of_images = number_of_images
         self.Einstein_radius_min = Einstein_radius_min
-        self.max_aspect_ratio_source = max_aspect_ratio_source
-        self.max_aspect_ratio_baryons = max_aspect_ratio_baryons
-        self.max_aspect_ratio_nfw = max_aspect_ratio_nfw
+        self.min_aspect_ratio_source = min_aspect_ratio_source
+        self.min_aspect_ratio_baryons = min_aspect_ratio_baryons
+        self.min_aspect_ratio_nfw = min_aspect_ratio_nfw
         self.Einstein_radii = []
         self.masses_baryons = []
         self.masses_haloes  = []
@@ -74,12 +74,12 @@ class Mocks:
                 while Einstein_radius < self.Einstein_radius_min:
 
                     baryons = Baryons(redshifts, distances, self.util,
-                                      max_aspect_ratio_baryons=self.max_aspect_ratio_baryons)
+                                      min_aspect_ratio_baryons=self.min_aspect_ratio_baryons)
                     halo = Halo(mass_baryons=baryons.mass,
                                 redshifts=redshifts,
                                 distances=distances,
                                 util=self.util,
-                                max_aspect_ratio_nfw=self.max_aspect_ratio_nfw,
+                                min_aspect_ratio_nfw=self.min_aspect_ratio_nfw,
                                 sigma_offset=self.sigma_halo_offset)
 
                     # Estimate the Einstein radius in arcsec
@@ -124,7 +124,7 @@ class Mocks:
                 # source
                 source = Source(redshifts, distances, self.util,
                                 maximum_source_offset_factor=self.maximum_source_offset_factor,
-                                max_aspect_ratio_source = self.max_aspect_ratio_source,
+                                min_aspect_ratio_source = self.min_aspect_ratio_source,
                                 Einstein_radius=Einstein_radius,
                                 lens_mass_centre=lens_mass_centre)
                 source_kwargs = source.kwargs

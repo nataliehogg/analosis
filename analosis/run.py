@@ -55,9 +55,9 @@ class Run:
                                  path=path,
                                  number_of_images=self.settings['number_of_images'],
                                  Einstein_radius_min=parameters['Einstein_radius_min'],
-                                 max_aspect_ratio_source=parameters['max_aspect_ratio_source'],
-                                 max_aspect_ratio_baryons=parameters['max_aspect_ratio_baryons'],
-                                 max_aspect_ratio_nfw=parameters['max_aspect_ratio_nfw'],
+                                 min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
+                                 min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
+                                 min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
                                  gamma_max=parameters['maximum_shear'],
                                  sigma_halo_offset=parameters['sigma_halo_offset'],
                                  maximum_source_offset_factor=parameters['maximum_source_offset_factor'])

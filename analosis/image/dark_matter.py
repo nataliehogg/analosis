@@ -13,7 +13,7 @@ class Halo():
                  redshifts,
                  distances,
                  util,
-                 max_aspect_ratio_nfw = 0.9,
+                 min_aspect_ratio_nfw = 0.9,
                  sigma_offset=300, # in pc
                  model_mass='NFW_ELLIPSE',
                  ):
@@ -47,7 +47,7 @@ class Halo():
 
         # ellipticity
         orientation_angle = np.random.uniform(0.0, 2*np.pi)
-        aspect_ratio      = np.random.uniform(max_aspect_ratio_nfw, 1.0)
+        aspect_ratio      = np.random.uniform(min_aspect_ratio_nfw, 1.0)
         e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
         # offset with respect to light centre (careful with pc -> arcsec)

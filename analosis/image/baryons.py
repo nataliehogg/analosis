@@ -12,7 +12,7 @@ class Baryons():
                  redshifts,
                  distances, # in Mpc
                  util,
-                 max_aspect_ratio_baryons = 0.9,
+                 min_aspect_ratio_baryons = 0.9,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
                  #amplitude_reference=1000, # amplitude for a source with mean mass at z=1
@@ -45,7 +45,7 @@ class Baryons():
 
         # ellipticity
         orientation_angle = np.random.uniform(0.0, 2*np.pi)
-        aspect_ratio      = np.random.uniform(max_aspect_ratio_baryons, 1.0)
+        aspect_ratio      = np.random.uniform(min_aspect_ratio_baryons, 1.0)
         e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
         # convergence at half-light radius

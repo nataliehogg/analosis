@@ -11,7 +11,7 @@ class Source:
                  distances,
                  util,
                  maximum_source_offset_factor=1,
-                 max_aspect_ratio_source = 0.9,
+                 min_aspect_ratio_source = 0.9,
                  Einstein_radius=1,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE'
@@ -49,7 +49,7 @@ class Source:
 
       # ellipticity
       orientation_angle = np.random.uniform(0.0, 2*np.pi)
-      aspect_ratio      = np.random.uniform(max_aspect_ratio_source, 1.0)
+      aspect_ratio      = np.random.uniform(min_aspect_ratio_source, 1.0)
       e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
       # amplitude of light
