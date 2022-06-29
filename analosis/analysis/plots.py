@@ -48,9 +48,12 @@ class Plots:
         # Check if a starting index has been specified
         try:
             i_start = settings['starting_index']
+            assert i_start > 0
             filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_' + str(i_start) + '.pickle'
         except KeyError:
             i_start = 0
+            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+        except AssertionError:
             filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
 
         # Define the quality of images from the impact parameter

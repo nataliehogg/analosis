@@ -93,7 +93,12 @@ class Image:
             image_list.append(image)
 
             # save the image data (list of arrays) to file for plotting
-            image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(settings['starting_index'])+'.pickle'
+            try:
+                i_start = settings['starting_index']
+                assert i_start > 0
+                image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(i_start)+'.pickle'
+            except:
+                image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list.pickle'
             image_outfile = open(image_filename,'wb')
             pickle.dump(image_list, image_outfile)
             image_outfile.close()
