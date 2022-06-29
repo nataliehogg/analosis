@@ -106,59 +106,8 @@ class Run:
                 im = Image()
                 im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
             else:
-                starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
-                util.save_input_kwargs(self.settings, starting_index_dataframe)
-
-            # rename the dataframe columns for lenstronomy
-            # we want them to have distinguishable names when we save the dataset above
-            # otherwise we will not know which R_sersic or e1 or x or whatever
-            # corresponds to which component
-            # possibly we can make this step less clunky
-            baryons = baryons.rename(
-                index=str, columns={
-                    'k_eff_bar': 'k_eff',
-                    'R_sersic_bar': 'R_sersic',
-                    'n_sersic_bar': 'n_sersic',
-                    'x_bar': 'center_x',
-                    'y_bar': 'center_y',
-                    'e1_bar': 'e1',
-                    'e2_bar': 'e2'})
-
-            halo = halo.rename(
-                index=str, columns={
-                    'x_nfw': 'center_x',
-                    'y_nfw': 'center_y',
-                    'e1_nfw': 'e1',
-                    'e2_nfw': 'e2'})
-
-            lens_light = lens_light.rename(
-                index=str, columns={
-                    'magnitude_ll': 'magnitude',
-                    'R_sersic_ll': 'R_sersic',
-                    'n_sersic_ll': 'n_sersic',
-                    'x_ll': 'center_x',
-                    'y_ll': 'center_y',
-                    'e1_ll': 'e1',
-                    'e2_ll': 'e2'})
-
-            source = source.rename(
-                index=str, columns={
-                    'magnitude_sl': 'magnitude',
-                    'R_sersic_sl': 'R_sersic',
-                    'n_sersic_sl': 'n_sersic',
-                    'x_sl': 'center_x',
-                    'y_sl': 'center_y',
-                    'e1_sl': 'e1',
-                    'e2_sl': 'e2'})
-
-        if self.settings['generate_image'] == True:
-            # generate the image and the associated data kwargs for either plotting or fitting
-            im = Image()
-            im.generate_image(self.settings,
-                              baryons, halo, los, lens_light, source,
-                              Einstein_radii, path, source_perturbations)
-        else:
-            pass
+                print('New images will not be generated.')
+                pass
 
         if self.settings['MCMC'] == True:
 
