@@ -427,7 +427,7 @@ class Plots:
                       'R_sersic_bar': r'$R_{\rm S\acute{e}rsic}^{\rm bar}$',
                       'n_sersic_bar': r'$n_{\rm S\acute{e}rsic}^{\rm bar}$',
                       'e1_bar': r'$e_1^{\rm bar}$',
-                      'e2_bar': r'$e_2{\rm bar}$',
+                      'e2_bar': r'$e_2^{\rm bar}$',
                       # DM
                       'R_s': r'$R_s$',
                       'alpha_Rs': r'$\alpha_{R_s}$',
