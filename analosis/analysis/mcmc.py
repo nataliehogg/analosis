@@ -175,9 +175,9 @@ class MCMC:
                 kwargs_lens_sigma.append({'theta_E': 0.001, 'gamma': 0.01,
                                          'e1': 0.01, 'e2': 0.01})
                 kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
-                                         'e1': -0.1, 'e2': -0.1})
+                                         'e1': -0.5, 'e2': -0.5})
                 kwargs_upper_lens.append({'theta_E': 3.0, 'gamma': 3.0,
-                                         'e1': 0.1, 'e2': 0.1})
+                                         'e1': 0.5, 'e2': 0.5})
 
             else:
                 # SERSIC_ELLIPSE_POTENTIAL
@@ -191,10 +191,10 @@ class MCMC:
                                           'e1': 0.01, 'e2': 0.01})
 
                 kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
-                                          'e1': -0.1, 'e2': -0.1})
+                                          'e1': -0.5, 'e2': -0.5})
 
                 kwargs_upper_lens.append({'k_eff': 2.0, 'R_sersic': 1.0, 'n_sersic': 8.0,
-                                          'e1': 0.1, 'e2': 0.1})
+                                          'e1': 0.5, 'e2': 0.5})
 
                 # NFW
                 # common priors and step sizes
@@ -207,7 +207,7 @@ class MCMC:
                 center_nfw_sigma = 0.01
                 center_nfw_prior = 0.2
                 e_nfw_sigma = 0.01
-                e_nfw_prior = 0.1
+                e_nfw_prior = 0.5
 
                 if settings['complexity'] == 'missing halo ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
@@ -311,7 +311,7 @@ class MCMC:
                 kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic']+ np.random.normal(0.0, 0.001), 'n_sersic': kwargs_ll[i]['n_sersic']+ np.random.normal(0.0, 0.001),
                                                'e1': kwargs_ll[i]['e1']+ np.random.normal(0.0, 0.01), 'e2': kwargs_ll[i]['e2']+ np.random.normal(0.0, 0.01)})
                 kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5,})
+                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
                 kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
 
                 lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
