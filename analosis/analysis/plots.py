@@ -41,7 +41,10 @@ class Plots:
 
     def image_plot(self, path, settings, number_of_columns=5, b_max=None, save=True, show=True):
         print('Preparing image plot...')
-        number_of_images = settings['number_of_images'] #+ settings['starting_index']
+        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
+
+        number_of_images = len(kwargs)
+        
         if number_of_images > 10:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
@@ -58,7 +61,6 @@ class Plots:
 
         # Define the quality of images from the impact parameter
         # normalised with the source half-light radius
-        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
         # position of the lens centre of mass
         try:
             m_bar  = kwargs['mass_bar'].loc[i_start:,].to_numpy()
@@ -136,7 +138,7 @@ class Plots:
 
         c = ChainConsumer()
 
-        for i in range(settings['number_of_images']):
+        for i in range(len(in_kwargs)):
             chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)

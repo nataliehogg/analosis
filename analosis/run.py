@@ -33,9 +33,9 @@ class Run:
 
         path = (Path(__file__).parent/'results/').resolve()
 
-        print('Running the {} case with the following settings:\n\nModel: {}\nNumber of images: {}\nLens light: {}'
-              .format(settings['scenario'], settings['complexity'],
-                      settings['number_of_images'], settings['lens_light']))
+        # print('Running the {} case with the following settings:\n\nModel: {}\nNumber of images: {}\nLens light: {}'
+        #       .format(settings['scenario'], settings['complexity'],
+        #               settings['number_of_images'], settings['lens_light']))
 
         colcos.setCosmology(cpars['id'])
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
@@ -62,89 +62,61 @@ class Run:
                                  sigma_halo_offset=parameters['sigma_halo_offset'],
                                  maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
 
-            # get the dictionary of kwargs from the mock generator
-            kwargs_dict = self.mocks.draw_kwargs()
+            if self.settings['generate_image'] == True:
+                # get the dictionary of kwargs from the mock generator
+                kwargs_dict = self.mocks.draw_kwargs()
 
-            # extract Einstein radii and other useful parameters
-            Einstein_radii = self.mocks.Einstein_radii
-            Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
-            mass_bar_dataframe = util.get_dataframe({'mass_bar': self.mocks.masses_baryons})
-            mass_nfw_dataframe = util.get_dataframe({'virial_mass_nfw': self.mocks.masses_haloes})
+                # extract Einstein radii and other useful parameters
+                Einstein_radii = self.mocks.Einstein_radii
+                Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
+                mass_bar_dataframe = util.get_dataframe({'mass_bar': self.mocks.masses_baryons})
+                mass_nfw_dataframe = util.get_dataframe({'virial_mass_nfw': self.mocks.masses_haloes})
 
-            # convert these into individual dataframes
-            # these are what will get passed around in the code
-            baryons = util.get_dataframe(kwargs_dict['baryons'])
-            halo = util.get_dataframe(kwargs_dict['halo'])
-            los = util.get_dataframe(kwargs_dict['los'])
-            lens_light = util.get_dataframe(kwargs_dict['lens_light'])
-            source = util.get_dataframe(kwargs_dict['source'])
+                # convert these into individual dataframes
+                # these are what will get passed around in the code
+                baryons = util.get_dataframe(kwargs_dict['baryons'])
+                halo = util.get_dataframe(kwargs_dict['halo'])
+                los = util.get_dataframe(kwargs_dict['los'])
+                lens_light = util.get_dataframe(kwargs_dict['lens_light'])
+                source = util.get_dataframe(kwargs_dict['source'])
 
-            # combine the dataframes for saving to file
-            # in the same order as the params are put into the MCMC for future ease of plotting
-            # complete_data = util.combine_dataframes([baryons, halo, los, lens_light, source, Einstein_radii_dataframe])
-            complete_data = util.combine_dataframes(
-                [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
-                 source, lens_light, Einstein_radii_dataframe])
+                # combine the dataframes for saving to file
+                # in the same order as the params are put into the MCMC for future ease of plotting
+                complete_data = util.combine_dataframes(
+                    [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
+                     source, lens_light, Einstein_radii_dataframe])
 
-            if self.settings['starting_index'] == 0:
-                util.save_input_kwargs(self.settings, complete_data)
+                if self.settings['starting_index'] == 0:
+                    util.save_input_kwargs(self.settings, complete_data)
+                else:
+                    starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
+                    util.save_input_kwargs(self.settings, starting_index_dataframe)
+
+                # rename the dataframes for lenstronomy
+                baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+
+                # generate the image and the associated data kwargs for either plotting or fitting
+                im = Image()
+                im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
             else:
-                starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
-                util.save_input_kwargs(self.settings, starting_index_dataframe)
-
-            # rename the dataframe columns for lenstronomy
-            # we want them to have distinguishable names when we save the dataset above
-            # otherwise we will not know which R_sersic or e1 or x or whatever
-            # corresponds to which component
-            # possibly we can make this step less clunky
-            baryons = baryons.rename(
-                index=str, columns={
-                    'k_eff_bar': 'k_eff',
-                    'R_sersic_bar': 'R_sersic',
-                    'n_sersic_bar': 'n_sersic',
-                    'x_bar': 'center_x',
-                    'y_bar': 'center_y',
-                    'e1_bar': 'e1',
-                    'e2_bar': 'e2'})
-
-            halo = halo.rename(
-                index=str, columns={
-                    'x_nfw': 'center_x',
-                    'y_nfw': 'center_y',
-                    'e1_nfw': 'e1',
-                    'e2_nfw': 'e2'})
-
-            lens_light = lens_light.rename(
-                index=str, columns={
-                    'magnitude_ll': 'magnitude',
-                    'R_sersic_ll': 'R_sersic',
-                    'n_sersic_ll': 'n_sersic',
-                    'x_ll': 'center_x',
-                    'y_ll': 'center_y',
-                    'e1_ll': 'e1',
-                    'e2_ll': 'e2'})
-
-            source = source.rename(
-                index=str, columns={
-                    'magnitude_sl': 'magnitude',
-                    'R_sersic_sl': 'R_sersic',
-                    'n_sersic_sl': 'n_sersic',
-                    'x_sl': 'center_x',
-                    'y_sl': 'center_y',
-                    'e1_sl': 'e1',
-                    'e2_sl': 'e2'})
-
-        if self.settings['generate_image'] == True:
-            # generate the image and the associated data kwargs for either plotting or fitting
-            im = Image()
-            im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii,path)
-        else:
-            pass
+                print('New images will not be generated.')
+                pass
 
         if self.settings['MCMC'] == True:
 
-            chain = MCMC(self.settings, baryons, halo, los, lens_light, Einstein_radii,
-                         source, path)
+            input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+
+            # this is a bit dissatisfactory because it assumes a hard-coded column order
+            los        = input_kwargs.loc[:, 'kappa_os':'omega_los']
+            baryons    = input_kwargs.loc[:, 'R_sersic_bar':'mass_bar']
+            halo       = input_kwargs.loc[:, 'Rs':'virial_mass_nfw']
+            lens_light = input_kwargs.loc[:, 'R_sersic_ll':'magnitude_ll']
+            source     = input_kwargs.loc[:, 'magnitude_sl':'e2_sl']
+            Einstein_radii = input_kwargs.loc[:, 'theta_E']
+
+            baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+
+            chain = MCMC(self.settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
 
         elif self.settings['MCMC'] == False:
             print('MCMC will not be run.')

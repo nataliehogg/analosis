@@ -201,3 +201,42 @@ class Utilities:
         final_df = pd.concat([original_df_blanks, dataframe], ignore_index = True)
 
         return final_df
+
+    def rename_kwargs(self, baryons, halo, lens_light, source):
+        baryons = baryons.rename(
+                index=str, columns={
+                    'k_eff_bar': 'k_eff',
+                    'R_sersic_bar': 'R_sersic',
+                    'n_sersic_bar': 'n_sersic',
+                    'x_bar': 'center_x',
+                    'y_bar': 'center_y',
+                    'e1_bar': 'e1',
+                    'e2_bar': 'e2'})
+
+        halo = halo.rename(
+            index=str, columns={
+                'x_nfw': 'center_x',
+                'y_nfw': 'center_y',
+                'e1_nfw': 'e1',
+                'e2_nfw': 'e2'})
+
+        lens_light = lens_light.rename(
+            index=str, columns={
+                'magnitude_ll': 'magnitude',
+                'R_sersic_ll': 'R_sersic',
+                'n_sersic_ll': 'n_sersic',
+                'x_ll': 'center_x',
+                'y_ll': 'center_y',
+                'e1_ll': 'e1',
+                'e2_ll': 'e2'})
+
+        source = source.rename(
+            index=str, columns={
+                'magnitude_sl': 'magnitude',
+                'R_sersic_sl': 'R_sersic',
+                'n_sersic_sl': 'n_sersic',
+                'x_sl': 'center_x',
+                'y_sl': 'center_y',
+                'e1_sl': 'e1',
+                'e2_sl': 'e2'})
+        return baryons, halo, lens_light, source
