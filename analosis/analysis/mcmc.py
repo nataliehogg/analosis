@@ -108,7 +108,7 @@ class MCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
-            gamma_sigma = 0.0001
+            gamma_sigma = 0.001
             omega_sigma = 0.00001
             gamma_prior = 0.1
             omega_prior = 0.001
