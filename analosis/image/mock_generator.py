@@ -25,7 +25,7 @@ class Mocks:
                  min_aspect_ratio_nfw = 0.9,
                  gamma_max=0.03,
                  sigma_halo_offset=300, # pc
-                 maximum_source_offset_factor=2 # in units of source size
+                 maximum_source_offset_factor=1, # in units of source half-light radius
                  ):
 
         self.util = util

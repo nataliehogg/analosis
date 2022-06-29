@@ -48,19 +48,26 @@ class Run:
             assert 'starting_index' in self.settings.keys()
         except AssertionError:
             self.settings['starting_index'] = 0
+            
+        # set the source perturbation to zero if not specified
+        try:
+            source_perturbations = parameters['source_perturbations']
+        except KeyError:
+            source_perturbations = []
 
         if settings['scenario'] == 'composite lens':
-            self.mocks = Mocks(util=util,
-                                 scenario=self.settings['scenario'],
-                                 path=path,
-                                 number_of_images=self.settings['number_of_images'],
-                                 Einstein_radius_min=parameters['Einstein_radius_min'],
-                                 min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
-                                 min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
-                                 min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
-                                 gamma_max=parameters['maximum_shear'],
-                                 sigma_halo_offset=parameters['sigma_halo_offset'],
-                                 maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
+            self.mocks = Mocks(
+                util=util,
+                scenario=self.settings['scenario'],
+                path=path,
+                number_of_images=self.settings['number_of_images'],
+                Einstein_radius_min=parameters['Einstein_radius_min'],
+                min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
+                min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
+                min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
+                gamma_max=parameters['maximum_shear'],
+                sigma_halo_offset=parameters['sigma_halo_offset'],
+                maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
 
             # get the dictionary of kwargs from the mock generator
             kwargs_dict = self.mocks.draw_kwargs()
@@ -137,7 +144,9 @@ class Run:
         if self.settings['generate_image'] == True:
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii,path)
+            im.generate_image(self.settings,
+                              baryons, halo, los, lens_light, source,
+                              Einstein_radii, path, source_perturbations)
         else:
             pass
 
