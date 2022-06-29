@@ -17,7 +17,10 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
-    def generate_image(self, settings, baryons, halo, los, lens_light, source, Einstein_radii, path):
+    def generate_image(self, settings,
+                       baryons, halo, los, lens_light, source,
+                       Einstein_radii, path, source_perturbations=[]
+                       ):
 
         image_list = []
         hyper_list = []
@@ -35,8 +38,25 @@ class Image:
             lens_light_model_list = ['SERSIC_ELLIPSE']
         else:
             lens_light_model_list = []
+        
+        # source and its potential perturbations
         source_model_list = ['SERSIC_ELLIPSE']
-
+        
+        if (type(source_perturbations) == float
+            or type(source_perturbations) == int
+            ):
+            source_perturbations = [float(source_perturbations)]
+            source_model_list.append('SERSIC')
+        elif type(source_perturbations) == list:
+            for i, pert in enumerate(source_perturbations):
+                if type(pert) not in [float, int]:
+                    source_perturbations[i] = 0
+                    raise Warning("I found an element of parameters['source_perturbations'] that is not a number, treating it as zero.")
+                source_model_list.append('SERSIC')
+        else:
+            source_perturbations = []
+            raise Warning("parameters['source_perturbations'] must be either None, a number, or a list of numbers, treating it as an empty list.")
+                   
         # lens model
         kwargs_model = {'lens_model_list': lens_model_list,
                         'lens_light_model_list': lens_light_model_list,
@@ -59,9 +79,35 @@ class Image:
 
         for i in range(settings['number_of_images']):
 
-            # define kwargs for the lens, source, image
+            # define kwargs for the lens
             kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
+            
+            # define kwargs for the main source
             kwargs_source = [kwargs_sl[i]]
+            
+            # add perturbations to the source
+            mag = kwargs_sl[i]['magnitude']
+            R_s = kwargs_sl[i]['R_sersic']
+            x_s = kwargs_sl[i]['center_x']
+            y_s = kwargs_sl[i]['center_y']
+            for pert in source_perturbations:
+                mag_pert = mag - 2.5 * np.log10(pert)
+                r2       = np.random.uniform(0, R_s**2)
+                r        = np.sqrt(r2)
+                phi      = np.random.uniform(0, 2*np.pi)
+                x        = x_s + r * np.cos(phi)
+                y        = y_s + r * np.sin(phi)
+                R        = np.random.uniform(R_s/10, R_s)
+                n        = np.random.uniform(2, 6)
+                kwargs_pert = {'magnitude': mag_pert,
+                               'R_sersic' : R,
+                               'n_sersic' : n,
+                               'center_x' : x,
+                               'center_y' : y
+                               }
+                kwargs_source.append(kwargs_pert)
+            
+            # define kwargs for the lens light
             if settings['lens_light']:
                 kwargs_lens_light = [kwargs_ll[i]]
             else:
