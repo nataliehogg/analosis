@@ -113,12 +113,24 @@ class Run:
 
             input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
 
-            # this is a bit dissatisfactory because it assumes a hard-coded column order
-            los        = input_kwargs.loc[:, 'kappa_os':'omega_los']
-            baryons    = input_kwargs.loc[:, 'R_sersic_bar':'mass_bar']
-            halo       = input_kwargs.loc[:, 'Rs':'virial_mass_nfw']
-            lens_light = input_kwargs.loc[:, 'R_sersic_ll':'magnitude_ll']
-            source     = input_kwargs.loc[:, 'magnitude_sl':'e2_sl']
+            los_cols = ['kappa_os', 'gamma1_os', 'gamma2_os', 'omega_os',
+                        'kappa_od', 'gamma1_od', 'gamma2_od', 'omega_od',
+                        'kappa_ds', 'gamma1_ds', 'gamma2_ds', 'omega_ds',
+                        'kappa_los', 'gamma1_los', 'gamma2_los', 'omega_los']
+
+            bar_cols = ['R_sersic_bar', 'n_sersic_bar', 'k_eff_bar', 'e1_bar', 'e2_bar', 'x_bar', 'y_bar', 'mass_bar']
+
+            nfw_cols = ['Rs', 'alpha_Rs', 'x_nfw', 'y_nfw', 'e1_nfw', 'e2_nfw', 'virial_mass_nfw']
+
+            ll_cols = ['R_sersic_ll', 'n_sersic_ll', 'e1_ll', 'e2_ll', 'x_ll', 'y_ll', 'magnitude_ll']
+
+            sl_cols = ['magnitude_sl', 'R_sersic_sl', 'n_sersic_sl', 'x_sl', 'y_sl', 'e1_sl', 'e2_sl']
+
+            los        = input_kwargs.loc[:, los_cols]
+            baryons    = input_kwargs.loc[:, bar_cols]
+            halo       = input_kwargs.loc[:, nfw_cols]
+            lens_light = input_kwargs.loc[:, ll_cols]
+            source     = input_kwargs.loc[:, sl_cols]
             Einstein_radii = input_kwargs.loc[:, 'theta_E']
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
