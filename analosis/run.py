@@ -136,7 +136,7 @@ class Run:
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
 
-            chain = MCMC(self.settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
+            chain = MCMC(self.settings, self.parameters, baryons, halo, los, lens_light, Einstein_radii, source, path)
 
         elif self.settings['MCMC'] == False:
             print('MCMC will not be run.')
