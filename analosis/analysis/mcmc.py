@@ -11,15 +11,15 @@ ncpu = cpu_count()
 
 class MCMC:
 
-    def __init__(self, settings, baryons, halo, los, lens_light, Einstein_radii,
+    def __init__(self, settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
                  source, path):
 
         rings_to_rule_them_all = 1
 
-        self.mcmc(settings, baryons, halo, los, lens_light, Einstein_radii,
+        self.mcmc(settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
                   source,path)
 
-    def mcmc(self, settings, baryons, halo, los, lens_light, Einstein_radii,
+    def mcmc(self, settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
              source, path):
 
         # if settings['scenario'] == 'distributed haloes':
@@ -304,7 +304,7 @@ class MCMC:
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
 
-            if settings['lens_light'] == True:
+            if parameters['lens_light'] == True:
                 lens_light_model_list = ['SERSIC_ELLIPSE']
 
                 # lens light model
@@ -333,7 +333,7 @@ class MCMC:
                                 'source_light_model_list': source_model_list,
                                 'lens_light_model_list': lens_light_model_list}
 
-            elif settings['lens_light'] == False:
+            elif parameters['lens_light'] == False:
                 kwargs_params = {'lens_model': lens_params,
                                  'source_model': source_params}
 
