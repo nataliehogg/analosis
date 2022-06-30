@@ -55,59 +55,59 @@ class Run:
         except KeyError:
             source_perturbations = []
 
-        if settings['scenario'] == 'composite lens':
-            self.mocks = Mocks(
-                util=util,
-                scenario=self.settings['scenario'],
-                path=path,
-                number_of_images=self.settings['number_of_images'],
-                Einstein_radius_min=parameters['Einstein_radius_min'],
-                min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
-                min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
-                min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
-                gamma_max=parameters['maximum_shear'],
-                sigma_halo_offset=parameters['sigma_halo_offset'],
-                maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
+        # if settings['scenario'] == 'composite lens':
+        self.mocks = Mocks(
+            util=util,
+            # scenario=self.settings['scenario'],
+            path=path,
+            number_of_images=self.settings['number_of_images'],
+            Einstein_radius_min=parameters['Einstein_radius_min'],
+            min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
+            min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
+            min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
+            gamma_max=parameters['maximum_shear'],
+            sigma_halo_offset=parameters['sigma_halo_offset'],
+            maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
 
-            if self.settings['generate_image'] == True:
-                # get the dictionary of kwargs from the mock generator
-                kwargs_dict = self.mocks.draw_kwargs()
+        if self.settings['generate_image'] == True:
+            # get the dictionary of kwargs from the mock generator
+            kwargs_dict = self.mocks.draw_kwargs()
 
-                # extract Einstein radii and other useful parameters
-                Einstein_radii = self.mocks.Einstein_radii
-                Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
-                mass_bar_dataframe = util.get_dataframe({'mass_bar': self.mocks.masses_baryons})
-                mass_nfw_dataframe = util.get_dataframe({'virial_mass_nfw': self.mocks.masses_haloes})
+            # extract Einstein radii and other useful parameters
+            Einstein_radii = self.mocks.Einstein_radii
+            Einstein_radii_dataframe = util.get_dataframe({'theta_E': Einstein_radii})
+            mass_bar_dataframe = util.get_dataframe({'mass_bar': self.mocks.masses_baryons})
+            mass_nfw_dataframe = util.get_dataframe({'virial_mass_nfw': self.mocks.masses_haloes})
 
-                # convert these into individual dataframes
-                # these are what will get passed around in the code
-                baryons = util.get_dataframe(kwargs_dict['baryons'])
-                halo = util.get_dataframe(kwargs_dict['halo'])
-                los = util.get_dataframe(kwargs_dict['los'])
-                lens_light = util.get_dataframe(kwargs_dict['lens_light'])
-                source = util.get_dataframe(kwargs_dict['source'])
+            # convert these into individual dataframes
+            # these are what will get passed around in the code
+            baryons = util.get_dataframe(kwargs_dict['baryons'])
+            halo = util.get_dataframe(kwargs_dict['halo'])
+            los = util.get_dataframe(kwargs_dict['los'])
+            lens_light = util.get_dataframe(kwargs_dict['lens_light'])
+            source = util.get_dataframe(kwargs_dict['source'])
 
-                # combine the dataframes for saving to file
-                # in the same order as the params are put into the MCMC for future ease of plotting
-                complete_data = util.combine_dataframes(
-                    [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
-                     source, lens_light, Einstein_radii_dataframe])
+            # combine the dataframes for saving to file
+            # in the same order as the params are put into the MCMC for future ease of plotting
+            complete_data = util.combine_dataframes(
+                [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
+                 source, lens_light, Einstein_radii_dataframe])
 
-                if self.settings['starting_index'] == 0:
-                    util.save_input_kwargs(self.settings, complete_data)
-                else:
-                    starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
-                    util.save_input_kwargs(self.settings, starting_index_dataframe)
-
-                # rename the dataframes for lenstronomy
-                baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
-
-                # generate the image and the associated data kwargs for either plotting or fitting
-                im = Image()
-                im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
+            if self.settings['starting_index'] == 0:
+                util.save_input_kwargs(self.settings, complete_data)
             else:
-                print('New images will not be generated.')
-                pass
+                starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
+                util.save_input_kwargs(self.settings, starting_index_dataframe)
+
+            # rename the dataframes for lenstronomy
+            baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+
+            # generate the image and the associated data kwargs for either plotting or fitting
+            im = Image()
+            im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
+        else:
+            print('New images will not be generated.')
+            pass
 
         if self.settings['MCMC'] == True:
 

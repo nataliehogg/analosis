@@ -22,10 +22,10 @@ class MCMC:
     def mcmc(self, settings, baryons, halo, los, lens_light, Einstein_radii,
              source, path):
 
-        if settings['scenario'] == 'distributed haloes':
-            lens_fit_list = ['LOS_MINIMAL', 'EPL']
-        elif settings['scenario'] == 'composite lens':
-            pass
+        # if settings['scenario'] == 'distributed haloes':
+        #     lens_fit_list = ['LOS_MINIMAL', 'EPL']
+        # elif settings['scenario'] == 'composite lens':
+        #     pass
 
         if settings['complexity'] == 'perfect':
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
