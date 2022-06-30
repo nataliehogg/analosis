@@ -76,7 +76,6 @@ class MCMC:
         # else read the number from settings
         if settings['generate_image'] == False:
             number_of_images = len(hyper_data)
-            print(number_of_images)
         elif settings['generate_image'] == True:
             number_of_images = settings['number_of_images']
         else:
@@ -92,7 +91,7 @@ class MCMC:
                 else:
                     pass
             else:
-                print('\n{} chains will be overwritten.\n'.format(settings['job_name']))
+                pass
 
             # Initialise the lists of parameters
             fixed_lens = []
@@ -159,8 +158,6 @@ class MCMC:
                 # omega_LOS should not be fixed! the LOS shears in combination induce a small rotation
                 # allowing for freedom in omega_LOS accounts for this and prevents bias in the shears
                 fixed_lens.append({'kappa_od': 0.0, 'kappa_los': 0.0, 'omega_od': 0.0}) #, 'omega_los':0.0})
-
-                print(i)
 
                 kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, gamma_sigma), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, gamma_sigma),
                                          'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, gamma_sigma), 'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, gamma_sigma),
