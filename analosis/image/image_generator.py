@@ -17,7 +17,7 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
-    def generate_image(self, settings,
+    def generate_image(self, settings, parameters,
                        baryons, halo, los, lens_light, source,
                        Einstein_radii, path, source_perturbations=[]
                        ):
@@ -34,14 +34,14 @@ class Image:
 
         # work out how to deal with this
         lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        if settings['lens_light']:
+        if parameters['lens_light']:
             lens_light_model_list = ['SERSIC_ELLIPSE']
         else:
             lens_light_model_list = []
-        
+
         # source and its potential perturbations
         source_model_list = ['SERSIC_ELLIPSE']
-        
+
         if (type(source_perturbations) == float
             or type(source_perturbations) == int
             ):
@@ -56,7 +56,7 @@ class Image:
         else:
             source_perturbations = []
             raise Warning("parameters['source_perturbations'] must be either None, a number, or a list of numbers, treating it as an empty list.")
-                   
+
         # lens model
         kwargs_model = {'lens_model_list': lens_model_list,
                         'lens_light_model_list': lens_light_model_list,
@@ -81,10 +81,10 @@ class Image:
 
             # define kwargs for the lens
             kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
-            
+
             # define kwargs for the main source
             kwargs_source = [kwargs_sl[i]]
-            
+
             # add perturbations to the source
             mag = kwargs_sl[i]['magnitude']
             R_s = kwargs_sl[i]['R_sersic']
@@ -106,9 +106,9 @@ class Image:
                                'center_y' : y
                                }
                 kwargs_source.append(kwargs_pert)
-            
+
             # define kwargs for the lens light
-            if settings['lens_light']:
+            if parameters['lens_light']:
                 kwargs_lens_light = [kwargs_ll[i]]
             else:
                 kwargs_lens_light = None

@@ -41,6 +41,7 @@ class Run:
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
         util = Utilities(cosmo, path)
         self.settings = settings
+        self.parameters = parameters
         #todo: save the settings in file
 
         # set the starting index to zero if not specified
@@ -104,7 +105,7 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
+            im.generate_image(self.settings, self.parameters, baryons, halo, los, lens_light, source, Einstein_radii, path)
         else:
             print('New images will not be generated.')
             pass
