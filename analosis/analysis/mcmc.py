@@ -134,7 +134,7 @@ class MCMC:
                                           'gamma1_os': gamma_prior, 'gamma2_os': gamma_prior,
                                           'gamma1_ds': gamma_prior, 'gamma2_ds': gamma_prior})
 
-            elif settings['complexity'] == 'missing foreground shear':
+            elif settings['complexity'] == 'missing_foreground_shear':
                 fixed_lens.append({'kappa_od': 0.0, 'gamma1_od':0.0, 'gamma2_od':0.0,
                                    'kappa_los': 0.0, 'omega_od': 0.0})
 
@@ -176,7 +176,7 @@ class MCMC:
                                           'omega_los': omega_prior})
 
 
-            if settings['complexity'] == 'power law':
+            if settings['complexity'] == 'power_law':
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
                 kwargs_lens_init.append({'theta_E': Einstein_radii[i] + np.random.normal(0.0, 0.001), 'gamma': 2.0 + np.random.normal(0.0, 0.01),
                                          'e1': kwargs_bar[i]['e1'] + np.random.normal(0.0, 0.01), 'e2': kwargs_bar[i]['e2'] + np.random.normal(0.0, 0.01)})
@@ -217,7 +217,7 @@ class MCMC:
                 e_nfw_sigma = 0.01
                 e_nfw_prior = 0.5
 
-                if settings['complexity'] == 'missing halo ellipticity':
+                if settings['complexity'] == 'missing_halo_ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
                     kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'] + np.random.normal(0.0, alpha_sigma),
                                              'center_x': kwargs_nfw[i]['center_x'] + np.random.normal(0.0, center_nfw_sigma),
@@ -232,7 +232,7 @@ class MCMC:
                     kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
                                               'center_x': center_nfw_prior, 'center_y': center_nfw_prior})
 
-                elif settings['complexity'] == 'missing offset':
+                elif settings['complexity'] == 'missing_offset':
                     fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
                     kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']+ np.random.normal(0.0, alpha_sigma),
                                              'e1': kwargs_nfw[i]['e1']+ np.random.normal(0.0, e_nfw_sigma), 'e2': kwargs_nfw[i]['e2']+ np.random.normal(0.0, e_nfw_sigma)})
