@@ -109,7 +109,7 @@ class MCMC:
             # common prior boundaries and step sizes
             gamma_sigma = 0.001
             omega_sigma = 0.00001
-            gamma_prior = 0.1
+            gamma_prior = 0.5
             omega_prior = 0.001
 
             if settings['complexity'] == 'perfect':
@@ -360,7 +360,7 @@ class MCMC:
 
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
-                                     'walkerRatio': walker_ratio, 'sigma_scale': 1.,
+                                     'walkerRatio': walker_ratio, 'sigma_scale': 10.,
                                      'threadCount': ncpu,
                                      'backup_filename': str(path) + '/chains/'
                                                        + str(settings['job_name']) + '_'
