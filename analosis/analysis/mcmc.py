@@ -72,22 +72,13 @@ class MCMC:
             output_gamma2_los = []
             output_omega_los = []
 
-        # # if MCMCing previously generated images, get the number of images to iterate over by looking at the length of the hyper_data file
-        # # else read the number from settings
-        # if settings['generate_image'] == False:
-        #     number_of_images = len(hyper_data)
-        # elif settings['generate_image'] == True:
-        #     number_of_images = settings['number_of_images']
-        # else:
-        #     raise ValueError('generate_image must be True or False.')
-
-        if settings['starting_index'] > settings['number_of_images'] + settings['starting_index']:
-            raise ValueError('You don\'t have enough data to run that many chains. Decrease your starting index!')
-
+        # the maximum number of iterations is your total data less the index you start at
+        # the maximum is always run i.e. all images are fit unless a starting index is specified
         max_iterations = len(hyper_data) - settings['starting_index']
 
         for n in range(max_iterations):
 
+            # this ensures you access the right part of your kwargs and hyperdata for the given iteration
             i = n + settings['starting_index']
 
             # check if the file with the custom starting index already exists
