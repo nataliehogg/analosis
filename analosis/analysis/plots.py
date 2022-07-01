@@ -374,7 +374,7 @@ class Plots:
 
         if settings['complexity'] == 'perfect':
             color = '#d7301f'
-        elif settings['complexity'] == 'perfect minimal':
+        elif settings['complexity'] == 'perfect_minimal':
             color = '#253494'
         else:
             # use default mpl colours; to be updated
