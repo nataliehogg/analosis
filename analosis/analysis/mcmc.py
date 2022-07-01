@@ -246,13 +246,13 @@ class MCMC:
 
                 elif settings['complexity'] == 'missing_offset_ellipticity':
                     fixed_lens.append({'center_x': 0.0, 'center_y': 0.0, 'e1': 0.0, 'e2': 0.0})
-                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']+ np.random.normal(0.0, alpha_sigma))
+                    kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs']+ np.random.normal(0.0, Rs_sigma), 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']+ np.random.normal(0.0, alpha_sigma)})
 
-                    kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma)
+                    kwargs_lens_sigma.append({'Rs': Rs_sigma, 'alpha_Rs': alpha_sigma})
 
-                    kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower)
+                    kwargs_lower_lens.append({'Rs': Rs_prior_lower, 'alpha_Rs': alpha_prior_lower})
 
-                    kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper)
+                    kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper})
 
                 else:
                     fixed_lens.append({})
