@@ -72,20 +72,27 @@ class MCMC:
             output_gamma2_los = []
             output_omega_los = []
 
-        # if MCMCing previously generated images, get the number of images to iterate over by looking at the length of the hyper_data file
-        # else read the number from settings
-        if settings['generate_image'] == False:
-            number_of_images = len(hyper_data)
-        elif settings['generate_image'] == True:
-            number_of_images = settings['number_of_images']
-        else:
-            raise ValueError('generate_image must be True or False.')
+        # # if MCMCing previously generated images, get the number of images to iterate over by looking at the length of the hyper_data file
+        # # else read the number from settings
+        # if settings['generate_image'] == False:
+        #     number_of_images = len(hyper_data)
+        # elif settings['generate_image'] == True:
+        #     number_of_images = settings['number_of_images']
+        # else:
+        #     raise ValueError('generate_image must be True or False.')
 
-        for i in range(number_of_images):
+        if settings['starting_index'] > settings['number_of_images'] + settings['starting_index']:
+            raise ValueError('You don\'t have enough data to run that many chains. Decrease your starting index!')
+
+        max_iterations = len(hyper_data) - settings['starting_index']
+
+        for n in range(max_iterations):
+
+            i = n + settings['starting_index']
 
             # check if the file with the custom starting index already exists
             if settings['starting_index'] > 0:
-                test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(i + settings['starting_index']) + '.h5'
+                test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(settings['complexity']) +'_' + str(i + settings['starting_index']) + '.h5'
                 if os.path.exists(test_file):
                     raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
                 else:
@@ -365,53 +372,53 @@ class MCMC:
                                      'backup_filename': str(path) + '/chains/'
                                                        + str(settings['job_name']) + '_'
                                                        + str(settings['complexity']) + '_'
-                                                       + str(i + settings['starting_index']) + '.h5'}]]
+                                                       + str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())
 
-            sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
+            sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[n][0]
 
             np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
-            if settings['complexity'] == 'perfect':
-                output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
-                output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
-                output_gamma1_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_os'])
-                output_gamma2_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_os'])
-                output_gamma1_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_ds'])
-                output_gamma2_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_ds'])
-
-                output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
-                                                                      'gamma1_os', 'gamma2_os',
-                                                                      'gamma1_ds', 'gamma2_ds'])
-
-                output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
-                output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
-                output_los_kwargs_dataframe['gamma1_os'] = output_gamma1_os
-                output_los_kwargs_dataframe['gamma2_os'] = output_gamma2_os
-                output_los_kwargs_dataframe['gamma1_ds'] = output_gamma1_ds
-                output_los_kwargs_dataframe['gamma2_ds'] = output_gamma2_ds
-            else:
-                output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
-                output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
-                output_gamma1_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_los'])
-                output_gamma2_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_los'])
-                output_omega_los.append(kwargs_result[i]['kwargs_lens'][0]['omega_los'])
-
-                output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
-                                                                      'gamma1_los', 'gamma2_los', 'omega_los'])
-
-                output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
-                output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
-                output_los_kwargs_dataframe['gamma1_los'] = output_gamma1_los
-                output_los_kwargs_dataframe['gamma2_los'] = output_gamma2_los
-                output_los_kwargs_dataframe['omega_los'] = output_omega_los
-
-
-        # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
-        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_' + str(settings['complexity']) +'_output_kwargs.csv', index = False)
+        #     if settings['complexity'] == 'perfect':
+        #         output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
+        #         output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
+        #         output_gamma1_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_os'])
+        #         output_gamma2_os.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_os'])
+        #         output_gamma1_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_ds'])
+        #         output_gamma2_ds.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_ds'])
+        #
+        #         output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
+        #                                                               'gamma1_os', 'gamma2_os',
+        #                                                               'gamma1_ds', 'gamma2_ds'])
+        #
+        #         output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
+        #         output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
+        #         output_los_kwargs_dataframe['gamma1_os'] = output_gamma1_os
+        #         output_los_kwargs_dataframe['gamma2_os'] = output_gamma2_os
+        #         output_los_kwargs_dataframe['gamma1_ds'] = output_gamma1_ds
+        #         output_los_kwargs_dataframe['gamma2_ds'] = output_gamma2_ds
+        #     else:
+        #         output_gamma1_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_od'])
+        #         output_gamma2_od.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_od'])
+        #         output_gamma1_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma1_los'])
+        #         output_gamma2_los.append(kwargs_result[i]['kwargs_lens'][0]['gamma2_los'])
+        #         output_omega_los.append(kwargs_result[i]['kwargs_lens'][0]['omega_los'])
+        #
+        #         output_los_kwargs_dataframe = pd.DataFrame(columns = ['gamma1_od', 'gamma2_od',
+        #                                                               'gamma1_los', 'gamma2_los', 'omega_los'])
+        #
+        #         output_los_kwargs_dataframe['gamma1_od'] = output_gamma1_od
+        #         output_los_kwargs_dataframe['gamma2_od'] = output_gamma2_od
+        #         output_los_kwargs_dataframe['gamma1_los'] = output_gamma1_los
+        #         output_los_kwargs_dataframe['gamma2_los'] = output_gamma2_los
+        #         output_los_kwargs_dataframe['omega_los'] = output_omega_los
+        #
+        #
+        # # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
+        # output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_' + str(settings['complexity']) +'_output_kwargs.csv', index = False)
 
 
         return None
