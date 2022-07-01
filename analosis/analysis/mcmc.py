@@ -29,12 +29,12 @@ class MCMC:
 
         if settings['complexity'] == 'perfect':
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        elif settings['complexity'] == 'power law':
+        elif settings['complexity'] == 'power_law':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
-        elif settings['complexity'] in ['perfect minimal',
-                                        'missing offset',
-                                        'missing foreground shear',
-                                        'missing halo ellipticity']:
+        elif settings['complexity'] in ['perfect_minimal',
+                                        'missing_offset',
+                                        'missing_foreground_shear',
+                                        'missing_halo_ellipticity']:
             lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
         else:
             raise ValueError('I didn\'t implement that setting yet.')
@@ -364,6 +364,7 @@ class MCMC:
                                      'threadCount': ncpu,
                                      'backup_filename': str(path) + '/chains/'
                                                        + str(settings['job_name']) + '_'
+                                                       + str(settings['complexity']) + '_'
                                                        + str(i + settings['starting_index']) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
@@ -371,7 +372,7 @@ class MCMC:
 
             sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
-            np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_sampled_params.csv',
+            np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
             if settings['complexity'] == 'perfect':
@@ -410,7 +411,7 @@ class MCMC:
 
 
         # save the best-fit los kwargs according to emcee -- should be roughly the same as the chain consumer returned values
-        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) +'_output_kwargs.csv', index = False)
+        output_los_kwargs_dataframe.to_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_' + str(settings['complexity']) +'_output_kwargs.csv', index = False)
 
 
         return None

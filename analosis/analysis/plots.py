@@ -44,7 +44,7 @@ class Plots:
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
 
         number_of_images = len(kwargs)
-        
+
         if number_of_images > 10:
             print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
 
@@ -126,7 +126,7 @@ class Plots:
 
     def input_output_plot(self, path, settings, b_max=None, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
-        in_kwargs = pd.read_csv(path + '/datasets/' +str(settings['job_name']) + '_input_kwargs.csv')
+        in_kwargs = pd.read_csv(path + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
 
         # define the impact parameter normalised by the source half-light radius
         beta = np.sqrt(in_kwargs['x_sl']**2. + in_kwargs['y_sl']**2.).to_numpy()
@@ -139,7 +139,7 @@ class Plots:
         c = ChainConsumer()
 
         for i in range(len(in_kwargs)):
-            chain = path + '/chains/' + str(settings['job_name']) + '_' + str(i) + '.h5'
+            chain = path + '/chains/' + str(settings['job_name']) + '_' + str(settings['complexity']) +'_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
             samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
             c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
@@ -266,7 +266,7 @@ class Plots:
             fig.suptitle(r"$b < {}$".format(b_max))
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output_cmap.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_' +str(settings['complexity']) + '_input_output.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
@@ -315,7 +315,7 @@ class Plots:
             plt.legend(frameon=False)
 
             if save:
-                plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+'_input_output.pdf', dpi=300, bbox_inches='tight')
+                plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+ '_' +str(settings['complexity']) + '_input_output.pdf', dpi=300, bbox_inches='tight')
             if show:
                 plt.show()
 
@@ -325,7 +325,7 @@ class Plots:
     def contour_plot(self, path, settings, chain_number, plot_params, size, draft=True, save=True, show=True):
 
         # get the chain name
-        filename = str(settings['job_name']) + '_' + str(chain_number) +'.h5'
+        filename = str(settings['job_name']) + '_' + str(settings['complexity']) +'_' + str(chain_number) +'.h5'
 
         # look at the raw chain file to get the number of walkers
         raw_chain = h5py.File(str(path) + '/chains/'+ filename, 'r')
@@ -334,7 +334,7 @@ class Plots:
 
         # read in the parameters which were sampled in the mcmc
         # (expected_values contains ALL params, including ones which were kept fixed)
-        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(settings['job_name'])+ '_sampled_params.csv', dtype='str')
+        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_sampled_params.csv', dtype='str')
 
         # rename the columns of sampled parameters to match plot_params
         # this could be condensed into a loop but whatever
@@ -367,7 +367,7 @@ class Plots:
                      parameters = labels)
 
         # read in the input kwargs for this set of jobs
-        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name'])+ '_input_kwargs.csv')
+        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
 
         # get the expected values for the chain and parameters of interest as a list
         expected_values = input_kwargs.iloc[chain_number][plot_params].to_list()
@@ -396,7 +396,7 @@ class Plots:
             fig.suptitle(settings['job_name'].replace('_', '\_'), fontsize=18)
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
