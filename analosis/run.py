@@ -105,7 +105,7 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.settings, self.parameters, baryons, halo, los, lens_light, source, Einstein_radii, path)
+            im.generate_image(self.settings, self.parameters, baryons, halo, los, lens_light, source, Einstein_radii, path, source_perturbations)
         else:
             print('New images will not be generated.')
             pass
