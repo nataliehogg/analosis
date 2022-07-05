@@ -106,6 +106,7 @@ class MCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
+            max_jitter = 0.1
             gamma_sigma = 0.001
             omega_sigma = 0.00001
             gamma_prior = 0.5
@@ -117,9 +118,9 @@ class MCMC:
                 # whereas it needs to be [{,}]
                 fixed_lens.append({'kappa_od': 0.0, 'kappa_os': 0.0, 'kappa_ds': 0.0,
                                    'omega_od': 0.0, 'omega_os': 0.0, 'omega_ds': 0.0})
-                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, gamma_sigma), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, gamma_sigma),
-                                         'gamma1_os': kwargs_los[i]['gamma1_os'] + np.random.normal(0.0, gamma_sigma), 'gamma2_os': kwargs_los[i]['gamma2_os'] + np.random.normal(0.0, gamma_sigma),
-                                         'gamma1_ds': kwargs_los[i]['gamma1_ds'] + np.random.normal(0.0, gamma_sigma), 'gamma2_ds': kwargs_los[i]['gamma2_ds'] + np.random.normal(0.0, gamma_sigma)})
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, max_jitter), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, max_jitter),
+                                         'gamma1_os': kwargs_los[i]['gamma1_os'] + np.random.normal(0.0, max_jitter), 'gamma2_os': kwargs_los[i]['gamma2_os'] + np.random.normal(0.0, max_jitter),
+                                         'gamma1_ds': kwargs_los[i]['gamma1_ds'] + np.random.normal(0.0, max_jitter), 'gamma2_ds': kwargs_los[i]['gamma2_ds'] + np.random.normal(0.0, max_jitter)})
 
                 kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
                                           'gamma1_os': gamma_sigma, 'gamma2_os': gamma_sigma,
@@ -137,8 +138,8 @@ class MCMC:
                 fixed_lens.append({'kappa_od': 0.0, 'gamma1_od':0.0, 'gamma2_od':0.0,
                                    'kappa_los': 0.0, 'omega_od': 0.0})
 
-                kwargs_lens_init.append({'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, gamma_sigma),
-                                         'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, gamma_sigma),
+                kwargs_lens_init.append({'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, max_jitter),
+                                         'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, max_jitter),
                                          'omega_los': kwargs_los[i]['omega_los'] + np.random.normal(0.0, omega_sigma)})
 
                 kwargs_lens_sigma.append({'gamma1_los': gamma_sigma,
@@ -158,8 +159,8 @@ class MCMC:
                 # allowing for freedom in omega_LOS accounts for this and prevents bias in the shears
                 fixed_lens.append({'kappa_od': 0.0, 'kappa_los': 0.0, 'omega_od': 0.0}) #, 'omega_los':0.0})
 
-                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, gamma_sigma), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, gamma_sigma),
-                                         'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, gamma_sigma), 'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, gamma_sigma),
+                kwargs_lens_init.append({'gamma1_od': kwargs_los[i]['gamma1_od'] + np.random.normal(0.0, max_jitter), 'gamma2_od': kwargs_los[i]['gamma2_od'] + np.random.normal(0.0, max_jitter),
+                                         'gamma1_los': kwargs_los[i]['gamma1_los'] + np.random.normal(0.0, max_jitter), 'gamma2_los': kwargs_los[i]['gamma2_los'] + np.random.normal(0.0, max_jitter),
                                          'omega_los': kwargs_los[i]['omega_los'] + np.random.normal(0.0, omega_sigma)})
 
                 kwargs_lens_sigma.append({'gamma1_od': gamma_sigma, 'gamma2_od': gamma_sigma,
