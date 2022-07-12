@@ -125,18 +125,30 @@ class Image:
                          kwargs_single_band=kwargs_band,
                          kwargs_model=kwargs_model)
 
+            # extract data kwargs
+            kwargs_data = sim.kwargs_data
+
             # convert magnitudes into amplitudes
             kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(
                 kwargs_lens_light_mag=kwargs_lens_light,
                 kwargs_source_mag=kwargs_source)
 
-            # generate image with noise
+            # generate image
             imSim = sim.image_model_class(kwargs_numerics)
             image = imSim.image(kwargs_lens=kwargs_lens,
                                 kwargs_source=kwargs_source,
                                 kwargs_lens_light=kwargs_lens_light)
-            image += sim.noise_for_model(model=image)
-            image_list.append(image)
+            # add noise
+            image_noisy = image + sim.noise_for_model(model=image)
+
+            # update kwargs_data with noisy image
+            kwargs_data['image_data'] = image_noisy
+
+            # append noisy image to list to be saved
+            image_list.append(image_noisy)
+
+            # append hyper-data to list to be saved
+            hyper_list.append([kwargs_data, kwargs_psf, kwargs_numerics])
 
             # save the image data (list of arrays) to file for plotting
             try:
@@ -149,12 +161,7 @@ class Image:
             pickle.dump(image_list, image_outfile)
             image_outfile.close()
 
-            # extract data kwargs
-            kwargs_data = sim.kwargs_data
-
-            hyper_list.append([kwargs_data, kwargs_psf, kwargs_numerics])
-
-        # saving what I'm calling the hyper-data for each image so we can MCMC any previously generated image
+        # saving the hyper-data for each image so we can MCMC any previously generated image
         hyper_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_hyperdata.pickle'
         hyper_outfile = open(hyper_filename,'wb')
         pickle.dump(hyper_list, hyper_outfile)
