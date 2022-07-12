@@ -188,13 +188,19 @@ class Plots:
         b_g1                = [b[i] for i in range(len(in_gamma1_converged))]
         b_g2                = [b[i] for i in range(len(in_gamma2_converged))]
 
-
         out_gamma1 = [s['gamma1_los'][1] for s in g1_summary_converged]
         out_gamma2 = [s['gamma2_los'][1] for s in g2_summary_converged]
-        gamma1_lower = [np.abs(s['gamma1_los'][0] - s['gamma1_los'][1]) for s in g1_summary_converged]
-        gamma1_upper = [np.abs(s['gamma1_los'][2] - s['gamma1_los'][1]) for s in g1_summary_converged]
-        gamma2_lower = [np.abs(s['gamma2_los'][0] - s['gamma2_los'][1]) for s in g2_summary_converged]
-        gamma2_upper = [np.abs(s['gamma2_los'][2] - s['gamma2_los'][1]) for s in g2_summary_converged]
+
+        gamma1_lower = [s['gamma1_los'][0] for s in g1_summary_converged]
+        gamma1_upper = [s['gamma1_los'][2] for s in g1_summary_converged]
+        gamma2_lower = [s['gamma2_los'][0] for s in g2_summary_converged]
+        gamma2_upper = [s['gamma2_los'][2] for s in g2_summary_converged]
+
+        g1_lower_error = np.subtract(out_gamma1, gamma1_lower) # g1 - g1_lower elementwise
+        g1_upper_error = np.subtract(gamma1_upper, out_gamma1)
+
+        g2_lower_error = np.subtract(out_gamma2, gamma2_lower)
+        g2_upper_error = np.subtract(gamma2_upper, out_gamma2)
 
         fig, ax = plt.subplots(1, 2, figsize = (11,5), sharex=True, sharey=True)
 
@@ -222,11 +228,14 @@ class Plots:
         b_colour_g2 = np.array([(mapper_g2.to_rgba(b)) for b in b_g2])
 
         # loop over each point to get the right colour for each error bar
-        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower, gamma1_upper, b_colour_g1):
-            ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower_error, gamma1_upper_error, b_colour_g1):
+            # ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+            ax[0].errorbar(x, y, yerr=[[e1], [e2]], color=color)
 
-        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower, gamma2_upper, b_colour_g2):
-            ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+
+        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower_error, gamma2_upper_error, b_colour_g2):
+            # ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
+            ax[1].errorbar(x, y, yerr=[[e1], [e2]], color=color)
 
         if show_not_converged and len(g1_indices_not_converged) > 0:
             # plot the non-converged ones with crosses and without error bars
