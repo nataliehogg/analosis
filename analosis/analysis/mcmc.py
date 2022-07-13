@@ -367,10 +367,10 @@ class MCMC:
 
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
-                                     'walkerRatio': walker_ratio, 'sigma_scale': 1.,
+                                     'walkerRatio': walker_ratio, 'sigma_scale': 10.,
                                      'threadCount': ncpu,
                                      'sampler_type': settings['sampler'],
-                                     'backup_filename': str(path) + '/chains/'
+                                     'backend_filename': str(path) + '/chains/'
                                                        + str(settings['job_name']) + '_'
                                                        + str(settings['complexity']) + '_'
                                                        + str(i) + '.h5'}]]
