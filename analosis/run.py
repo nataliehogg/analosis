@@ -13,10 +13,6 @@ from astropy.cosmology import FlatLambdaCDM
 
 # lenstronomy
 from lenstronomy.ImSim.image_model import ImageModel
-import lenstronomy.Util.simulation_util as sim_util
-import lenstronomy.Util.image_util as image_util
-from lenstronomy.Data.imaging_data import ImageData
-from lenstronomy.Data.psf import PSF
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.Workflow.fitting_sequence import FittingSequence
@@ -29,7 +25,7 @@ from analosis.analysis.mcmc import MCMC
 
 class Run:
 
-    def __init__(self, cpars, settings, parameters):
+    def __init__(self, cpars, image_settings, mcmc_settings):
 
         path = (Path(__file__).parent/'results/').resolve()
 
@@ -40,37 +36,36 @@ class Run:
         colcos.setCosmology(cpars['id'])
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
         util = Utilities(cosmo, path)
-        self.settings = settings
-        self.parameters = parameters
-        #todo: save the settings in file
+        self.image_settings = image_settings
+        self.mcmc_settings = mcmc_settings
 
         # set the starting index to zero if not specified
-        try:
-            assert 'starting_index' in self.settings.keys()
-        except AssertionError:
-            self.settings['starting_index'] = 0
+        # try:
+        #     assert 'starting_index' in self.settings.keys()
+        # except AssertionError:
+        #     self.settings['starting_index'] = 0
 
         # set the source perturbation to zero if not specified
-        try:
-            source_perturbations = parameters['source_perturbations']
-        except KeyError:
-            source_perturbations = []
+        # try:
+        #     source_perturbations = parameters['source_perturbations']
+        # except KeyError:
+        #     source_perturbations = []
 
-        # if settings['scenario'] == 'composite lens':
+        # source_perturbations = self.image_settings['source_perturbations']
+
         self.mocks = Mocks(
             util=util,
-            # scenario=self.settings['scenario'],
             path=path,
-            number_of_images=self.settings['number_of_images'],
-            Einstein_radius_min=parameters['Einstein_radius_min'],
-            min_aspect_ratio_source=parameters['min_aspect_ratio_source'],
-            min_aspect_ratio_baryons=parameters['min_aspect_ratio_baryons'],
-            min_aspect_ratio_nfw=parameters['min_aspect_ratio_nfw'],
-            gamma_max=parameters['maximum_shear'],
-            sigma_halo_offset=parameters['sigma_halo_offset'],
-            maximum_source_offset_factor=parameters['maximum_source_offset_factor'])
+            number_of_images=self.image_settings['number_of_images'],
+            Einstein_radius_min=self.image_settings['Einstein_radius_min'],
+            min_aspect_ratio_source=self.image_settings['min_aspect_ratio_source'],
+            min_aspect_ratio_baryons=self.image_settings['min_aspect_ratio_baryons'],
+            min_aspect_ratio_nfw=self.image_settings['min_aspect_ratio_nfw'],
+            gamma_max=self.image_settings['maximum_shear'],
+            sigma_halo_offset=self.image_settings['sigma_halo_offset'],
+            maximum_source_offset_factor=self.image_settings['maximum_source_offset_factor'])
 
-        if self.settings['generate_image'] == True:
+        if self.image_settings['generate_image'] == True:
             # get the dictionary of kwargs from the mock generator
             kwargs_dict = self.mocks.draw_kwargs()
 
@@ -94,25 +89,27 @@ class Run:
                 [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
                  source, lens_light, Einstein_radii_dataframe])
 
-            if self.settings['starting_index'] == 0:
-                util.save_input_kwargs(self.settings, complete_data)
-            else:
-                starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
-                util.save_input_kwargs(self.settings, starting_index_dataframe)
+            # if self.settings['starting_index'] == 0:
+            #     util.save_input_kwargs(self.settings, complete_data)
+            # else:
+            #     starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
+            #     util.save_input_kwargs(self.settings, starting_index_dataframe)
+
+            util.save_input_kwargs(self.image_settings, complete_data)
 
             # rename the dataframes for lenstronomy
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.settings, self.parameters, baryons, halo, los, lens_light, source, Einstein_radii, path, source_perturbations)
+            im.generate_image(self.image_settings, baryons, halo, los, lens_light, source, Einstein_radii, path)#, source_perturbations)
         else:
             print('New images will not be generated.')
             pass
 
-        if self.settings['MCMC'] == True:
+        if self.mcmc_settings['MCMC'] == True:
 
-            input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+            input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv') # todo: add a check/search for this file...
 
             los_cols = ['kappa_os', 'gamma1_os', 'gamma2_os', 'omega_os',
                         'kappa_od', 'gamma1_od', 'gamma2_od', 'omega_od',
@@ -136,9 +133,9 @@ class Run:
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
 
-            chain = MCMC(self.settings, self.parameters, baryons, halo, los, lens_light, Einstein_radii, source, path)
+            chain = MCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
 
-        elif self.settings['MCMC'] == False:
+        elif self.mcmc_settings['MCMC'] == False:
             print('MCMC will not be run.')
 
         else:

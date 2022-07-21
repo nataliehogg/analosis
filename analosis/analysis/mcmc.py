@@ -11,22 +11,22 @@ ncpu = cpu_count()
 
 class MCMC:
 
-    def __init__(self, settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
+    def __init__(self, image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
                  source, path):
 
         rings_to_rule_them_all = 1
 
-        self.mcmc(settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
+        self.mcmc(image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
                   source,path)
 
-    def mcmc(self, settings, parameters, baryons, halo, los, lens_light, Einstein_radii,
+    def mcmc(self, image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
              source, path):
 
-        if settings['complexity'] == 'perfect':
+        if mcmc_settings['complexity'] == 'perfect':
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        elif settings['complexity'] == 'power_law':
+        elif mcmc_settings['complexity'] == 'power_law':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
-        elif settings['complexity'] in ['perfect_minimal',
+        elif mcmc_settings['complexity'] in ['perfect_minimal',
                                         'missing_offset',
                                         'missing_foreground_shear',
                                         'missing_halo_ellipticity',
@@ -44,20 +44,20 @@ class MCMC:
         kwargs_likelihood = {'source_marg': True}
 
         # load the hyperdata
-        hyperfile = str(path)+'/datasets/'+str(settings['job_name'])+'_hyperdata.pickle'
+        hyperfile = str(path)+'/datasets/'+str(image_settings['image_name'])+'_hyperdata.pickle'
         infile = open(hyperfile,'rb')
         hyper_data = pickle.load(infile)
         infile.close()
 
         # global setting for number of walkers per sampled parameter
-        if settings['sampler'] == 'ZEUS':
+        if mcmc_settings['sampler'] == 'ZEUS':
             walker_ratio = 2
         else:
             walker_ratio = 10
 
         chain_list = []
         kwargs_result = []
-        if settings['complexity'] == 'perfect':
+        if  mcmc_settings['complexity'] == 'perfect':
             output_gamma1_os = []
             output_gamma2_os = []
             output_gamma1_od = []
@@ -73,22 +73,23 @@ class MCMC:
 
         # the maximum number of iterations is your total data less the index you start at
         # the maximum is always run i.e. all images are fit unless a starting index is specified
-        max_iterations = len(hyper_data) - settings['starting_index']
+        # max_iterations = len(hyper_data) - settings['starting_index']
+        iterations =  mcmc_settings['number_of_runs']
 
-        for n in range(max_iterations):
+        for n in range(iterations):
 
             # this ensures you access the right part of your kwargs and hyperdata for the given iteration
-            i = n + settings['starting_index']
+            i = n +  mcmc_settings['starting_index']
 
             # check if the file with the custom starting index already exists
-            if settings['starting_index'] > 0:
-                test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(settings['complexity']) +'_' + str(i + settings['starting_index']) + '.h5'
-                if os.path.exists(test_file):
-                    raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
-                else:
-                    pass
-            else:
-                pass
+            # if settings['starting_index'] > 0:
+            #     test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(settings['complexity']) +'_' + str(i) + '.h5'
+            #     if os.path.exists(test_file):
+            #         raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
+            #     else:
+            #         pass
+            # else:
+            #     pass
 
             # Initialise the lists of parameters
             fixed_lens = []
@@ -109,7 +110,7 @@ class MCMC:
             gamma_prior = 0.5
             omega_prior = 0.5
 
-            if settings['complexity'] == 'perfect':
+            if mcmc_settings['complexity'] == 'perfect':
                 # notice that we can't just append to the already existing fixed_lens object
                 # this creates a structure like [{}, {}]
                 # whereas it needs to be [{,}]
@@ -131,7 +132,7 @@ class MCMC:
                                           'gamma1_os': gamma_prior, 'gamma2_os': gamma_prior,
                                           'gamma1_ds': gamma_prior, 'gamma2_ds': gamma_prior})
 
-            elif settings['complexity'] == 'missing_foreground_shear':
+            elif mcmc_settings['complexity'] == 'missing_foreground_shear':
                 fixed_lens.append({'kappa_od': 0.0, 'gamma1_od':0.0, 'gamma2_od':0.0,
                                    'kappa_los': 0.0, 'omega_od': 0.0})
 
@@ -173,7 +174,7 @@ class MCMC:
                                           'omega_los': omega_prior})
 
 
-            if settings['complexity'] == 'power_law':
+            if mcmc_settings['complexity'] == 'power_law':
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
                 kwargs_lens_init.append({'theta_E': Einstein_radii[i], 'gamma': 2.0,
                                          'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
@@ -214,7 +215,7 @@ class MCMC:
                 e_nfw_sigma = 0.01
                 e_nfw_prior = 0.5
 
-                if settings['complexity'] == 'missing_halo_ellipticity':
+                if mcmc_settings['complexity'] == 'missing_halo_ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
                     kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
                                              'center_x': kwargs_nfw[i]['center_x'],
@@ -229,7 +230,7 @@ class MCMC:
                     kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
                                               'center_x': center_nfw_prior, 'center_y': center_nfw_prior})
 
-                elif settings['complexity'] == 'missing_offset':
+                elif mcmc_settings['complexity'] == 'missing_offset':
                     fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
                     kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs'],
                                              'e1': kwargs_nfw[i]['e1'], 'e2': kwargs_nfw[i]['e2']})
@@ -243,7 +244,7 @@ class MCMC:
                     kwargs_upper_lens.append({'Rs': Rs_prior_upper, 'alpha_Rs': alpha_prior_upper,
                                               'e1': e_nfw_prior, 'e2': e_nfw_prior})
 
-                elif settings['complexity'] == 'missing_offset_ellipticity':
+                elif mcmc_settings['complexity'] == 'missing_offset_ellipticity':
                     fixed_lens.append({'center_x': 0.0, 'center_y': 0.0, 'e1': 0.0, 'e2': 0.0})
                     kwargs_lens_init.append({'Rs': kwargs_nfw[i]['Rs'], 'alpha_Rs': kwargs_nfw[i]['alpha_Rs']})
 
@@ -311,43 +312,43 @@ class MCMC:
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
 
-            if parameters['lens_light'] == True:
-                lens_light_model_list = ['SERSIC_ELLIPSE']
+            # if parameters['lens_light'] == True:
+            lens_light_model_list = ['SERSIC_ELLIPSE']
 
-                # lens light model
-                fixed_lens_light = []
-                kwargs_lens_light_init = []
-                kwargs_lens_light_sigma = []
-                kwargs_lower_lens_light = []
-                kwargs_upper_lens_light = []
+            # lens light model
+            fixed_lens_light = []
+            kwargs_lens_light_init = []
+            kwargs_lens_light_sigma = []
+            kwargs_lower_lens_light = []
+            kwargs_upper_lens_light = []
 
-                # Define parameters
-                fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
-                kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
-                                               'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
-                kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
-                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
+            # Define parameters
+            fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
+            kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
+                                           'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
+            kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
+            kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
+            kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
 
-                lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
-                                    fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
+            lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
+                                fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
 
-                kwargs_params = {'lens_model': lens_params,
-                                 'source_model': source_params,
-                                 'lens_light_model': lens_light_params}
+            kwargs_params = {'lens_model': lens_params,
+                             'source_model': source_params,
+                             'lens_light_model': lens_light_params}
 
-                kwargs_model = {'lens_model_list': lens_fit_list,
-                                'source_light_model_list': source_model_list,
-                                'lens_light_model_list': lens_light_model_list}
+            kwargs_model = {'lens_model_list': lens_fit_list,
+                            'source_light_model_list': source_model_list,
+                            'lens_light_model_list': lens_light_model_list}
 
-            elif parameters['lens_light'] == False:
-                kwargs_params = {'lens_model': lens_params,
-                                 'source_model': source_params}
-
-                kwargs_model = {'lens_model_list': lens_fit_list,
-                                'source_light_model_list': source_model_list}
-            else:
-                print('Something went wrong with the lens light settings.')
+            # elif parameters['lens_light'] == False:
+            #     kwargs_params = {'lens_model': lens_params,
+            #                      'source_model': source_params}
+            #
+            #     kwargs_model = {'lens_model_list': lens_fit_list,
+            #                     'source_light_model_list': source_model_list}
+            # else:
+            #     print('Something went wrong with the lens light settings.')
 
 
             kwargs_data = hyper_data[i][0]
@@ -366,13 +367,13 @@ class MCMC:
                                           kwargs_likelihood, kwargs_params)
 
             fitting_kwargs_list = [['MCMC',
-                                    {'n_burn': settings['n_burn'], 'n_run': settings['n_run'],
+                                    {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': 10.,
                                      'threadCount': ncpu,
-                                     'sampler_type': settings['sampler'],
+                                     'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
-                                                       + str(settings['job_name']) + '_'
-                                                       + str(settings['complexity']) + '_'
+                                                       + str(mcmc_settings['job_name']) + '_'
+                                                       # + str(mcmc_settings['complexity']) + '_'
                                                        + str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
@@ -380,7 +381,10 @@ class MCMC:
 
             sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[n][0]
 
-            np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
+            # np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
+            #            param_mcmc, delimiter=',',  fmt='%s')
+
+            np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
         return None

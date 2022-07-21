@@ -164,22 +164,22 @@ class Utilities:
 
         return dataframe
 
-    def save_input_kwargs(self, settings, dataframe):
+    def save_input_kwargs(self, image_settings, dataframe):
         '''
         saves input kwargs dataframe to file
         '''
 
-        dataframe.to_csv(str(self.path) + '/datasets/'+str(settings['job_name'])+'_input_kwargs.csv',
+        dataframe.to_csv(str(self.path) + '/datasets/'+str(image_settings['image_name'])+'_input_kwargs.csv',
                               index = False)
 
-    def append_from_starting_index(self, path, settings, dataframe):
+    def append_from_starting_index(self, path, image_settings, dataframe):
         '''
         appends new dataframe from custom starting index to original dataframe
 
         use at your own peril!
         '''
 
-        original_input_kwargs_dataframe = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+        original_input_kwargs_dataframe = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image__name']) + '_input_kwargs.csv')
 
         # check the starting index is on a blank row
         # this could be broken by trying to fill a gap in the df which is too small for your new df to fit

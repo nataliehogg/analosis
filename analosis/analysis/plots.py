@@ -16,7 +16,7 @@ from chainconsumer import ChainConsumer
 from analosis.utilities.useful_functions import Utilities
 
 # common thinning setting (takes every nth sample in chain to ensure independence of samples)
-thin = 10
+thin = 1#10
 
 # colours for plots
 LOS         = ['#a6dba0','#5aae61','#1b7837']
@@ -39,25 +39,33 @@ class Plots:
         return plot
 
 
-    def image_plot(self, path, settings, number_of_columns=5, b_max=None, save=True, show=True):
+    def image_plot(self, path, image_settings, number_of_columns=5, b_max=None, save=True, show=True):
         print('Preparing image plot...')
-        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(settings['job_name']) + '_input_kwargs.csv')
+        kwargs = pd.read_csv(str(path) + '/datasets/'+ str(image_settings['image_name']) + '_input_kwargs.csv')
 
-        number_of_images = len(kwargs)
+        number_of_images = image_settings['number_of_images'] #len(kwargs)
 
-        if number_of_images > 10:
-            print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
+        # if number_of_images > 10:
+            # print('The plotter is slow for this many images but the result looks soooo good. Patience, my young padawan!')
+
+        i_start = 0 #settings['starting_index'] + 1
+        filename = str(path)  + '/datasets/' + str(image_settings['image_name']) + '_image_list.pickle'
+
+        # no!!! the starting index does not belong here! it has nothing to do with the images
+        # it is only for MCMCing the same image multiple times
+        # accordingly we're getting rid of the starting index option in image_generator
+
 
         # Check if a starting index has been specified
-        try:
-            i_start = settings['starting_index']
-            assert i_start > 0
-            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_' + str(i_start) + '.pickle'
-        except KeyError:
-            i_start = 0
-            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
-        except AssertionError:
-            filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+        # try:
+        #     i_start = settings['starting_index']
+        #     assert i_start > 0
+        #     filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list_' + str(i_start) + '.pickle'
+        # except KeyError:
+        #     i_start = 0
+        #     filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
+        # except AssertionError:
+        #     filename = str(path) + '/datasets/' + str(settings['job_name']) + '_image_list.pickle'
 
         # Define the quality of images from the impact parameter
         # normalised with the source half-light radius
@@ -113,20 +121,22 @@ class Plots:
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             ax.autoscale(False)
+            ax.axis('off')
+
 
         # fig.tight_layout()
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_image.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(image_settings['image_name']) + '_image.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
         return None
 
 
-    def input_output_plot(self, path, settings, b_max=None, show_not_converged=True, use_colourmap=True, save=True, show=True):
+    def input_output_plot(self, path, image_settings, mcmc_settings, b_max=None, show_not_converged=True, use_colourmap=True, save=True, show=True):
 
-        in_kwargs = pd.read_csv(path + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+        in_kwargs = pd.read_csv(path + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
         # define the impact parameter normalised by the source half-light radius
         beta = np.sqrt(in_kwargs['x_sl']**2. + in_kwargs['y_sl']**2.).to_numpy()
@@ -139,9 +149,9 @@ class Plots:
         c = ChainConsumer()
 
         for i in range(len(in_kwargs)):
-            chain = path + '/chains/' + str(settings['job_name']) + '_' + str(settings['complexity']) +'_' + str(i) + '.h5'
+            chain = path + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i) + '.h5'
             reader = emcee.backends.HDFBackend(filename = chain, name = 'lenstronomy_mcmc_emcee')
-            samples = reader.get_chain(discard = settings['n_burn'], flat = True, thin = thin)
+            samples = reader.get_chain(discard = mcmc_settings['n_burn'], flat = True, thin = thin)
             c.add_chain(samples[:,2:4], walkers=np.shape(samples)[0], parameters = ['gamma1_los', 'gamma2_los'])
         summary = c.analysis.get_summary()
 
@@ -228,12 +238,12 @@ class Plots:
         b_colour_g2 = np.array([(mapper_g2.to_rgba(b)) for b in b_g2])
 
         # loop over each point to get the right colour for each error bar
-        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, gamma1_lower_error, gamma1_upper_error, b_colour_g1):
+        for x, y, e1, e2, color in zip(in_gamma1_converged, out_gamma1, g1_lower_error, g1_upper_error, b_colour_g1):
             # ax[0].errorbar(x, y, yerr=np.array(e1,e2), color=color)
             ax[0].errorbar(x, y, yerr=[[e1], [e2]], color=color)
 
 
-        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, gamma2_lower_error, gamma2_upper_error, b_colour_g2):
+        for x, y, e1, e2, color in zip(in_gamma2_converged, out_gamma2, g2_lower_error, g2_upper_error, b_colour_g2):
             # ax[1].errorbar(x, y, yerr=np.array(e1,e2), color=color)
             ax[1].errorbar(x, y, yerr=[[e1], [e2]], color=color)
 
@@ -275,7 +285,7 @@ class Plots:
             fig.suptitle(r"$b < {}$".format(b_max))
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_' +str(settings['complexity']) + '_input_output.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(mcmc_settings['job_name'])  + '_input_output.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
@@ -324,17 +334,17 @@ class Plots:
             plt.legend(frameon=False)
 
             if save:
-                plt.savefig(str(path) + '/plots/' + str(settings['job_name'])+ '_' +str(settings['complexity']) + '_input_output.pdf', dpi=300, bbox_inches='tight')
+                plt.savefig(str(path) + '/plots/' + str(mcmc_settings['job_name']) + '_input_output.pdf', dpi=300, bbox_inches='tight')
             if show:
                 plt.show()
 
         return None
 
 
-    def emcee_contour_plot(self, path, settings, chain_number, plot_params, size, draft=True, save=True, show=True):
+    def emcee_contour_plot(self, path, image_settings, mcmc_settings, chain_number, plot_params, size, draft=True, save=True, show=True):
 
         # get the chain name
-        filename = str(settings['job_name']) + '_' + str(settings['complexity']) +'_' + str(chain_number) +'.h5'
+        filename = str(mcmc_settings['job_name'])  +'_' + str(chain_number) +'.h5'
 
         # look at the raw chain file to get the number of walkers
         raw_chain = h5py.File(str(path) + '/chains/'+ filename, 'r')
@@ -343,7 +353,7 @@ class Plots:
 
         # read in the parameters which were sampled in the mcmc
         # (expected_values contains ALL params, including ones which were kept fixed)
-        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_sampled_params.csv', dtype='str')
+        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv', dtype='str')
 
         # rename the columns of sampled parameters to match plot_params
         # this could be condensed into a loop but whatever
@@ -353,7 +363,7 @@ class Plots:
         renamed_lens2 = [name.replace('lens2', 'nfw') for name in renamed_lens1]
         renamed_sl = [name.replace('source_light0', 'sl') for name in renamed_lens2]
 
-        if any('lens_light0' in s for s in renamed_sl):
+        if any('lens_light0' in s for s in renamed_sl): # NH this can go since ll is always present now
             # rename the lens light if it's present
             renamed = [name.replace('lens_light0', 'll') for name in renamed_sl]
         else:
@@ -364,7 +374,7 @@ class Plots:
 
         reader = emcee.backends.HDFBackend(str(path) + '/chains/' + filename, name='lenstronomy_mcmc_emcee')
 
-        samples = reader.get_chain(discard=settings['n_burn'], flat=True, thin=thin)
+        samples = reader.get_chain(discard=mcmc_settings['n_burn'], flat=True, thin=thin)
 
         # get the list of LaTeX strings for our params
         labels = self.get_labels(plot_params)
@@ -376,14 +386,14 @@ class Plots:
                      parameters = labels)
 
         # read in the input kwargs for this set of jobs
-        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
         # get the expected values for the chain and parameters of interest as a list
         expected_values = input_kwargs.iloc[chain_number][plot_params].to_list()
 
-        if settings['complexity'] == 'perfect':
+        if mcmc_settings['complexity'] == 'perfect':
             color = '#d7301f'
-        elif settings['complexity'] == 'perfect_minimal':
+        elif mcmc_settings['complexity'] == 'perfect_minimal':
             color = '#253494'
         else:
             # use default mpl colours; to be updated
@@ -402,21 +412,21 @@ class Plots:
 
         if draft:
             # add a plot title with the job name
-            fig.suptitle(settings['job_name'].replace('_', '\_'), fontsize=18)
+            fig.suptitle(mcmc_settings['job_name'].replace('_', '\_'), fontsize=18)
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(mcmc_settings['job_name']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 
         return None
 
-    def zeus_contour_plot(self, path, settings, chain_number, plot_params, size, draft=True, save=True, show=True):
+    def zeus_contour_plot(self, path, image_settings, mcmc_settings, chain_number, plot_params, size, draft=True, save=True, show=True):
         '''
         plot contours from zeus chains
         '''
 
-        filename = str(settings['job_name']) + '_' + str(settings['complexity']) +'_' + str(chain_number) +'.h5'
+        filename = str(mcmc_settings['job_name']) +'_' + str(chain_number) +'.h5'
 
         with h5py.File(str(path) + '/chains/'+ filename, 'r') as hf:
             samples = np.copy(hf['samples'])
@@ -429,7 +439,7 @@ class Plots:
 
         # read in the parameters which were sampled in the mcmc
         # (expected_values contains ALL params, including ones which were kept fixed)
-        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_sampled_params.csv', dtype='str')
+        sampled_parameters = np.genfromtxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv', dtype='str')
 
         # rename the columns of sampled parameters to match plot_params
         # this could be condensed into a loop but whatever
@@ -439,7 +449,7 @@ class Plots:
         renamed_lens2 = [name.replace('lens2', 'nfw') for name in renamed_lens1]
         renamed_sl    = [name.replace('source_light0', 'sl') for name in renamed_lens2]
 
-        if any('lens_light0' in s for s in renamed_sl):
+        if any('lens_light0' in s for s in renamed_sl): # NH ditto above
             # rename the lens light if it's present
             renamed = [name.replace('lens_light0', 'll') for name in renamed_sl]
         else:
@@ -458,7 +468,7 @@ class Plots:
                      parameters = labels)
 
         # read in the input kwargs for this set of jobs
-        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(settings['job_name']) + '_input_kwargs.csv')
+        input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
         # get the expected values for the chain and parameters of interest as a list
         expected_values = input_kwargs.iloc[chain_number][plot_params].to_list()
@@ -484,10 +494,10 @@ class Plots:
 
         if draft:
             # add a plot title with the job name
-            fig.suptitle(settings['job_name'].replace('_', '\_'), fontsize=18)
+            fig.suptitle(mcmc_settings['job_name'].replace('_', '\_'), fontsize=18)
 
         if save:
-            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_' + str(settings['complexity']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
+            plt.savefig(str(path) + '/plots/' + str(settings['job_name']) + '_contours_' +str(chain_number)+'.pdf', dpi=300, bbox_inches='tight')
         if show:
             plt.show()
 

@@ -3,10 +3,6 @@ import pandas as pd
 import pickle
 
 from lenstronomy.ImSim.image_model import ImageModel
-import lenstronomy.Util.simulation_util as sim_util
-import lenstronomy.Util.image_util as image_util
-from lenstronomy.Data.imaging_data import ImageData
-from lenstronomy.Data.psf import PSF
 from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.SimulationAPI.sim_api import SimAPI
@@ -17,9 +13,9 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
-    def generate_image(self, settings, parameters,
+    def generate_image(self, image_settings,
                        baryons, halo, los, lens_light, source,
-                       Einstein_radii, path, source_perturbations=[]
+                       Einstein_radii, path# , source_perturbations=[]
                        ):
 
         image_list = []
@@ -34,13 +30,15 @@ class Image:
 
         # work out how to deal with this
         lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        if parameters['lens_light']:
-            lens_light_model_list = ['SERSIC_ELLIPSE']
-        else:
-            lens_light_model_list = []
+        # if image_settings['lens_light']:
+        lens_light_model_list = ['SERSIC_ELLIPSE']
+        # else:
+            # lens_light_model_list = []
 
         # source and its potential perturbations
         source_model_list = ['SERSIC_ELLIPSE']
+
+        source_perturbations = image_settings['source_perturbations']
 
         if (type(source_perturbations) == float
             or type(source_perturbations) == int
@@ -77,7 +75,7 @@ class Image:
                            'supersampling_convolution': False}
 
 
-        for i in range(settings['number_of_images']):
+        for i in range(image_settings['number_of_images']):
 
             # define kwargs for the lens
             kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
@@ -108,10 +106,13 @@ class Image:
                 kwargs_source.append(kwargs_pert)
 
             # define kwargs for the lens light
-            if parameters['lens_light']:
-                kwargs_lens_light = [kwargs_ll[i]]
-            else:
-                kwargs_lens_light = None
+            # if image_settings['lens_light']:
+            #     kwargs_lens_light = [kwargs_ll[i]]
+            # else:
+            #     kwargs_lens_light = None
+
+            kwargs_lens_light = [kwargs_ll[i]]
+
 
             # compute the size of the image from the Einstein radius
             theta_E = Einstein_radii[i] # in arcsec
@@ -151,18 +152,18 @@ class Image:
             hyper_list.append([kwargs_data, kwargs_psf, kwargs_numerics])
 
             # save the image data (list of arrays) to file for plotting
-            try:
-                i_start = settings['starting_index']
-                assert i_start > 0
-                image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(i_start)+'.pickle'
-            except:
-                image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list.pickle'
+            # try:
+            #     i_start = settings['starting_index']
+            #     assert i_start > 0
+            #     image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(i_start)+'.pickle'
+            # except:
+            image_filename = str(path)+'/datasets/'+str(image_settings['image_name'])+'_image_list.pickle'
             image_outfile = open(image_filename,'wb')
             pickle.dump(image_list, image_outfile)
             image_outfile.close()
 
         # saving the hyper-data for each image so we can MCMC any previously generated image
-        hyper_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_hyperdata.pickle'
+        hyper_filename = str(path)+'/datasets/'+str(image_settings['image_name'])+'_hyperdata.pickle'
         hyper_outfile = open(hyper_filename,'wb')
         pickle.dump(hyper_list, hyper_outfile)
         hyper_outfile.close()
