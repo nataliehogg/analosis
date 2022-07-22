@@ -79,19 +79,6 @@ class SplitMCMC:
 
         for i in range(iterations):
 
-            # this ensures you access the right part of your kwargs and hyperdata for the given iteration
-            # i = n +  mcmc_settings['starting_index']
-
-            # check if the file with the custom starting index already exists
-            # if settings['starting_index'] > 0:
-            #     test_file = str(path) + '/chains/' + settings['job_name'] + '_' + str(settings['complexity']) +'_' + str(i) + '.h5'
-            #     if os.path.exists(test_file):
-            #         raise ValueError('That chain file already exists; change your starting index or set it to zero to overwrite the job.')
-            #     else:
-            #         pass
-            # else:
-            #     pass
-
             # Initialise the lists of parameters
             fixed_lens = []
             kwargs_lens_init = []
@@ -379,10 +366,7 @@ class SplitMCMC:
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
             kwargs_result.append(fitting_seq.best_fit())
 
-            sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[n][0]
-
-            # np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
-            #            param_mcmc, delimiter=',',  fmt='%s')
+            sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
             np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
