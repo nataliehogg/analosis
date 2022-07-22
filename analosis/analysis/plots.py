@@ -293,10 +293,10 @@ class Plots:
 
             fig, ax = plt.subplots(1, 1, figsize = (7,7), sharex=True, sharey=True)
 
-            plt.errorbar(in_gamma1_converged, out_gamma1, yerr = [gamma1_lower, gamma1_upper],
+            plt.errorbar(in_gamma1_converged, out_gamma1, yerr = [g1_lower_error, g1_upper_error],
                          ls = ' ', marker = '.', color = LOS[1], label = r'$\gamma_1^{\rm LOS}$')
 
-            plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [gamma2_lower, gamma2_upper],
+            plt.errorbar(in_gamma2_converged, out_gamma2, yerr = [g2_lower_error, g2_upper_error],
                          ls = ' ', marker = '.', color = LOS_minimal[1], label = r'$\gamma_2^{\rm LOS}$')
 
 
