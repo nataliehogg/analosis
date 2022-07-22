@@ -22,6 +22,8 @@ from analosis.utilities.useful_functions import Utilities
 from analosis.image.mock_generator import Mocks
 from analosis.image.image_generator import Image
 from analosis.analysis.mcmc import MCMC
+from analosis.analysis.split_mcmc import SplitMCMC
+
 
 class Run:
 
@@ -109,7 +111,11 @@ class Run:
 
         if self.mcmc_settings['MCMC'] == True:
 
-            input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv') # todo: add a check/search for this file...
+            if self.mcmc_settings['split'] == True:
+                index = self.mcmc_settings['split_index']
+                input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs_{}.csv'.format(index))
+            else:
+                input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
             los_cols = ['kappa_os', 'gamma1_os', 'gamma2_os', 'omega_os',
                         'kappa_od', 'gamma1_od', 'gamma2_od', 'omega_od',
@@ -133,7 +139,10 @@ class Run:
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
 
-            chain = MCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
+            if self.mcmc_settings['split'] == True:
+                chain = SplitMCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
+            else:
+                chain = MCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
 
         elif self.mcmc_settings['MCMC'] == False:
             print('MCMC will not be run.')
