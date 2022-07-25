@@ -39,7 +39,11 @@ class MCMC:
         kwargs_bar = baryons.to_dict('records')
         kwargs_nfw = halo.to_dict('records')
         kwargs_sl  = source.to_dict('records')
-        kwargs_ll  = lens_light.to_dict('records')
+
+        if lens_light is not None:
+            kwargs_ll  = lens_light.to_dict('records')
+        else:
+            kwargs_ll = None
 
         kwargs_likelihood = {'source_marg': True}
 
@@ -312,43 +316,42 @@ class MCMC:
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
 
-            # if parameters['lens_light'] == True:
-            lens_light_model_list = ['SERSIC_ELLIPSE']
+            # lens light
+            if kwargs_ll is not None:
+                lens_light_model_list = ['SERSIC_ELLIPSE']
 
-            # lens light model
-            fixed_lens_light = []
-            kwargs_lens_light_init = []
-            kwargs_lens_light_sigma = []
-            kwargs_lower_lens_light = []
-            kwargs_upper_lens_light = []
+                # lens light model
+                fixed_lens_light = []
+                kwargs_lens_light_init = []
+                kwargs_lens_light_sigma = []
+                kwargs_lower_lens_light = []
+                kwargs_upper_lens_light = []
 
-            # Define parameters
-            fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
-            kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
-                                           'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
-            kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
-            kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
+                # Define parameters
+                fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
+                kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
+                                               'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
+                kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
+                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
 
-            lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
-                                fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
+                lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
+                                    fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
 
-            kwargs_params = {'lens_model': lens_params,
-                             'source_model': source_params,
-                             'lens_light_model': lens_light_params}
 
-            kwargs_model = {'lens_model_list': lens_fit_list,
-                            'source_light_model_list': source_model_list,
-                            'lens_light_model_list': lens_light_model_list}
+                kwargs_params = {'lens_model': lens_params,
+                                 'source_model': source_params,
+                                 'lens_light_model': lens_light_params}
 
-            # elif parameters['lens_light'] == False:
-            #     kwargs_params = {'lens_model': lens_params,
-            #                      'source_model': source_params}
-            #
-            #     kwargs_model = {'lens_model_list': lens_fit_list,
-            #                     'source_light_model_list': source_model_list}
-            # else:
-            #     print('Something went wrong with the lens light settings.')
+                kwargs_model = {'lens_model_list': lens_fit_list,
+                                'source_light_model_list': source_model_list,
+                                'lens_light_model_list': lens_light_model_list}
+            else:
+                kwargs_params = {'lens_model': lens_params,
+                                 'source_model': source_params}
+
+                kwargs_model = {'lens_model_list': lens_fit_list,
+                                'source_light_model_list': source_model_list}
 
 
             kwargs_data = hyper_data[i][0]
@@ -373,7 +376,6 @@ class MCMC:
                                      'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
                                                        + str(mcmc_settings['job_name']) + '_'
-                                                       # + str(mcmc_settings['complexity']) + '_'
                                                        + str(i) + '.h5'}]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
@@ -381,10 +383,10 @@ class MCMC:
 
             sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[n][0]
 
-            # np.savetxt(str(path) + '/datasets/' + str(settings['job_name']) + '_' +str(settings['complexity'])+ '_sampled_params.csv',
-            #            param_mcmc, delimiter=',',  fmt='%s')
+        # np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_kwargs_result.csv',
+        #                kwargs_result, delimiter=',',  fmt='%s')
 
-            np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
+        np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
         return None

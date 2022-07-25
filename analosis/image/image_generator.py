@@ -56,9 +56,13 @@ class Image:
             raise Warning("parameters['source_perturbations'] must be either None, a number, or a list of numbers, treating it as an empty list.")
 
         # lens model
-        kwargs_model = {'lens_model_list': lens_model_list,
-                        'lens_light_model_list': lens_light_model_list,
-                        'source_light_model_list': source_model_list}
+        if image_settings['lens_light'] == True:
+            kwargs_model = {'lens_model_list': lens_model_list,
+                            'lens_light_model_list': lens_light_model_list,
+                            'source_light_model_list': source_model_list}
+        else:
+            kwargs_model = {'lens_model_list': lens_model_list,
+                            'source_light_model_list': source_model_list}            
 
         # telescope settings (HST)
         psf = 'GAUSSIAN'
@@ -106,12 +110,10 @@ class Image:
                 kwargs_source.append(kwargs_pert)
 
             # define kwargs for the lens light
-            # if image_settings['lens_light']:
-            #     kwargs_lens_light = [kwargs_ll[i]]
-            # else:
-            #     kwargs_lens_light = None
-
-            kwargs_lens_light = [kwargs_ll[i]]
+            if image_settings['lens_light']:
+                kwargs_lens_light = [kwargs_ll[i]]
+            else:
+                kwargs_lens_light = None
 
 
             # compute the size of the image from the Einstein radius
@@ -130,9 +132,8 @@ class Image:
             kwargs_data = sim.kwargs_data
 
             # convert magnitudes into amplitudes
-            kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(
-                kwargs_lens_light_mag=kwargs_lens_light,
-                kwargs_source_mag=kwargs_source)
+            kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(kwargs_lens_light_mag=kwargs_lens_light,
+                                                                           kwargs_source_mag=kwargs_source)
 
             # generate image
             imSim = sim.image_model_class(kwargs_numerics)

@@ -220,15 +220,18 @@ class Utilities:
                 'e1_nfw': 'e1',
                 'e2_nfw': 'e2'})
 
-        lens_light = lens_light.rename(
-            index=str, columns={
-                'magnitude_ll': 'magnitude',
-                'R_sersic_ll': 'R_sersic',
-                'n_sersic_ll': 'n_sersic',
-                'x_ll': 'center_x',
-                'y_ll': 'center_y',
-                'e1_ll': 'e1',
-                'e2_ll': 'e2'})
+        if lens_light is not None:
+            lens_light = lens_light.rename(
+                index=str, columns={
+                    'magnitude_ll': 'magnitude',
+                    'R_sersic_ll': 'R_sersic',
+                    'n_sersic_ll': 'n_sersic',
+                    'x_ll': 'center_x',
+                    'y_ll': 'center_y',
+                    'e1_ll': 'e1',
+                    'e2_ll': 'e2'})
+        else:
+            lens_light = None
 
         source = source.rename(
             index=str, columns={
