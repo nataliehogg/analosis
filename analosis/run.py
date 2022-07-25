@@ -87,9 +87,14 @@ class Run:
 
             # combine the dataframes for saving to file
             # in the same order as the params are put into the MCMC for future ease of plotting
-            complete_data = util.combine_dataframes(
-                [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe,
-                 source, lens_light, Einstein_radii_dataframe])
+            if image_settings['lens_light'] == True:
+                complete_data = util.combine_dataframes([los, baryons, mass_bar_dataframe,
+                                                         halo, mass_nfw_dataframe, source,
+                                                         lens_light, Einstein_radii_dataframe])
+            else:
+                complete_data = util.combine_dataframes([los, baryons, mass_bar_dataframe,
+                                                         halo, mass_nfw_dataframe, source,
+                                                         Einstein_radii_dataframe])
 
             # if self.settings['starting_index'] == 0:
             #     util.save_input_kwargs(self.settings, complete_data)
@@ -134,9 +139,13 @@ class Run:
             los        = input_kwargs.loc[:, los_cols]
             baryons    = input_kwargs.loc[:, bar_cols]
             halo       = input_kwargs.loc[:, nfw_cols]
-            lens_light = input_kwargs.loc[:, ll_cols]
             source     = input_kwargs.loc[:, sl_cols]
             Einstein_radii = input_kwargs.loc[:, 'theta_E']
+
+            if set(ll_cols).issubset(input_kwargs.columns):
+                lens_light = input_kwargs.loc[:, ll_cols]
+            else:
+                lens_light = None
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
 
