@@ -114,6 +114,7 @@ class Run:
             if self.mcmc_settings['split'] == True:
                 index = self.mcmc_settings['split_index']
                 input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs_{}.csv'.format(index))
+                print('using split kwargs index', index)
             else:
                 input_kwargs = pd.read_csv(str(path) + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
