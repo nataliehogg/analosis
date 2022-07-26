@@ -118,7 +118,7 @@ class Plots:
                 ax.plot([0,1],[1,0], color='red')
             else:
                 ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
-            ax.get_xaxis().set_visible(False)
+                ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             ax.autoscale(False)
             ax.axis('off')
@@ -135,7 +135,7 @@ class Plots:
 
 
     def input_output_plot(self, path, image_settings, mcmc_settings, b_max=None, show_not_converged=True, use_colourmap=True, save=True, show=True):
-
+        print('starting index needs to be implemented...')
         in_kwargs = pd.read_csv(path + '/datasets/' + str(image_settings['image_name']) + '_input_kwargs.csv')
 
         # define the impact parameter normalised by the source half-light radius
