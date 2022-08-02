@@ -50,8 +50,6 @@ class Mocks:
         row of a dataframe.
         """
 
-        # if self.scenario == 'composite lens':
-
         kwargs = {'baryons': [], 'halo':[], 'los':[], 'lens_light':[], 'source': []}
 
         for i in range(self.number_of_images):
@@ -105,9 +103,9 @@ class Mocks:
             self.masses_baryons.append(baryons.mass)
             self.masses_haloes.append(halo.virial_mass)
 
-            halo_kwargs = halo.kwargs #for i in range(self.number_of_images)]
-            baryon_kwargs = baryons.return_kwargs(data_type='mass') #for i in range(self.number_of_images)]
-            lens_light_kwargs = baryons.return_kwargs(data_type='light') #for i in range(self.number_of_images)]
+            halo_kwargs = halo.kwargs
+            baryon_kwargs = baryons.return_kwargs(data_type='mass')
+            lens_light_kwargs = baryons.return_kwargs(data_type='light')
 
             # centre of mass of the main lens
             lens_mass_centre = {}
@@ -119,7 +117,7 @@ class Mocks:
 
             # LOS effects
             los = LOS(util=self.util, gamma_max=self.gamma_max)
-            los_kwargs = los.kwargs # for i in range(self.number_of_images)]
+            los_kwargs = los.kwargs
 
             # source
             source = Source(redshifts, distances, self.util,
@@ -134,10 +132,5 @@ class Mocks:
             kwargs['los'].append(los_kwargs)
             kwargs['lens_light'].append(lens_light_kwargs)
             kwargs['source'].append(source_kwargs)
-
-        # elif self.scenario == 'distributed haloes':
-        #     raise ValueError("The distributed halo case is not implemented yet.")
-        # else:
-        #     raise ValueError("Unknown scenario.")
 
         return kwargs

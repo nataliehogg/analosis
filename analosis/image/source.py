@@ -52,9 +52,6 @@ class Source:
       aspect_ratio      = np.random.uniform(min_aspect_ratio_source, 1.0)
       e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
-      # amplitude of light
-      # amplitude = amplitude_reference * (2 / (1 + redshifts['source']))**4
-
       # absolute magnitude: assume that the luminosity is proportional to the
       # galaxy's area; for r = mean_radius we have M = reference_magnitude
       reference_magnitude = -21
@@ -65,7 +62,6 @@ class Source:
       magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
       # Save kwargs
-      # self.kwargs['amp_sl'] = amplitude
       self.kwargs['magnitude_sl'] = magnitude
       self.kwargs['R_sersic_sl'] = R_sersic
       self.kwargs['n_sersic_sl'] = n_sersic
