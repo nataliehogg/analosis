@@ -16,7 +16,7 @@ from chainconsumer import ChainConsumer
 from analosis.utilities.useful_functions import Utilities
 
 # common thinning setting (takes every nth sample in chain to ensure independence of samples)
-thin = 1#10
+thin = 10
 
 # colours for plots
 LOS         = ['#a6dba0','#5aae61','#1b7837']

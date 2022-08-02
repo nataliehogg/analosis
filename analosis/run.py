@@ -29,29 +29,11 @@ class Run:
 
         path = (Path(__file__).parent/'results/').resolve()
 
-        # print('Running the {} case with the following settings:\n\nModel: {}\nNumber of images: {}\nLens light: {}'
-        #       .format(settings['scenario'], settings['complexity'],
-        #               settings['number_of_images'], settings['lens_light']))
-
         colcos.setCosmology(cpars['id'])
         cosmo = FlatLambdaCDM(H0 = cpars['H0'], Om0 = cpars['Om'])
         util = Utilities(cosmo, path)
         self.image_settings = image_settings
         self.mcmc_settings = mcmc_settings
-
-        # set the starting index to zero if not specified
-        # try:
-        #     assert 'starting_index' in self.settings.keys()
-        # except AssertionError:
-        #     self.settings['starting_index'] = 0
-
-        # set the source perturbation to zero if not specified
-        # try:
-        #     source_perturbations = parameters['source_perturbations']
-        # except KeyError:
-        #     source_perturbations = []
-
-        # source_perturbations = self.image_settings['source_perturbations']
 
         self.mocks = Mocks(
             util=util,
@@ -94,12 +76,6 @@ class Run:
                                                          halo, mass_nfw_dataframe, source,
                                                          Einstein_radii_dataframe])
 
-            # if self.settings['starting_index'] == 0:
-            #     util.save_input_kwargs(self.settings, complete_data)
-            # else:
-            #     starting_index_dataframe = util.append_from_starting_index(path, self.settings, complete_data)
-            #     util.save_input_kwargs(self.settings, starting_index_dataframe)
-
             util.save_input_kwargs(self.image_settings, complete_data)
 
             # rename the dataframes for lenstronomy
@@ -107,7 +83,7 @@ class Run:
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.image_settings, baryons, halo, los, lens_light, source, Einstein_radii, path)#, source_perturbations)
+            im.generate_image(self.image_settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
         else:
             print('New images will not be generated.')
             pass

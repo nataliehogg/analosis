@@ -15,7 +15,6 @@ class Baryons():
                  min_aspect_ratio_baryons = 0.9,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
-                 #amplitude_reference=1000, # amplitude for a source with mean mass at z=1
                  ):
         """
         Create the baryonic component of the main lens with Sérsic profile.
@@ -74,12 +73,10 @@ class Baryons():
         self.kwargs['x'] = 0.0
         self.kwargs['y'] = 0.0
         self.kwargs['magnitude'] = magnitude
-        # self.kwargs['amp'] = amplitude
 
     def return_kwargs(self, data_type):
         if data_type == 'mass':
             bk = copy.copy(self.kwargs)
-            # bk.pop('amp')
             bk.pop('magnitude')
             kwargs = {k + '_bar': v for k, v in bk.items()}
         elif data_type == 'light':

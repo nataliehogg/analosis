@@ -37,9 +37,8 @@ class Halo():
         self.virial_mass = mass_baryons * ratio_DM_baryons
 
         # concentration freely inspired from https://arxiv.org/pdf/1312.0945.pdf
-        # mean_concentration = 10**0.9
-        # concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
-        concentration = np.random.normal(17.0, 4.0)
+        mean_concentration = 10**0.9
+        concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
 
         # scale radius and displacement angle [arcsec]
         Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=self.virial_mass,

@@ -30,10 +30,7 @@ class Image:
 
         # work out how to deal with this
         lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
-        # if image_settings['lens_light']:
         lens_light_model_list = ['SERSIC_ELLIPSE']
-        # else:
-            # lens_light_model_list = []
 
         # source and its potential perturbations
         source_model_list = ['SERSIC_ELLIPSE']
@@ -62,7 +59,7 @@ class Image:
                             'source_light_model_list': source_model_list}
         else:
             kwargs_model = {'lens_model_list': lens_model_list,
-                            'source_light_model_list': source_model_list}            
+                            'source_light_model_list': source_model_list}
 
         # telescope settings (HST)
         psf = 'GAUSSIAN'
@@ -109,12 +106,8 @@ class Image:
                                }
                 kwargs_source.append(kwargs_pert)
 
-            # define kwargs for the lens light
-            if image_settings['lens_light']:
-                kwargs_lens_light = [kwargs_ll[i]]
-            else:
-                kwargs_lens_light = None
-
+            # always having lens light now
+            kwargs_lens_light = [kwargs_ll[i]]
 
             # compute the size of the image from the Einstein radius
             theta_E = Einstein_radii[i] # in arcsec
@@ -153,11 +146,6 @@ class Image:
             hyper_list.append([kwargs_data, kwargs_psf, kwargs_numerics])
 
             # save the image data (list of arrays) to file for plotting
-            # try:
-            #     i_start = settings['starting_index']
-            #     assert i_start > 0
-            #     image_filename = str(path)+'/datasets/'+str(settings['job_name'])+'_image_list_'+str(i_start)+'.pickle'
-            # except:
             image_filename = str(path)+'/datasets/'+str(image_settings['image_name'])+'_image_list.pickle'
             image_outfile = open(image_filename,'wb')
             pickle.dump(image_list, image_outfile)
