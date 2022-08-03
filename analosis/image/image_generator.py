@@ -15,7 +15,7 @@ class Image:
 
     def generate_image(self, image_settings,
                        baryons, halo, los, lens_light, source,
-                       Einstein_radii, path# , source_perturbations=[]
+                       Einstein_radii, path
                        ):
 
         image_list = []

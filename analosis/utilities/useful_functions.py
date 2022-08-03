@@ -76,7 +76,7 @@ class Utilities:
     def get_effective_convergence(self, mass, R_sersic, n_sersic, e1, e2,
                                   d_os, d_od, d_ds):
         """
-        Computes convergence at half-light radius for a Sérsec profile,
+        Computes convergence at half-light radius for a Sérsic profile,
         assuming light traces baryonic mass.
         """
 
