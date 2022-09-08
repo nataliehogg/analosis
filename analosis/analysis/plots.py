@@ -13,7 +13,8 @@ import h5py
 import os
 from chainconsumer import ChainConsumer
 
-from analosis.utilities.useful_functions import Utilities
+from analosis.utilities.useful_functions import Utilities, estimate_quality
+
 
 # common thinning setting (takes every nth sample in chain to ensure independence of samples)
 thin = 10
