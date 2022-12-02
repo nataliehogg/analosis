@@ -7,6 +7,7 @@ from analosis.image.los import LOS
 from analosis.image.baryons import Baryons
 from analosis.image.dark_matter import Halo
 from lenstronomy.LensModel.lens_model import LensModel
+from analosis.utilities.useful_functions import estimate_Einstein_radius
 
 class Mocks:
     """
@@ -81,24 +82,17 @@ class Mocks:
                             sigma_offset=self.sigma_halo_offset)
 
                 # Estimate the Einstein radius in arcsec
-                # start with the baryons as if they were a point lens
-                theta_E_bar = self.util.Einstein_radius_point_lens(
-                    mass=baryons.mass,
-                    distances=distances)
-                # displacement angle of NFW at that position
-                spherical_halo_class = LensModel(lens_model_list=['NFW'])
-                kwargs_spherical_halo = [{'Rs': halo.kwargs['Rs'],
-                                          'alpha_Rs': halo.kwargs['alpha_Rs']}]
-                alpha_x, alpha_y = spherical_halo_class.alpha(x=theta_E_bar,
-                                                              y=0,
-                                                              kwargs=kwargs_spherical_halo)
-                # sum the contribution of baryons and NFW
-                Einstein_radius = theta_E_bar + alpha_x
+                Einstein_radius = estimate_Einstein_radius(
+                    R_sersic=baryons.kwargs['R_sersic'],
+                    n_sersic=baryons.kwargs['n_sersic'],
+                    k_eff=baryons.kwargs['k_eff'],
+                    Rs=halo.kwargs['Rs'],
+                    alpha_Rs=halo.kwargs['alpha_Rs']
+                    )
 
                 attempt += 1
-                if attempt > 100:
-                    raise RuntimeWarning("I seem to have difficulties to\
-                                         reach the required Einstein radius.")
+                if attempt == 100:
+                    print("Warning: I seem to have difficulties to reach the required Einstein radius.")
             self.Einstein_radii.append(Einstein_radius)
             self.masses_baryons.append(baryons.mass)
             self.masses_haloes.append(halo.virial_mass)

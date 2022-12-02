@@ -7,3 +7,5 @@ The analosis package is a wrapper for lenstronomy created to investigate line-of
 Its main functionality is to simulate a large number of strong lensing images and fit them with a range of different models using an MCMC parameter inference.
 
 An example notebook showing how to use analosis is in the notebooks directory.
+
+Used in https://arxiv.org/abs/2210.07210.

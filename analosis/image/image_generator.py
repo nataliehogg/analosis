@@ -15,7 +15,7 @@ class Image:
 
     def generate_image(self, image_settings,
                        baryons, halo, los, lens_light, source,
-                       Einstein_radii, path# , source_perturbations=[]
+                       Einstein_radii, path
                        ):
 
         image_list = []
@@ -113,7 +113,7 @@ class Image:
             theta_E = Einstein_radii[i] # in arcsec
             beta = np.sqrt(kwargs_sl[i]['center_x']**2
                            + kwargs_sl[i]['center_y']**2) # source offset
-            image_size = 3 * (theta_E + beta)
+            image_size = 4 * (theta_E + beta)
             numpix = int(image_size / pixel_size)
 
             # simulation API
