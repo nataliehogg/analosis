@@ -5,6 +5,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from lenstronomy.LensModel.Profiles.sersic_utils import SersicUtil
 from lenstronomy.SimulationAPI.sim_api import SimAPI
 from lenstronomy.SimulationAPI.ObservationConfig.HST import HST
+from lenstronomy.LensModel.lens_model import LensModel
+from scipy.optimize import fsolve
 
 
 class Utilities:
@@ -368,3 +370,25 @@ def estimate_quality(input_kwargs, snr_cut=1):
         
 
     return qualities
+
+
+def estimate_Einstein_radius(R_sersic, n_sersic, k_eff, Rs, alpha_Rs, guess=1):
+    """
+    This functions estimates the Einstein radius [in arcsec] of a composite
+    model made of a Sérsic profile and an NFW profile, assumed to be concentric
+    and axially symmetric. The Einstein radius the solves the equation
+    alpha(theta_E) = theta_E ,
+    where alpha is the total displacement angle of the composite lens.
+    """
+    
+    lens = LensModel(lens_model_list=['SERSIC', 'NFW'])
+    kwargs_sersic = {'R_sersic': R_sersic,
+                     'n_sersic': n_sersic,
+                     'k_eff': k_eff}
+    kwargs_nfw = {'Rs': Rs, 'alpha_Rs': alpha_Rs}
+    kwargs_lens = [kwargs_sersic, kwargs_nfw]
+    
+    func = lambda theta: lens.alpha(x=theta, y=0, kwargs=kwargs_lens)[0] - theta
+    theta_E = fsolve(func, guess)[0]
+    
+    return theta_E
