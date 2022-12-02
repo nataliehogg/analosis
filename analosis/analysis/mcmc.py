@@ -55,9 +55,14 @@ class MCMC:
 
         # global setting for number of walkers per sampled parameter
         if mcmc_settings['sampler'] == 'ZEUS':
-            walker_ratio = 2
+            walker_ratio = 4
+            sigma_scale = 1e-3
+            # correct settings below
+            #walker_ratio = 2
+            #sigma_scale = 0.01 # multiplies kwargs_sigma to get the sigma of the initialising ball
         else:
             walker_ratio = 10
+            sigma_scale = 1e-3
 
         chain_list = []
         kwargs_result = []
@@ -109,8 +114,8 @@ class MCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
-            gamma_sigma = 0.001
-            omega_sigma = 0.001
+            gamma_sigma = 0.1
+            omega_sigma = 0.1
             gamma_prior = 0.5
             omega_prior = 0.5
 
@@ -371,7 +376,13 @@ class MCMC:
 
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
-                                     'walkerRatio': walker_ratio, 'sigma_scale': 10.,
+                                     'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
+                                     'mu': mcmc_settings['mu'],
+                                     'tune': mcmc_settings['tune'],
+                                     # 'ncheck': mcmc_settings['ncheck'],
+                                     'autocorrelation_callback': mcmc_settings['autocorrelation_callback'],
+                                     # 'splitr_callback': mcmc_settings['splitr_callback'],
+                                     # 'miniter_callback': mcmc_settings['miniter_callback'],
                                      'threadCount': ncpu,
                                      'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
