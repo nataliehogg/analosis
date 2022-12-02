@@ -52,9 +52,11 @@ class SplitMCMC:
 
         # global setting for number of walkers per sampled parameter
         if mcmc_settings['sampler'] == 'ZEUS':
-            walker_ratio = 2
+            walker_ratio = 4
+            sigma_scale = 1e-3
         else:
             walker_ratio = 10
+            sigma_scale = 1e-3
 
         chain_list = []
         kwargs_result = []
@@ -93,8 +95,8 @@ class SplitMCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
-            gamma_sigma = 0.001
-            omega_sigma = 0.001
+            gamma_sigma = 0.1
+            omega_sigma = 0.1
             gamma_prior = 0.5
             omega_prior = 0.5
 
@@ -181,27 +183,27 @@ class SplitMCMC:
                                           'n_sersic': kwargs_bar[i]['n_sersic'],
                                           'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
 
-                kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.01, 'n_sersic': 0.01,
-                                          'e1': 0.01, 'e2': 0.01})
+                kwargs_lens_sigma.append({'k_eff': 0.01, 'R_sersic': 0.1, 'n_sersic': 0.1,
+                                          'e1': 0.1, 'e2': 0.1})
 
                 kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
-                                          'e1': -0.5, 'e2': -0.5})
+                                          'e1': -1.0, 'e2': -1.0})
 
-                kwargs_upper_lens.append({'k_eff': 2.0, 'R_sersic': 1.0, 'n_sersic': 8.0,
-                                          'e1': 0.5, 'e2': 0.5})
+                kwargs_upper_lens.append({'k_eff': 0.5, 'R_sersic': 5.0, 'n_sersic': 10.0,
+                                          'e1': 1.0, 'e2': 1.0})
 
                 # NFW
                 # common priors and step sizes
-                Rs_sigma = 0.01
-                Rs_prior_lower = 5.0
-                Rs_prior_upper = 20.0
-                alpha_sigma = 0.01
-                alpha_prior_lower = 1.0
-                alpha_prior_upper = 4.0
-                center_nfw_sigma = 0.01
-                center_nfw_prior = 0.2
-                e_nfw_sigma = 0.01
-                e_nfw_prior = 0.5
+                Rs_sigma = 0.1
+                Rs_prior_lower = 0.0
+                Rs_prior_upper = 10.0
+                alpha_sigma = 0.1
+                alpha_prior_lower = 0.0
+                alpha_prior_upper = 5.0
+                center_nfw_sigma = 0.1
+                center_nfw_prior = 2.0
+                e_nfw_sigma = 0.1
+                e_nfw_prior = 1.0
 
                 if mcmc_settings['complexity'] == 'missing_halo_ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
@@ -285,17 +287,17 @@ class SplitMCMC:
                                        'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
                                        'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
 
-            kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
-                                        'center_x': 0.01, 'center_y': 0.01,
-                                        'e1': 0.01, 'e2': 0.01})
+            kwargs_source_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1,
+                                        'center_x': 0.1, 'center_y': 0.1,
+                                        'e1': 0.1, 'e2': 0.1})
 
-            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
-                                        'center_x': -0.5, 'center_y': -0.5,
-                                        'e1': -0.5, 'e2': -0.5})
+            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 1.0,
+                                        'center_x': -1.0, 'center_y': -1.0,
+                                        'e1': -1.0, 'e2': -1.0})
 
-            kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
-                                         'center_x': 0.5, 'center_y': 0.5,
-                                         'e1': 0.5, 'e2': 0.5})
+            kwargs_upper_source.append({'R_sersic': 5.0, 'n_sersic': 10.0,
+                                         'center_x': 1.0, 'center_y': 1.0,
+                                         'e1': 1.0, 'e2': 1.0})
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -314,9 +316,10 @@ class SplitMCMC:
             fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
             kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
                                            'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
-            kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
-            kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
+
+            kwargs_lens_light_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1, 'e1': 0.1, 'e2': 0.1})
+            kwargs_lower_lens_light.append({'R_sersic': 0.0, 'n_sersic': 1.0,   'e1': -1.0, 'e2': -1.0})
+            kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
 
             lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                 fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
@@ -356,8 +359,13 @@ class SplitMCMC:
 
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
-                                     'walkerRatio': walker_ratio, 'sigma_scale': 10.,
+                                     'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
                                      'threadCount': ncpu,
+                                     'mu': mcmc_settings['mu'],
+                                     'tune': mcmc_settings['tune'],
+                                     # 'autocorrelation_callback': mcmc_settings['autocorrelation_callback'],
+                                     'splitr_callback': mcmc_settings['splitr_callback'],
+                                     # 'miniter_callback': mcmc_settings['miniter_callback'],
                                      'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
                                                        + str(mcmc_settings['job_name']) + '_'
