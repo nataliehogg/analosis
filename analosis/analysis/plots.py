@@ -40,7 +40,7 @@ class Plots:
         return plot
 
 
-    def image_plot(self, path, image_settings, number_of_columns=5, b_max=None, save=True, show=True):
+    def image_plot(self, path, image_settings, number_of_columns=5, u_max=None, save=True, show=True):
         print('Preparing image plot...')
         kwargs = pd.read_csv(str(path) + '/datasets/'+ str(image_settings['image_name']) + '_input_kwargs.csv')
 
@@ -80,6 +80,7 @@ class Plots:
             y_nfw  = kwargs['y_nfw'].loc[i_start:,].to_numpy()
             x_cm = (m_bar * x_bar + m_halo * x_nfw) / (m_bar + m_halo)
             y_cm = (m_bar * y_bar + m_halo * y_nfw) / (m_bar + m_halo)
+            Einstein_radius = kwargs['theta_E'].loc[i_start:,].to_numpy()
         except KeyError:
             # this is for retrocompatibility before we had the masses in kwargs
             # in this case we fix the centre of mass on the optical axis
@@ -88,8 +89,9 @@ class Plots:
         x_s = kwargs['x_sl'].loc[i_start:,].to_numpy()
         y_s = kwargs['y_sl'].loc[i_start:,].to_numpy()
         # normalised impact parameter to the centre of mass
-        R_s = kwargs['R_sersic_sl'].loc[i_start:,].to_numpy()
-        b   = np.sqrt((x_s - x_cm)**2 + (y_s - y_cm)**2) / R_s
+        #R_s = kwargs['R_sersic_sl'].loc[i_start:,].to_numpy() #PFmod
+        #b   = np.sqrt((x_s - x_cm)**2 + (y_s - y_cm)**2) / R_s #PFmod
+        u = np.sqrt((x_s - x_cm)**2 + (y_s - y_cm)**2) / Einstein_radius #PFmod
 
         infile = open(filename,'rb')
         image_list = pickle.load(infile)
@@ -113,12 +115,15 @@ class Plots:
             ax = fig.add_subplot(gs[n])
             im = ax.matshow(np.log10(image_list[n]), origin='lower', vmin=v_min, vmax=v_max, cmap=cmap, extent=[0, 1, 0, 1])
 
-            if b_max is not None and b[n] > b_max:
-                ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
+            #if b_max is not None and b[n] > b_max: # PFmod
+            #   ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
+            if u_max is not None and u[n] > u_max: # PFmod
+                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8) # PFmod
                 ax.plot([0,1],[0,1], color='red')
                 ax.plot([0,1],[1,0], color='red')
             else:
-                ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8)
+                #ax.set_title(r'$b = {:.2f}$'.format(b[n]), fontsize=8) #PFmod
+                ax.set_title(r'$u = {:.2f}$'.format(u[n]), fontsize=8) #PFmod
                 ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             ax.autoscale(False)
