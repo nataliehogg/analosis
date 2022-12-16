@@ -3,11 +3,10 @@ import pandas as pd
 import os
 import pickle
 from lenstronomy.Workflow.fitting_sequence import FittingSequence
-from multiprocessing import cpu_count
 from analosis.image.image_generator import Image
 
 im = Image()
-ncpu = cpu_count()
+
 
 class SplitMCMC:
 
@@ -53,10 +52,10 @@ class SplitMCMC:
         # global setting for number of walkers per sampled parameter
         if mcmc_settings['sampler'] == 'ZEUS':
             walker_ratio = 4
-            sigma_scale = 1e-3
+            sigma_scale = 0.001
         else:
             walker_ratio = 10
-            sigma_scale = 1e-3
+            sigma_scale = 0.001
 
         chain_list = []
         kwargs_result = []
@@ -360,12 +359,6 @@ class SplitMCMC:
             fitting_kwargs_list = [['MCMC',
                                     {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
-                                     'threadCount': ncpu,
-                                     'mu': mcmc_settings['mu'],
-                                     'tune': mcmc_settings['tune'],
-                                     # 'autocorrelation_callback': mcmc_settings['autocorrelation_callback'],
-                                     'splitr_callback': mcmc_settings['splitr_callback'],
-                                     # 'miniter_callback': mcmc_settings['miniter_callback'],
                                      'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
                                                        + str(mcmc_settings['job_name']) + '_'
