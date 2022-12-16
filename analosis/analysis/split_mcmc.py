@@ -189,17 +189,17 @@ class SplitMCMC:
                 kwargs_lower_lens.append({'k_eff': 0.0, 'R_sersic': 0.0, 'n_sersic': 1.0,
                                           'e1': -1.0, 'e2': -1.0})
 
-                kwargs_upper_lens.append({'k_eff': 0.5, 'R_sersic': 5.0, 'n_sersic': 10.0,
+                kwargs_upper_lens.append({'k_eff': 1.0, 'R_sersic': 5.0, 'n_sersic': 10.0,
                                           'e1': 1.0, 'e2': 1.0})
 
                 # NFW
                 # common priors and step sizes
                 Rs_sigma = 0.1
                 Rs_prior_lower = 0.0
-                Rs_prior_upper = 10.0
+                Rs_prior_upper = 15.0
                 alpha_sigma = 0.1
                 alpha_prior_lower = 0.0
-                alpha_prior_upper = 5.0
+                alpha_prior_upper = 6.0
                 center_nfw_sigma = 0.1
                 center_nfw_prior = 2.0
                 e_nfw_sigma = 0.1
@@ -319,7 +319,7 @@ class SplitMCMC:
 
             kwargs_lens_light_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1, 'e1': 0.1, 'e2': 0.1})
             kwargs_lower_lens_light.append({'R_sersic': 0.0, 'n_sersic': 1.0,   'e1': -1.0, 'e2': -1.0})
-            kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
+            kwargs_upper_lens_light.append({'R_sersic': 2.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
 
             lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                 fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
