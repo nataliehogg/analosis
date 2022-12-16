@@ -96,7 +96,7 @@ class Image:
                 phi      = np.random.uniform(0, 2*np.pi)
                 x        = x_s + r * np.cos(phi)
                 y        = y_s + r * np.sin(phi)
-                R        = np.random.uniform(R_s/10, R_s)
+                R        = np.random.uniform(R_s/2, R_s) #PFmod
                 n        = np.random.uniform(2, 6)
                 kwargs_pert = {'magnitude': mag_pert,
                                'R_sersic' : R,

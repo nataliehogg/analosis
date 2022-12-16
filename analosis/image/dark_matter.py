@@ -31,14 +31,18 @@ class Halo():
         # Determine the parameters
 
         ratio_DM_baryons = np.random.uniform(low=30, high=100)
+
         # Reasonable but could be more realistic
         # Freely inspired from:
         # https://www.aanda.org/articles/aa/pdf/2020/02/aa36329-19.pdf
         self.virial_mass = mass_baryons * ratio_DM_baryons
 
         # concentration freely inspired from https://arxiv.org/pdf/1312.0945.pdf
-        mean_concentration = 10**0.9
-        concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
+        # mean_concentration = 10**0.9
+        # concentration = np.random.lognormal(np.log(mean_concentration), 0.1)
+
+        mean_concentration = 10**1.1 # Pierre look here
+        concentration = np.random.lognormal(np.log(mean_concentration), 0.2)
 
         # scale radius and displacement angle [arcsec]
         Rs, alpha_Rs = self.lens_cosmo.nfw_physical2angle(M=self.virial_mass,

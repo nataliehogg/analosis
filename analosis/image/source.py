@@ -27,10 +27,11 @@ class Source:
       # Define the parameters
       # half-light radius size
       # (freely inspired from https://arxiv.org/abs/1904.10992)
-      mean_radius = 2e-3 #[Mpc]
+      mean_radius = 3e-3 #[Mpc] #PFmod
       radius = np.random.lognormal(np.log(mean_radius), np.log(2)/2)
-      # this ensures that 95% of the events have a mass that is at most
-      # a factor two larger or smaller than the mean mass.
+      # this ensures that 95% of the events have a radius that is at most
+      # a factor two larger or smaller than the mean radius.
+      radius = max(radius, mean_radius/2) #PFmod: ensures large enough source
       R_sersic = radius / distances['os'] # [rad]
       R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
 
@@ -39,7 +40,9 @@ class Source:
       n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
 
       # position
-      r_max = min(maximum_source_offset_factor * R_sersic, Einstein_radius)
+      #r_max = min(maximum_source_offset_factor * R_sersic, Einstein_radius) #PFmod
+      r_max = min(R_sersic, maximum_source_offset_factor * Einstein_radius) #PFmod
+      #r_max = maximum_source_offset_factor * Einstein_radius #PFmod
       r_sq_max = r_max**2 #[arcsec^2]
       r_sq = np.random.uniform(0, r_sq_max)
       r = np.sqrt(r_sq)
@@ -54,7 +57,7 @@ class Source:
 
       # absolute magnitude: assume that the luminosity is proportional to the
       # galaxy's area; for r = mean_radius we have M = reference_magnitude
-      reference_magnitude = -21
+      reference_magnitude = -22 #PFmod
       absolute_magnitude = reference_magnitude - 5 * np.log10(radius / mean_radius)
 
       # apparent magnitude
