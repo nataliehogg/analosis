@@ -60,8 +60,8 @@ class MCMC:
         #     walker_ratio = 10
         #     sigma_scale = 0.001
 
-        chain_list = []
-        kwargs_result = []
+        # chain_list = []
+        # kwargs_result = []
         if  mcmc_settings['complexity'] == 'perfect':
             output_gamma1_os = []
             output_gamma2_os = []
@@ -325,9 +325,9 @@ class MCMC:
                 kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
                                                'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
 
-            kwargs_lens_light_sigma.append({'R_sersic': 0.01, 'n_sersic': 0.01, 'e1': 0.01, 'e2': 0.01})
-            kwargs_lower_lens_light.append({'R_sersic': 0.0, 'n_sersic': 1.0,   'e1': -1.0, 'e2': -1.0})
-            kwargs_upper_lens_light.append({'R_sersic': 2.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
+                kwargs_lens_light_sigma.append({'R_sersic': 0.01, 'n_sersic': 0.01, 'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_lens_light.append({'R_sersic': 0.0, 'n_sersic': 1.0,   'e1': -1.0, 'e2': -1.0})
+                kwargs_upper_lens_light.append({'R_sersic': 2.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
 
                 lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                     fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
@@ -363,25 +363,34 @@ class MCMC:
             fitting_seq = FittingSequence(kwargs_data_joint, kwargs_model, kwargs_constraints,
                                           kwargs_likelihood, kwargs_params)
 
-           outpath = str(path) + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i)
+            outpath = str(path) + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i)
 
-           num_params = len(kwargs_lens_init)+len(kwargs_lens_light_init)+len(kwargs_source_init)
+            num_lens_params = [len(kwargs_lens_init[i].keys()) for i in range(len(lens_fit_list))]
+            num_ll_params = [len(kwargs_lens_light_init[i].keys()) for i in range(len(lens_light_model_list))]
+            num_source_params = [len(kwargs_source_init[i].keys()) for i in range(len(source_model_list))]
 
-           proposals = [0.001]*num_params
+            num_params = sum(num_lens_params) + sum(num_ll_params) + sum(num_source_params)
 
-           kwargs_cobaya = {'proposal_widths': proposals,
+            proposals = [0.001]*num_params
+
+            kwargs_cobaya = {'proposal_widths': proposals,
                             'Rminus1_stop': 0.01,
                             'path': outpath,
                             'force_overwrite': True}
 
-           fitting_kwargs_list = [['metropolis_hastings', kwargs_cobaya]]
+            fitting_kwargs_list = [['metropolis_hastings', kwargs_cobaya]]
 
-            chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
-            kwargs_result.append(kwargs_result = chain_list[i][2])
+            cl = fitting_seq.fit_sequence(fitting_kwargs_list)
+
+            # chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
+            # kwargs_result.append(kwargs_result = chain_list[n][2])
 
             # sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
             np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
+                       param_mcmc, delimiter=',',  fmt='%s')
+
+        np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
         return None

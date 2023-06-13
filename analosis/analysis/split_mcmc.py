@@ -57,8 +57,8 @@ class SplitMCMC:
         #     walker_ratio = 10
         #     sigma_scale = 0.001
 
-        chain_list = []
-        kwargs_result = []
+        # chain_list = []
+        # kwargs_result = []
         if  mcmc_settings['complexity'] == 'perfect':
             output_gamma1_os = []
             output_gamma2_os = []
@@ -309,16 +309,6 @@ class SplitMCMC:
                             'source_light_model_list': source_model_list,
                             'lens_light_model_list': lens_light_model_list}
 
-            # elif parameters['lens_light'] == False:
-            #     kwargs_params = {'lens_model': lens_params,
-            #                      'source_model': source_params}
-            #
-            #     kwargs_model = {'lens_model_list': lens_fit_list,
-            #                     'source_light_model_list': source_model_list}
-            # else:
-            #     print('Something went wrong with the lens light settings.')
-
-
             kwargs_data = hyper_data[i][0]
             kwargs_psf = hyper_data[i][1]
             kwargs_numerics = hyper_data[i][2]
@@ -334,23 +324,27 @@ class SplitMCMC:
             fitting_seq = FittingSequence(kwargs_data_joint, kwargs_model, kwargs_constraints,
                                           kwargs_likelihood, kwargs_params)
 
-           outpath = str(path) + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i)
+            outpath = str(path) + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i)
 
-           num_params = len(kwargs_lens_init)+len(kwargs_lens_light_init)+len(kwargs_source_init)
+            num_lens_params = [len(kwargs_lens_init[i].keys()) for i in range(len(lens_fit_list))]
+            num_ll_params = [len(kwargs_lens_light_init[i].keys()) for i in range(len(lens_light_model_list))]
+            num_source_params = [len(kwargs_source_init[i].keys()) for i in range(len(source_model_list))]
 
-           proposals = [0.001]*num_params
+            num_params = sum(num_lens_params) + sum(num_ll_params) + sum(num_source_params)
 
-           kwargs_cobaya = {'proposal_widths': proposals,
+            proposals = [0.001]*num_params
+
+            kwargs_cobaya = {'proposal_widths': proposals,
                             'Rminus1_stop': 0.01,
                             'path': outpath,
                             'force_overwrite': True}
 
-           fitting_kwargs_list = [['metropolis_hastings', kwargs_cobaya]]
+            fitting_kwargs_list = [['metropolis_hastings', kwargs_cobaya]]
 
-            chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
-            kwargs_result.append(kwargs_result = chain_list[i][2])
+            cl = fitting_seq.fit_sequence(fitting_kwargs_list)
 
-            # sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
+            # chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
+            # kwargs_result.append(kwargs_result = chain_list[i][2])
 
             np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
