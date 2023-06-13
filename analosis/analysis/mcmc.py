@@ -53,12 +53,12 @@ class MCMC:
         infile.close()
 
         # global setting for number of walkers per sampled parameter
-        if mcmc_settings['sampler'] == 'ZEUS':
-            walker_ratio = 4
-            sigma_scale = 0.001
-        else:
-            walker_ratio = 10
-            sigma_scale = 0.001
+        # if mcmc_settings['sampler'] == 'ZEUS':
+        #     walker_ratio = 4
+        #     sigma_scale = 0.001
+        # else:
+        #     walker_ratio = 10
+        #     sigma_scale = 0.001
 
         chain_list = []
         kwargs_result = []
@@ -110,10 +110,10 @@ class MCMC:
             # Line-of-sight parameters
             # we have to have a big if/else for perfect vs perfect minimal models
             # common prior boundaries and step sizes
-            gamma_sigma = 0.1
-            omega_sigma = 0.1
-            gamma_prior = 0.5
-            omega_prior = 0.5
+            gamma_sigma = 0.01
+            omega_sigma = 0.01
+            gamma_prior = 0.1
+            omega_prior = 0.1
 
             if mcmc_settings['complexity'] == 'perfect':
                 # notice that we can't just append to the already existing fixed_lens object
@@ -183,7 +183,7 @@ class MCMC:
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
                 kwargs_lens_init.append({'theta_E': Einstein_radii[i], 'gamma': 2.0,
                                          'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
-                kwargs_lens_sigma.append({'theta_E': 0.001, 'gamma': 0.01,
+                kwargs_lens_sigma.append({'theta_E': 0.01, 'gamma': 0.01,
                                          'e1': 0.01, 'e2': 0.01})
                 kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
                                          'e1': -0.5, 'e2': -0.5})
@@ -210,15 +210,15 @@ class MCMC:
                 # NFW
                 # common priors and step sizes
                 Rs_sigma = 0.01
-                Rs_prior_lower = 5.0
-                Rs_prior_upper = 20.0
+                Rs_prior_lower = 0.0
+                Rs_prior_upper = 15.0
                 alpha_sigma = 0.01
-                alpha_prior_lower = 1.0
-                alpha_prior_upper = 4.0
+                alpha_prior_lower = 0.0
+                alpha_prior_upper = 6.0
                 center_nfw_sigma = 0.01
-                center_nfw_prior = 0.2
+                center_nfw_prior = 2.0
                 e_nfw_sigma = 0.01
-                e_nfw_prior = 0.5
+                e_nfw_prior = 1.0
 
                 if mcmc_settings['complexity'] == 'missing_halo_ellipticity':
                     fixed_lens.append({'e1': 0.0, 'e2': 0.0})
@@ -302,17 +302,9 @@ class MCMC:
                                        'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
                                        'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
 
-            kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
-                                        'center_x': 0.01, 'center_y': 0.01,
-                                        'e1': 0.01, 'e2': 0.01})
-
-            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
-                                        'center_x': -0.5, 'center_y': -0.5,
-                                        'e1': -0.5, 'e2': -0.5})
-
-            kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
-                                         'center_x': 0.5, 'center_y': 0.5,
-                                         'e1': 0.5, 'e2': 0.5})
+            kwargs_source_sigma.append({'R_sersic': 0.01, 'n_sersic': 0.01, 'center_x': 0.01, 'center_y': 0.01, 'e1': 0.01, 'e2': 0.01})
+            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 1.0, 'center_x': -1.0, 'center_y': -1.0, 'e1': -1.0, 'e2': -1.0})
+            kwargs_upper_source.append({'R_sersic': 5.0, 'n_sersic': 10.0, 'center_x': 1.0, 'center_y': 1.0, 'e1': 1.0, 'e2': 1.0})
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -332,9 +324,10 @@ class MCMC:
                 fixed_lens_light.append({'center_x': 0.0, 'center_y': 0.0})
                 kwargs_lens_light_init.append({'R_sersic': kwargs_ll[i]['R_sersic'], 'n_sersic': kwargs_ll[i]['n_sersic'],
                                                'e1': kwargs_ll[i]['e1'], 'e2': kwargs_ll[i]['e2']})
-                kwargs_lens_light_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001, 'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens_light.append({'R_sersic': 0, 'n_sersic': 2.0,   'e1': -0.5, 'e2': -0.5})
-                kwargs_upper_lens_light.append({'R_sersic': 1.0,  'n_sersic': 7.0,   'e1': 0.5,  'e2': 0.5})
+
+            kwargs_lens_light_sigma.append({'R_sersic': 0.01, 'n_sersic': 0.01, 'e1': 0.01, 'e2': 0.01})
+            kwargs_lower_lens_light.append({'R_sersic': 0.0, 'n_sersic': 1.0,   'e1': -1.0, 'e2': -1.0})
+            kwargs_upper_lens_light.append({'R_sersic': 2.0,  'n_sersic': 10.0,   'e1': 1.0,  'e2': 1.0})
 
                 lens_light_params = [kwargs_lens_light_init, kwargs_lens_light_sigma,
                                     fixed_lens_light, kwargs_lower_lens_light, kwargs_upper_lens_light]
@@ -370,23 +363,25 @@ class MCMC:
             fitting_seq = FittingSequence(kwargs_data_joint, kwargs_model, kwargs_constraints,
                                           kwargs_likelihood, kwargs_params)
 
-            fitting_kwargs_list = [['MCMC',
-                                    {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
-                                     'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
-                                     'sampler_type':  mcmc_settings['sampler'],
-                                     'backend_filename': str(path) + '/chains/'
-                                                       + str(mcmc_settings['job_name']) + '_'
-                                                       + str(i) + '.h5'}]]
+           outpath = str(path) + '/chains/' + str(mcmc_settings['job_name']) + '_' + str(i)
+
+           num_params = len(kwargs_lens_init)+len(kwargs_lens_light_init)+len(kwargs_source_init)
+
+           proposals = [0.001]*num_params
+
+           kwargs_cobaya = {'proposal_widths': proposals,
+                            'Rminus1_stop': 0.01,
+                            'path': outpath,
+                            'force_overwrite': True}
+
+           fitting_kwargs_list = [['metropolis_hastings', kwargs_cobaya]]
 
             chain_list.append(fitting_seq.fit_sequence(fitting_kwargs_list))
-            kwargs_result.append(fitting_seq.best_fit())
+            kwargs_result.append(kwargs_result = chain_list[i][2])
 
-            sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[n][0]
+            # sampler_type, samples_mcmc, param_mcmc, dist_mcmc  = chain_list[i][0]
 
-        # np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_kwargs_result.csv',
-        #                kwargs_result, delimiter=',',  fmt='%s')
-
-        np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
+            np.savetxt(str(path) + '/datasets/' + str(mcmc_settings['job_name']) + '_sampled_params.csv',
                        param_mcmc, delimiter=',',  fmt='%s')
 
         return None
