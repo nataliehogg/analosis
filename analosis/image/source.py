@@ -3,7 +3,10 @@ import pandas as pd
 
 class Source:
     """
-    This class randomly draws and handles the properties of source.
+    This class randomly draws and handles the properties of the source.
+
+    Perturbations to the source are added in the Image class.
+
     """
 
     def __init__(self,
@@ -17,7 +20,7 @@ class Source:
                  model='SERSIC_ELLIPSE'
                  ):
       """
-      Creates the source light with Sérsic profile.
+      Creates the source light with an elliptical Sérsic profile.
       This could later be generalised to other profiles.
       """
 

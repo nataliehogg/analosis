@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+import random
 
 from lenstronomy.ImSim.image_model import ImageModel
 from lenstronomy.LensModel.lens_model import LensModel
@@ -33,33 +34,18 @@ class Image:
         lens_light_model_list = ['SERSIC_ELLIPSE']
 
         # source and its potential perturbations
-        source_model_list = ['SERSIC_ELLIPSE']
+        # source_model_list = ['SERSIC_ELLIPSE']
 
-        source_perturbations = image_settings['source_perturbations']
+        max_source_perturbations = image_settings['max_source_perturbations']
 
-        if (type(source_perturbations) == float
-            or type(source_perturbations) == int
-            ):
-            source_perturbations = [float(source_perturbations)]
-            source_model_list.append('SERSIC')
-        elif type(source_perturbations) == list:
-            for i, pert in enumerate(source_perturbations):
-                if type(pert) not in [float, int]:
-                    source_perturbations[i] = 0
-                    raise Warning("I found an element of parameters['source_perturbations'] that is not a number, treating it as zero.")
-                source_model_list.append('SERSIC')
+        if max_source_perturbations == 0:
+            print('Adding no perturbations to the source.')
+        elif max_source_perturbations == 1:
+            print('Adding 1 source perturbation per image.')
+        elif max_source_perturbations > 1:
+            print('Adding between 1 and {} source perturbations per image.'.format(max_source_perturbations))
         else:
-            source_perturbations = []
-            raise Warning("parameters['source_perturbations'] must be either None, a number, or a list of numbers, treating it as an empty list.")
-
-        # lens model
-        if image_settings['lens_light'] == True:
-            kwargs_model = {'lens_model_list': lens_model_list,
-                            'lens_light_model_list': lens_light_model_list,
-                            'source_light_model_list': source_model_list}
-        else:
-            kwargs_model = {'lens_model_list': lens_model_list,
-                            'source_light_model_list': source_model_list}
+            raise Warning("image_settings['max_source_perturbations'] should be an integer.")
 
         # telescope settings (HST)
         psf = 'GAUSSIAN'
@@ -89,32 +75,53 @@ class Image:
             R_s = kwargs_sl[i]['R_sersic']
             x_s = kwargs_sl[i]['center_x']
             y_s = kwargs_sl[i]['center_y']
-            for pert in source_perturbations:
-                mag_pert = mag - 2.5 * np.log10(pert)
-                r2       = np.random.uniform(0, R_s**2)
-                r        = np.sqrt(r2)
-                phi      = np.random.uniform(0, 2*np.pi)
-                x        = x_s + r * np.cos(phi)
-                y        = y_s + r * np.sin(phi)
-                R        = np.random.uniform(R_s/2, R_s) #PFmod
-                n        = np.random.uniform(2, 6)
-                kwargs_pert = {'magnitude': mag_pert,
+
+            if max_source_perturbations == 0:
+                 source_model_list = ['SERSIC_ELLIPSE']
+            else:
+                source_perturbations_list = list(np.random.uniform(0.0, 0.06, random.randint(1, max_source_perturbations)))
+                source_model_list = ['SERSIC_ELLIPSE'] + ['SERSIC']*len(source_perturbations_list)
+                for pert in source_perturbations_list:
+                    mag_pert = mag - 2.5 * np.log10(pert)
+                    r2       = np.random.uniform(0, R_s**2)
+                    r        = np.sqrt(r2)
+                    phi      = np.random.uniform(0, 2*np.pi)
+                    x        = x_s + r * np.cos(phi)
+                    y        = y_s + r * np.sin(phi)
+                    R        = np.random.uniform(R_s/2, R_s) 
+                    n        = np.random.uniform(2, 6)
+                    kwargs_pert = {'magnitude': mag_pert,
                                'R_sersic' : R,
                                'n_sersic' : n,
                                'center_x' : x,
                                'center_y' : y
                                }
-                kwargs_source.append(kwargs_pert)
+                    kwargs_source.append(kwargs_pert)
+
+            if image_settings['lens_light'] == True:
+                kwargs_model = {'lens_model_list': lens_model_list, 
+                                'lens_light_model_list': lens_light_model_list,
+                                'source_light_model_list': source_model_list}
+            else:
+                kwargs_model = {'lens_model_list': lens_model_list,
+                                'source_light_model_list': source_model_list}
 
             # always having lens light now
             kwargs_lens_light = [kwargs_ll[i]]
 
-            # compute the size of the image from the Einstein radius
-            theta_E = Einstein_radii[i] # in arcsec
-            beta = np.sqrt(kwargs_sl[i]['center_x']**2
-                           + kwargs_sl[i]['center_y']**2) # source offset
-            image_size = 4 * (theta_E + beta)
-            numpix = int(image_size / pixel_size)
+
+            if image_settings['fixed_numpix'] == True:
+                numpix = 100
+            elif image_settings['fixed_numpix'] == False:
+                # compute the size of the image from the Einstein radius
+                 theta_E = Einstein_radii[i] # in arcsec
+                 beta = np.sqrt(kwargs_sl[i]['center_x']**2 + kwargs_sl[i]['center_y']**2) # source offset
+                 image_size = 4 * (theta_E + beta)
+                 numpix = int(image_size / pixel_size)
+            else:
+                raise Warning("image_settings['fixed_numpix'] should be True or False.")
+
+            print(numpix)
 
             # simulation API
             sim = SimAPI(numpix=numpix,
