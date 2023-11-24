@@ -121,8 +121,6 @@ class Image:
             else:
                 raise Warning("image_settings['fixed_numpix'] should be True or False.")
 
-            print(numpix)
-
             # simulation API
             sim = SimAPI(numpix=numpix,
                          kwargs_single_band=kwargs_band,
