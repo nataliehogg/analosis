@@ -392,3 +392,118 @@ def estimate_Einstein_radius(R_sersic, n_sersic, k_eff, Rs, alpha_Rs, guess=1):
     theta_E = fsolve(func, guess)[0]
 
     return theta_E
+
+def estimate_quality_lens_light(input_kwargs, snr_cut=1):
+    """
+    Compute image quality including lens light in the calculation
+    """
+
+    qualities = []
+
+    # Extract data
+    los_cols = ['kappa_os', 'gamma1_os', 'gamma2_os', 'omega_os',
+            'kappa_od', 'gamma1_od', 'gamma2_od', 'omega_od',
+            'kappa_ds', 'gamma1_ds', 'gamma2_ds', 'omega_ds',
+            'kappa_los', 'gamma1_los', 'gamma2_los', 'omega_los']
+    bar_cols = ['R_sersic_bar', 'n_sersic_bar', 'k_eff_bar', 'e1_bar', 'e2_bar', 'x_bar', 'y_bar', 'mass_bar']
+    nfw_cols = ['Rs', 'alpha_Rs', 'x_nfw', 'y_nfw', 'e1_nfw', 'e2_nfw', 'virial_mass_nfw']
+    sl_cols = ['magnitude_sl', 'R_sersic_sl', 'n_sersic_sl', 'x_sl', 'y_sl', 'e1_sl', 'e2_sl']
+    ll_cols = ['magnitude_ll', 'R_sersic_ll', 'n_sersic_ll', 'x_ll', 'y_ll', 'e1_ll', 'e2_ll']
+
+    los        = input_kwargs.loc[:, los_cols]
+    baryons    = input_kwargs.loc[:, bar_cols]
+    halo       = input_kwargs.loc[:, nfw_cols]
+    source     = input_kwargs.loc[:, sl_cols]
+    lens_light =  input_kwargs.loc[:, ll_cols]
+    Einstein_radii = input_kwargs.loc[:, 'theta_E']
+
+    # Rename the keys for lenstronomy
+    util = Utilities(cosmo=None, path=None)
+    baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+
+    # Convert dataframes into lists of dictionaries
+    kwargs_los = los.to_dict('records')
+    kwargs_bar = baryons.to_dict('records')
+    kwargs_nfw = halo.to_dict('records')
+    kwargs_sl  = source.to_dict('records')
+    kwargs_ll  = lens_light.to_dict('records')
+
+    # Eliminate useless keys
+    for kwargs in kwargs_bar:
+        del kwargs['mass_bar']
+    for kwargs in kwargs_nfw:
+        del kwargs['virial_mass_nfw']
+
+
+    # PRODUCE IMAGES AND EVALUATE QUALITY
+
+    for i in range(len(kwargs_bar)):
+
+        # lens models
+        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        lens_light_model_list = ['SERSIC_ELLIPSE']
+        source_model_list = ['SERSIC_ELLIPSE'] # we don't include source perturbations here
+        kwargs_model = {'lens_model_list': lens_model_list,
+                        'lens_light_model_list': lens_light_model_list,
+                        'source_light_model_list': source_model_list}
+
+        # telescope settings (HST)
+        psf = 'GAUSSIAN'
+        band = HST(band='WFC3_F160W', psf_type=psf)
+        kwargs_band = band.kwargs_single_band()
+        pixel_size = band.camera['pixel_scale'] # in arcsec
+        kwargs_psf = {'psf_type': psf,
+                        'fwhm': kwargs_band['seeing'],
+                        'pixel_size': pixel_size,
+                        'truncation': 3}
+
+        # numerics
+        kwargs_numerics = {'supersampling_factor': 1,
+                            'supersampling_convolution': False}
+
+        # define kwargs for the lens, source, lens_light
+        kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
+        kwargs_source = [kwargs_sl[i]]
+        kwargs_lens_light = [kwargs_ll[i]]
+
+        # compute the size of the image from the Einstein radius
+        theta_E = Einstein_radii[i] # in arcsec
+        beta = np.sqrt(kwargs_sl[i]['center_x']**2
+                       + kwargs_sl[i]['center_y']**2) # source offset
+        image_size = 4 * (theta_E + beta)
+        numpix = int(image_size / pixel_size)
+
+        # simulation API
+        sim = SimAPI(numpix=numpix,
+                     kwargs_single_band=kwargs_band,
+                     kwargs_model=kwargs_model)
+
+        # extract data kwargs
+        kwargs_data = sim.kwargs_data
+
+        # convert magnitudes into amplitudes
+        kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(kwargs_lens_light_mag=kwargs_lens_light, kwargs_source_mag=kwargs_source)
+
+
+        # generate image
+        imSim = sim.image_model_class(kwargs_numerics)
+        image = imSim.image(kwargs_lens=kwargs_lens,
+                            kwargs_lens_light=kwargs_lens_light,
+                            kwargs_source=kwargs_source)
+        # add noise
+        image_noisy = image + sim.noise_for_model(model=image)
+        kwargs_data['image_data'] = image_noisy
+
+        # extract noise amplitude
+        background_rms = kwargs_data['background_rms']
+
+        # compute quality
+        quality = 0
+        for signal in np.nditer(image_noisy):
+            snr = signal / background_rms
+            if snr > snr_cut:
+                quality += snr
+        qualities.append(quality)
+
+
+    return qualities
