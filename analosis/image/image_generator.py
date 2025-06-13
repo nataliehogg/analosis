@@ -8,6 +8,7 @@ from lenstronomy.LensModel.lens_model import LensModel
 from lenstronomy.LightModel.light_model import LightModel
 from lenstronomy.SimulationAPI.sim_api import SimAPI
 from lenstronomy.SimulationAPI.ObservationConfig.HST import HST
+from lenstronomy.SimulationAPI.ObservationConfig.JWST import JWST
 
 class Image:
 
@@ -30,7 +31,7 @@ class Image:
         kwargs_ll  = lens_light.to_dict('records')
 
         # work out how to deal with this
-        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL'] # NHmod 13/06/25
         lens_light_model_list = ['SERSIC_ELLIPSE']
 
         # source and its potential perturbations
@@ -47,15 +48,24 @@ class Image:
         else:
             raise Warning("image_settings['max_source_perturbations'] should be an integer.")
 
-        # telescope settings (HST)
         psf = 'GAUSSIAN'
-        band = HST(band='WFC3_F160W', psf_type=psf)
-        kwargs_band = band.kwargs_single_band()
-        pixel_size = band.camera['pixel_scale'] # in arcsec
+
+        if image_settings['telescope'] == 'HST':
+            # telescope settings (HST)
+            band = HST(band='WFC3_F160W', psf_type=psf)
+            kwargs_band = band.kwargs_single_band()
+            pixel_size = band.camera['pixel_scale'] # in arcsec
+        elif image_settings['telescope'] == 'JWST':
+            band = JWST(band='F115W', psf_type=psf)
+            kwargs_band = band.kwargs_single_band()
+            pixel_size = band.camera['pixel_scale']
+        else:
+            raise ValueError('Unknown telescope.')
+
         kwargs_psf = {'psf_type': psf,
-                      'fwhm': kwargs_band['seeing'],
-                      'pixel_size': pixel_size,
-                      'truncation': 3}
+                          'fwhm': kwargs_band['seeing'],
+                          'pixel_size': pixel_size,
+                          'truncation': 3}
 
         # numerics
         kwargs_numerics = {'supersampling_factor': 1,

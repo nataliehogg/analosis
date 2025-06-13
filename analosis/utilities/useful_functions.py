@@ -306,7 +306,7 @@ def estimate_quality(input_kwargs, snr_cut=1):
     for i in range(len(kwargs_bar)):
 
         # lens models
-        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL'] # NHmod 13/06/25
         lens_light_model_list = [] # no lens light to evaluate image quality
         source_model_list = ['SERSIC_ELLIPSE'] # we don't include source perturbations here
         kwargs_model = {'lens_model_list': lens_model_list,
@@ -440,7 +440,7 @@ def estimate_quality_lens_light(input_kwargs, snr_cut=1):
     for i in range(len(kwargs_bar)):
 
         # lens models
-        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL'] # NHmod 13/06/25
         lens_light_model_list = ['SERSIC_ELLIPSE']
         source_model_list = ['SERSIC_ELLIPSE'] # we don't include source perturbations here
         kwargs_model = {'lens_model_list': lens_model_list,

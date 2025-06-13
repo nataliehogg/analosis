@@ -15,7 +15,7 @@ class Halo():
                  util,
                  min_aspect_ratio_nfw = 0.9,
                  sigma_offset=300, # in pc
-                 model_mass='NFW_ELLIPSE',
+                 model_mass='NFW_ELLIPSE_POTENTIAL', # NH: modified 13/06/25 as NFW_ELLIPSE now deprecated in lenstronomy
                  ):
         """
         Creates the dark-matter component of the main lens with NFW profile.

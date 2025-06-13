@@ -22,7 +22,7 @@ class SplitMCMC:
              source, path):
 
         if mcmc_settings['complexity'] == 'perfect':
-            lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+            lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL']
         elif mcmc_settings['complexity'] == 'power_law':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
         elif mcmc_settings['complexity'] in ['perfect_minimal',
@@ -30,7 +30,7 @@ class SplitMCMC:
                                         'missing_foreground_shear',
                                         'missing_halo_ellipticity',
                                         'missing_offset_ellipticity']:
-            lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE']
+            lens_fit_list = ['LOS_MINIMAL', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL']
         else:
             raise ValueError('I didn\'t implement that setting yet.')
 
