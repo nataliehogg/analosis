@@ -19,7 +19,7 @@ class Utilities:
         self.path = path
         self.sersic_util = SersicUtil()
 
-    def mstar_from_catalogue(self, index):
+    def mstar_from_catalogue(self, band, index):
         '''
         computes stellar mass in solar mass units from forecast COSMOS-Web velocity dispersions
         assumes fundamental plane relation of Hyde & Bernardi 2009
@@ -47,7 +47,20 @@ class Utilities:
         rl = rl[index]
 
 
-        return mass, mean_mass, rl
+        if band == 'F115W':
+            ml = data[:,6]
+        elif band == 'F150W':
+            ml = data[:,7]
+        elif band == 'F277W':
+            ml = data[:,8]
+        elif band == 'F444W':
+            ml = data[:,9]
+        else:
+            raise ValueError('Unknown band.')
+
+        ml = ml[index]
+
+        return mass, mean_mass, rl, ml
 
     def source_from_catalogue(self, band, index):
         '''

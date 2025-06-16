@@ -80,6 +80,7 @@ class Mocks:
 
                 baryons = Baryons(redshifts, distances, self.util, telescope=self.telescope,
                                   index = i, # NH: this just goes through the catalogue sequentially
+                                  band=self.band, 
                                   min_aspect_ratio_baryons=self.min_aspect_ratio_baryons)
                 halo = Halo(mass_baryons=baryons.mass,
                             redshifts=redshifts,

@@ -14,6 +14,7 @@ class Baryons():
                  util,
                  min_aspect_ratio_baryons = 0.9,
                  telescope = 'JWST',
+                 band = 'F115W',
                  index = 0,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
@@ -31,7 +32,7 @@ class Baryons():
 
         # mass and size
         if telescope =='JWST':
-            self.mass, mean_mass, R_sersic = util.mstar_from_catalogue(index)
+            self.mass, mean_mass, R_sersic, magnitude = util.mstar_from_catalogue(band, index)
         else:
             # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
             mean_mass = 2e11
@@ -41,6 +42,18 @@ class Baryons():
             R_sersic = (self.mass / mean_mass) * 2e-3 # Sérsic half-light radius [Mpc]
             R_sersic /= distances['od'] # [rad]
             R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
+
+            # absolute magnitude
+            mass_to_light = 2 # baryonic mass-to-light ratio
+            absolute_magnitude_sun = 4.74 # absolute magnitude of the Sun
+            absolute_magnitude = (absolute_magnitude_sun
+                                  - 2.5 * np.log10(self.mass / mass_to_light))
+            # for a mass of 5e10 [solar masses], and a mass-to-light ratio of 1,
+            # we have absolute_magnitude = -22
+
+            # apparent magnitude
+            D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
+            magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
         # Sérsic index
         mean_sersic_index = 4
@@ -55,18 +68,6 @@ class Baryons():
         effective_convergence = util.get_effective_convergence(
             mass=self.mass, R_sersic=R_sersic, n_sersic=n_sersic, e1=e1, e2=e2,
             d_os=distances['os'], d_od=distances['od'], d_ds=distances['ds'])
-
-        # absolute magnitude
-        mass_to_light = 2 # baryonic mass-to-light ratio
-        absolute_magnitude_sun = 4.74 # absolute magnitude of the Sun
-        absolute_magnitude = (absolute_magnitude_sun
-                              - 2.5 * np.log10(self.mass / mass_to_light))
-        # for a mass of 5e10 [solar masses], and a mass-to-light ratio of 1,
-        # we have absolute_magnitude = -22
-
-        # apparent magnitude
-        D = (1 + redshifts['lens'])**2 * distances['od'] # luminosity distance to d [Mpc]
-        magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
         # Save the kwargs as attributes
         self.kwargs['R_sersic'] = R_sersic
