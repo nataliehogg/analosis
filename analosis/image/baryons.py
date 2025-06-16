@@ -14,6 +14,7 @@ class Baryons():
                  util,
                  min_aspect_ratio_baryons = 0.9,
                  telescope = 'JWST',
+                 index = 0,
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
                  ):
@@ -30,7 +31,7 @@ class Baryons():
 
         # mass and size
         if telescope =='JWST':
-            self.mass, mean_mass, R_sersic = util.mstar_from_catalogue()
+            self.mass, mean_mass, R_sersic = util.mstar_from_catalogue(index)
         else:
             # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
             mean_mass = 2e11

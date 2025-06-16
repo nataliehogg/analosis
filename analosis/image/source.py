@@ -16,6 +16,8 @@ class Source:
                  maximum_source_offset_factor=1,
                  min_aspect_ratio_source = 0.9,
                  telescope = 'JWST',
+                 band = 'F115W',
+                 index = 0,
                  Einstein_radius=1,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE'
@@ -31,7 +33,7 @@ class Source:
       # Define the parameters
 
       if telescope == 'JWST':
-        R_sersic = util.source_from_catalogue()
+        R_sersic, magnitude = util.source_from_catalogue(band, index)
       else:
         # half-light radius size
         # (freely inspired from https://arxiv.org/abs/1904.10992)
@@ -43,14 +45,21 @@ class Source:
         R_sersic = radius / distances['os'] # [rad]
         R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
 
+        # absolute magnitude: assume that the luminosity is proportional to the
+        # galaxy's area; for r = mean_radius we have M = reference_magnitude
+        reference_magnitude = -22 #PFmod
+        absolute_magnitude = reference_magnitude - 5 * np.log10(radius / mean_radius)
+
+        # apparent magnitude
+        D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
+        magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
+
       # Sérsic index
       mean_sersic_index = 4
       n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
 
       # position
-      #r_max = min(maximum_source_offset_factor * R_sersic, Einstein_radius) #PFmod
       r_max = min(R_sersic, maximum_source_offset_factor * Einstein_radius) #PFmod
-      #r_max = maximum_source_offset_factor * Einstein_radius #PFmod
       r_sq_max = r_max**2 #[arcsec^2]
       r_sq = np.random.uniform(0, r_sq_max)
       r = np.sqrt(r_sq)
@@ -63,14 +72,6 @@ class Source:
       aspect_ratio      = np.random.uniform(min_aspect_ratio_source, 1.0)
       e1, e2    = util.ellipticity(orientation_angle, aspect_ratio)
 
-      # absolute magnitude: assume that the luminosity is proportional to the
-      # galaxy's area; for r = mean_radius we have M = reference_magnitude
-      reference_magnitude = -22 #PFmod
-      absolute_magnitude = reference_magnitude - 5 * np.log10(radius / mean_radius)
-
-      # apparent magnitude
-      D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
-      magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
       # Save kwargs
       self.kwargs['magnitude_sl'] = magnitude

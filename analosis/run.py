@@ -48,7 +48,8 @@ class Run:
             gamma_max=self.image_settings['maximum_shear'],
             sigma_halo_offset=self.image_settings['sigma_halo_offset'],
             maximum_source_offset_factor=self.image_settings['maximum_source_offset_factor'],
-            telescope = self.image_settings['telescope'])
+            telescope = self.image_settings['telescope'],
+            band = self.image_settings['band'])
 
         if self.image_settings['generate_image'] == True:
             # get the dictionary of kwargs from the mock generator

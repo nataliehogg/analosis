@@ -19,23 +19,14 @@ class Utilities:
         self.path = path
         self.sersic_util = SersicUtil()
 
-    def random_index(self):
-
-        nlenses = 111000
-
-        random_index = np.random.randint(0, 111000)
-
-        return random_index
-
-
-    def mstar_from_catalogue(self):
+    def mstar_from_catalogue(self, index):
         '''
         computes stellar mass in solar mass units from forecast COSMOS-Web velocity dispersions
         assumes fundamental plane relation of Hyde & Bernardi 2009
         also gets the matching half-light radius from the catalogue
         '''
 
-        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/'
+        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/' # NH TODO: remove hardbaked path
         lenses = 'lenses_COSMOS-Web.txt'
         data = np.genfromtxt(path+lenses)
 
@@ -51,32 +42,42 @@ class Utilities:
         
         stellarmass_msun = 10**log10_stellarmass
 
-        random_index = self.random_index()
-
-        random_mass = stellarmass_msun[random_index]
+        mass = stellarmass_msun[index]
         mean_mass = np.mean(stellarmass_msun)
-        random_rl = rl[random_index]
+        rl = rl[index]
 
-        return random_mass, mean_mass, random_rl
 
-    def source_from_catalogue(self):
+        return mass, mean_mass, rl
+
+    def source_from_catalogue(self, band, index):
         '''
         computes stellar mass in solar mass units from forecast COSMOS-Web velocity dispersions
         assumes fundamental plane relation of Hyde & Bernardi 2009
         also gets the matching half-light radius from the catalogue
         '''
 
-        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/'
+        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/' # NH TODO: remove hardbaked path
         lenses = 'lenses_COSMOS-Web.txt'
         data = np.genfromtxt(path+lenses)
 
         sl = data[:,14]
 
-        random_index = self.random_index()
+        sl = sl[index]
 
-        random_sl = sl[random_index]
+        if band == 'F115W':
+            ms = data[:,15]
+        elif band == 'F150W':
+            ms = data[:,17]
+        elif band == 'F277W':
+            ms = data[:,19]
+        elif band == 'F444W':
+            ms = data[:,21]
+        else:
+            raise ValueError('Unknown band.')
+        
+        ms = ms[index]
 
-        return random_sl
+        return sl, ms
 
 
     def dA(self, z1, z2):
@@ -372,6 +373,7 @@ def estimate_quality(input_kwargs, snr_cut=1):
                         'source_light_model_list': source_model_list}
 
         # telescope settings (HST)
+        # NH TODO: provide JWST option
         psf = 'GAUSSIAN'
         band = HST(band='WFC3_F160W', psf_type=psf)
         kwargs_band = band.kwargs_single_band()
