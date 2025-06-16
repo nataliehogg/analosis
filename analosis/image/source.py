@@ -33,7 +33,8 @@ class Source:
       # Define the parameters
 
       if telescope == 'JWST':
-        R_sersic, magnitude = util.source_from_catalogue(band, index)
+        # with JWST settings we ignore the max source offset factor, just passing in the catalogue source positions
+        R_sersic, magnitude, x, y = util.source_from_catalogue(band, index)
       else:
         # half-light radius size
         # (freely inspired from https://arxiv.org/abs/1904.10992)
@@ -54,18 +55,18 @@ class Source:
         D = (1 + redshifts['source'])**2 * distances['os'] # luminosity distance to s [Mpc]
         magnitude = absolute_magnitude + 5 * np.log10(D) + 25 # 25 = log10(Mpc/10pc)
 
+        # position
+        r_max = min(R_sersic, maximum_source_offset_factor * Einstein_radius) #PFmod
+        r_sq_max = r_max**2 #[arcsec^2]
+        r_sq = np.random.uniform(0, r_sq_max)
+        r = np.sqrt(r_sq)
+        phi = np.random.uniform(0, 2*np.pi)
+        x = lens_mass_centre['x'] + r * np.cos(phi)
+        y = lens_mass_centre['y'] + r * np.sin(phi)
+
       # Sérsic index
       mean_sersic_index = 4
       n_sersic = np.random.lognormal(np.log(mean_sersic_index), np.log(1.5)/2)
-
-      # position
-      r_max = min(R_sersic, maximum_source_offset_factor * Einstein_radius) #PFmod
-      r_sq_max = r_max**2 #[arcsec^2]
-      r_sq = np.random.uniform(0, r_sq_max)
-      r = np.sqrt(r_sq)
-      phi = np.random.uniform(0, 2*np.pi)
-      x = lens_mass_centre['x'] + r * np.cos(phi)
-      y = lens_mass_centre['y'] + r * np.sin(phi)
 
       # ellipticity
       orientation_angle = np.random.uniform(0.0, 2*np.pi)

@@ -61,9 +61,11 @@ class Mocks:
 
             # redshifts
             redshifts = {}
-            redshifts['lens'] = np.random.uniform(low=0.4, high=0.6)
-            redshifts['source'] = np.random.uniform(low=1.5, high=2.5)
-            # TODO: save the redshifts in dataframe?
+            if self.telescope == 'JWST':
+                redshifts['lens'], redshifts['source'] = self.util.redshifts_from_catalogue(i)
+            else:
+                redshifts['lens'] = np.random.uniform(low=0.4, high=0.6)
+                redshifts['source'] = np.random.uniform(low=1.5, high=2.5)
 
             # distances
             distances = {}

@@ -61,7 +61,6 @@ class Utilities:
         data = np.genfromtxt(path+lenses)
 
         sl = data[:,14]
-
         sl = sl[index]
 
         if band == 'F115W':
@@ -77,8 +76,30 @@ class Utilities:
         
         ms = ms[index]
 
-        return sl, ms
+        x = data[:, 10]
+        y = data[:, 11]
 
+        x = x[index]
+        y= y[index]
+
+        return sl, ms, x, y
+
+    def redshifts_from_catalogue(self, index):
+        '''
+        gets the lens and source redshifts from catalogue
+        '''
+
+        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/' # NH TODO: remove hardbaked path
+        lenses = 'lenses_COSMOS-Web.txt'
+        data = np.genfromtxt(path+lenses)
+
+        zl = data[:,0]
+        zs = data[:,1]
+
+        zl = zl[index]
+        zs = zs[index]
+
+        return zl, zs
 
     def dA(self, z1, z2):
         """
