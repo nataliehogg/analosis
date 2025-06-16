@@ -27,6 +27,7 @@ class Mocks:
                  gamma_max=0.03,
                  sigma_halo_offset=300, # pc
                  maximum_source_offset_factor=1, # in units of source half-light radius
+                 telescope = 'HST'
                  ):
 
         self.util = util
@@ -43,6 +44,7 @@ class Mocks:
         self.gamma_max = gamma_max
         self.sigma_halo_offset = sigma_halo_offset
         self.maximum_source_offset_factor = maximum_source_offset_factor
+        self.telescope = telescope
 
 
     def draw_kwargs(self):
@@ -72,7 +74,7 @@ class Mocks:
             attempt = 0
             while Einstein_radius < self.Einstein_radius_min:
 
-                baryons = Baryons(redshifts, distances, self.util,
+                baryons = Baryons(redshifts, distances, self.util, telescope=self.telescope,
                                   min_aspect_ratio_baryons=self.min_aspect_ratio_baryons)
                 halo = Halo(mass_baryons=baryons.mass,
                             redshifts=redshifts,
@@ -117,6 +119,7 @@ class Mocks:
             source = Source(redshifts, distances, self.util,
                             maximum_source_offset_factor=self.maximum_source_offset_factor,
                             min_aspect_ratio_source = self.min_aspect_ratio_source,
+                            telescope = self.telescope,
                             Einstein_radius=Einstein_radius,
                             lens_mass_centre=lens_mass_centre)
             source_kwargs = source.kwargs

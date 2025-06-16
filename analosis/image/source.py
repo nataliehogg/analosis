@@ -15,6 +15,7 @@ class Source:
                  util,
                  maximum_source_offset_factor=1,
                  min_aspect_ratio_source = 0.9,
+                 telescope = 'JWST',
                  Einstein_radius=1,
                  lens_mass_centre={'x':0, 'y':0},
                  model='SERSIC_ELLIPSE'
@@ -28,15 +29,19 @@ class Source:
       self.kwargs = {}
 
       # Define the parameters
-      # half-light radius size
-      # (freely inspired from https://arxiv.org/abs/1904.10992)
-      mean_radius = 3e-3 #[Mpc] #PFmod
-      radius = np.random.lognormal(np.log(mean_radius), np.log(2)/2)
-      # this ensures that 95% of the events have a radius that is at most
-      # a factor two larger or smaller than the mean radius.
-      radius = max(radius, mean_radius/2) #PFmod: ensures large enough source
-      R_sersic = radius / distances['os'] # [rad]
-      R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
+
+      if telescope == 'JWST':
+        R_sersic = util.source_from_catalogue()
+      else:
+        # half-light radius size
+        # (freely inspired from https://arxiv.org/abs/1904.10992)
+        mean_radius = 3e-3 #[Mpc] #PFmod
+        radius = np.random.lognormal(np.log(mean_radius), np.log(2)/2)
+        # this ensures that 95% of the events have a radius that is at most
+        # a factor two larger or smaller than the mean radius.
+        radius = max(radius, mean_radius/2) #PFmod: ensures large enough source
+        R_sersic = radius / distances['os'] # [rad]
+        R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
 
       # Sérsic index
       mean_sersic_index = 4

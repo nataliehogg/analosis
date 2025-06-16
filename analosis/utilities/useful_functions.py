@@ -19,6 +19,65 @@ class Utilities:
         self.path = path
         self.sersic_util = SersicUtil()
 
+    def random_index(self):
+
+        nlenses = 111000
+
+        random_index = np.random.randint(0, 111000)
+
+        return random_index
+
+
+    def mstar_from_catalogue(self):
+        '''
+        computes stellar mass in solar mass units from forecast COSMOS-Web velocity dispersions
+        assumes fundamental plane relation of Hyde & Bernardi 2009
+        also gets the matching half-light radius from the catalogue
+        '''
+
+        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/'
+        lenses = 'lenses_COSMOS-Web.txt'
+        data = np.genfromtxt(path+lenses)
+
+        vel_disp = data[:,3]
+        rl = data[:,5]
+        
+        V = np.log10(vel_disp)
+
+        p0 = -5.97 
+        p1 = -1.24 
+        p2 = -0.044
+        log10_stellarmass = -(p1 + ((-p1)**2 - (4*(-p2)*(-p0+V)))**0.5)/(2*-p2)
+        
+        stellarmass_msun = 10**log10_stellarmass
+
+        random_index = self.random_index()
+
+        random_mass = stellarmass_msun[random_index]
+        mean_mass = np.mean(stellarmass_msun)
+        random_rl = rl[random_index]
+
+        return random_mass, mean_mass, random_rl
+
+    def source_from_catalogue(self):
+        '''
+        computes stellar mass in solar mass units from forecast COSMOS-Web velocity dispersions
+        assumes fundamental plane relation of Hyde & Bernardi 2009
+        also gets the matching half-light radius from the catalogue
+        '''
+
+        path = r'/home/nataliehogg/Documents/Projects/analosis/analosis/utilities/'
+        lenses = 'lenses_COSMOS-Web.txt'
+        data = np.genfromtxt(path+lenses)
+
+        sl = data[:,14]
+
+        random_index = self.random_index()
+
+        random_sl = sl[random_index]
+
+        return random_sl
+
 
     def dA(self, z1, z2):
         """

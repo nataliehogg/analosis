@@ -13,6 +13,7 @@ class Baryons():
                  distances, # in Mpc
                  util,
                  min_aspect_ratio_baryons = 0.9,
+                 telescope = 'JWST',
                  model_mass='SERSIC_ELLIPSE_POTENTIAL',
                  model_light='SERSIC_ELLIPSE',
                  ):
@@ -28,19 +29,17 @@ class Baryons():
         # Define the kwargs
 
         # mass and size
-        # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
-        # mean_mass = 6e10 # mean total baryonic mass [solar masses]
-
-        mean_mass = 2e11 # Pierre look here
-
-        # yes, we consider quite large masses here
-        self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
-
-        # this ensures that 95% of the events have a mass that is at most
-        # a factor two larger or smaller than the mean mass.
-        R_sersic = (self.mass / mean_mass) * 2e-3 # Sérsic half-light radius [Mpc]
-        R_sersic /= distances['od'] # [rad]
-        R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
+        if telescope =='JWST':
+            self.mass, mean_mass, R_sersic = util.mstar_from_catalogue()
+        else:
+            # orders of magnitude freely inspired from https://arxiv.org/abs/1904.10992
+            mean_mass = 2e11
+            # this ensures that 95% of the events have a mass that is at most
+            # a factor two larger or smaller than the mean mass.
+            self.mass = np.random.lognormal(np.log(mean_mass), np.log(2)/2)
+            R_sersic = (self.mass / mean_mass) * 2e-3 # Sérsic half-light radius [Mpc]
+            R_sersic /= distances['od'] # [rad]
+            R_sersic = util.angle_conversion(R_sersic, 'to arcsecs') # [arcsec]
 
         # Sérsic index
         mean_sersic_index = 4
