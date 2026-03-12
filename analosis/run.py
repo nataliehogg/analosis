@@ -46,6 +46,8 @@ class Run:
             min_aspect_ratio_baryons=self.image_settings['min_aspect_ratio_baryons'],
             min_aspect_ratio_nfw=self.image_settings['min_aspect_ratio_nfw'],
             gamma_max=self.image_settings['maximum_shear'],
+            truth_model=self.image_settings.get('truth_model', 'composite'),
+            a4_max=self.image_settings.get('a4_max', 0.05),
             sigma_halo_offset=self.image_settings['sigma_halo_offset'],
             maximum_source_offset_factor=self.image_settings['maximum_source_offset_factor'],
             telescope = self.image_settings['telescope'],
@@ -68,26 +70,32 @@ class Run:
             los = util.get_dataframe(kwargs_dict['los'])
             lens_light = util.get_dataframe(kwargs_dict['lens_light'])
             source = util.get_dataframe(kwargs_dict['source'])
+            if 'boxydisky' in kwargs_dict:
+                boxydisky = util.get_dataframe(kwargs_dict['boxydisky'])
+            else:
+                boxydisky = None
 
             # combine the dataframes for saving to file
             # in the same order as the params are put into the MCMC for future ease of plotting
+            dataframes = [los, baryons, mass_bar_dataframe, halo, mass_nfw_dataframe]
+            if boxydisky is not None:
+                dataframes.append(boxydisky)
             if image_settings['lens_light'] == True:
-                complete_data = util.combine_dataframes([los, baryons, mass_bar_dataframe,
-                                                         halo, mass_nfw_dataframe, source,
-                                                         lens_light, Einstein_radii_dataframe])
+                dataframes.extend([source, lens_light, Einstein_radii_dataframe])
             else:
-                complete_data = util.combine_dataframes([los, baryons, mass_bar_dataframe,
-                                                         halo, mass_nfw_dataframe, source,
-                                                         Einstein_radii_dataframe])
+                dataframes.extend([source, Einstein_radii_dataframe])
+
+            complete_data = util.combine_dataframes(dataframes)
 
             util.save_input_kwargs(self.image_settings, complete_data)
 
             # rename the dataframes for lenstronomy
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+            boxydisky = util.rename_boxydisky_kwargs(boxydisky)
 
             # generate the image and the associated data kwargs for either plotting or fitting
             im = Image()
-            im.generate_image(self.image_settings, baryons, halo, los, lens_light, source, Einstein_radii, path)
+            im.generate_image(self.image_settings, baryons, halo, los, lens_light, source, boxydisky, Einstein_radii, path)
         else:
             print('New images will not be generated.')
             pass
@@ -113,12 +121,17 @@ class Run:
             ll_cols = ['R_sersic_ll', 'n_sersic_ll', 'e1_ll', 'e2_ll', 'x_ll', 'y_ll', 'magnitude_ll']
 
             sl_cols = ['magnitude_sl', 'R_sersic_sl', 'n_sersic_sl', 'x_sl', 'y_sl', 'e1_sl', 'e2_sl']
+            bodi_cols = ['theta_E_bodi', 'gamma_bodi', 'e1_bodi', 'e2_bodi', 'x_bodi', 'y_bodi', 'a4_a_bodi']
 
             los        = input_kwargs.loc[:, los_cols]
             baryons    = input_kwargs.loc[:, bar_cols]
             halo       = input_kwargs.loc[:, nfw_cols]
             source     = input_kwargs.loc[:, sl_cols]
             Einstein_radii = input_kwargs.loc[:, 'theta_E']
+            if set(bodi_cols).issubset(input_kwargs.columns):
+                boxydisky = input_kwargs.loc[:, bodi_cols]
+            else:
+                boxydisky = None
 
             if set(ll_cols).issubset(input_kwargs.columns):
                 lens_light = input_kwargs.loc[:, ll_cols]
@@ -126,11 +139,12 @@ class Run:
                 lens_light = None
 
             baryons, halo, lens_light, source = util.rename_kwargs(baryons, halo, lens_light, source)
+            boxydisky = util.rename_boxydisky_kwargs(boxydisky)
 
             if self.mcmc_settings['split'] == True:
-                chain = SplitMCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
+                chain = SplitMCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path, boxydisky=boxydisky)
             else:
-                chain = MCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path)
+                chain = MCMC(self.image_settings, self.mcmc_settings, baryons, halo, los, lens_light, Einstein_radii, source, path, boxydisky=boxydisky)
 
         elif self.mcmc_settings['MCMC'] == False:
             print('MCMC will not be run.')

@@ -17,6 +17,7 @@ class Image:
 
     def generate_image(self, image_settings,
                        baryons, halo, los, lens_light, source,
+                       boxydisky,
                        Einstein_radii, path
                        ):
 
@@ -29,10 +30,26 @@ class Image:
         kwargs_nfw = halo.to_dict('records')
         kwargs_sl  = source.to_dict('records')
         kwargs_ll  = lens_light.to_dict('records')
+        kwargs_bd = None if boxydisky is None else boxydisky.to_dict('records')
 
-        # work out how to deal with this
-        lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL'] # NHmod 13/06/25
+        truth_model = image_settings.get('truth_model', 'composite')
+        if truth_model == 'composite':
+            lens_model_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL']
+        elif truth_model == 'boxydisky':
+            lens_model_list = ['LOS_MINIMAL', 'EPL_BOXYDISKY']
+        else:
+            raise ValueError('Unknown truth model.')
         lens_light_model_list = ['SERSIC_ELLIPSE']
+        los_minimal_keys = [
+            'kappa_od',
+            'gamma1_od',
+            'gamma2_od',
+            'omega_od',
+            'kappa_los',
+            'gamma1_los',
+            'gamma2_los',
+            'omega_los',
+        ]
 
         # source and its potential perturbations
         # source_model_list = ['SERSIC_ELLIPSE']
@@ -75,7 +92,13 @@ class Image:
         for i in range(image_settings['number_of_images']):
 
             # define kwargs for the lens
-            kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
+            if truth_model == 'composite':
+                kwargs_lens = [kwargs_los[i], kwargs_bar[i], kwargs_nfw[i]]
+            else:
+                kwargs_lens = [
+                    {key: kwargs_los[i][key] for key in los_minimal_keys},
+                    kwargs_bd[i],
+                ]
 
             # define kwargs for the main source
             kwargs_source = [kwargs_sl[i]]
