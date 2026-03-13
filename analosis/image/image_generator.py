@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import random
+from copy import deepcopy
 
 from lenstronomy.ImSim.image_model import ImageModel
 from lenstronomy.LensModel.lens_model import LensModel
@@ -15,6 +16,37 @@ class Image:
     def __init__(self):
         rings_for_dwarf_lords = 7
 
+    @staticmethod
+    def _serialise_value(value):
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        return value
+
+    def _source_component_rows(self, image_index, source_model_list, kwargs_source_mag, kwargs_source_amp):
+        rows = []
+
+        for component_index, model_name in enumerate(source_model_list):
+            row = {
+                'image_index': image_index,
+                'component_index': component_index,
+                'model_name': model_name,
+                'is_main_source': component_index == 0,
+            }
+
+            kwargs_mag = kwargs_source_mag[component_index]
+            kwargs_amp = kwargs_source_amp[component_index]
+
+            for key, value in kwargs_mag.items():
+                row[f'mag_{key}'] = self._serialise_value(value)
+            for key, value in kwargs_amp.items():
+                row[f'amp_{key}'] = self._serialise_value(value)
+
+            rows.append(row)
+
+        return rows
+
     def generate_image(self, image_settings,
                        baryons, halo, los, lens_light, source,
                        boxydisky,
@@ -23,6 +55,8 @@ class Image:
 
         image_list = []
         hyper_list = []
+        source_truth_list = []
+        source_truth_rows = []
 
         # convert the dfs to dicts for use with lenstronomy
         kwargs_los = los.to_dict('records')
@@ -131,6 +165,9 @@ class Image:
                                }
                     kwargs_source.append(kwargs_pert)
 
+            kwargs_source_mag = deepcopy(kwargs_source)
+            source_model_list_truth = list(source_model_list)
+
             if image_settings['lens_light'] == True:
                 kwargs_model = {'lens_model_list': lens_model_list, 
                                 'lens_light_model_list': lens_light_model_list,
@@ -165,6 +202,17 @@ class Image:
             # convert magnitudes into amplitudes
             kwargs_lens_light, kwargs_source, ps = sim.magnitude2amplitude(kwargs_lens_light_mag=kwargs_lens_light,
                                                                            kwargs_source_mag=kwargs_source)
+            kwargs_source_amp = deepcopy(kwargs_source)
+
+            source_truth_list.append({
+                'image_index': i,
+                'source_light_model_list': source_model_list_truth,
+                'kwargs_source_mag': kwargs_source_mag,
+                'kwargs_source_amp': kwargs_source_amp,
+            })
+            source_truth_rows.extend(
+                self._source_component_rows(i, source_model_list_truth, kwargs_source_mag, kwargs_source_amp)
+            )
 
             # generate image
             imSim = sim.image_model_class(kwargs_numerics)
@@ -194,6 +242,17 @@ class Image:
         hyper_outfile = open(hyper_filename,'wb')
         pickle.dump(hyper_list, hyper_outfile)
         hyper_outfile.close()
+
+        source_truth_filename = str(path)+'/datasets/'+str(image_settings['image_name'])+'_source_truth.pickle'
+        source_truth_outfile = open(source_truth_filename, 'wb')
+        pickle.dump(source_truth_list, source_truth_outfile)
+        source_truth_outfile.close()
+
+        source_truth_dataframe = pd.DataFrame(source_truth_rows)
+        source_truth_dataframe.to_csv(
+            str(path) + '/datasets/' + str(image_settings['image_name']) + '_source_truth.csv',
+            index=False,
+        )
 
 
         return None
