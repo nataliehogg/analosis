@@ -44,6 +44,8 @@ class SplitMCMC:
         kwargs_ll  = lens_light.to_dict('records')
 
         kwargs_likelihood = {'source_marg': True}
+        source_model = mcmc_settings.get('source_model', 'sersic')
+        shapelet_n_max = int(mcmc_settings.get('shapelet_n_max', 6))
 
         # load the hyperdata
         index = mcmc_settings['split_index']
@@ -278,25 +280,50 @@ class SplitMCMC:
 
             # SOURCE MODEL
 
-            source_model_list = ['SERSIC_ELLIPSE']
-
-            # Initialise the lists of parameters
             fixed_source = []
             kwargs_source_init = []
             kwargs_source_sigma = []
             kwargs_lower_source = []
             kwargs_upper_source = []
 
+            if source_model == 'sersic':
+                source_model_list = ['SERSIC_ELLIPSE']
 
-            # Define parameters
-            fixed_source.append({})
-            kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
-                                       'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
-                                       'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+                fixed_source.append({})
+                kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
+                                           'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
+                                           'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
 
-            kwargs_source_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1, 'center_x': 0.1, 'center_y': 0.1, 'e1': 0.1, 'e2': 0.1})
-            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 1.0, 'center_x': -1.0, 'center_y': -1.0, 'e1': -1.0, 'e2': -1.0})
-            kwargs_upper_source.append({'R_sersic': 5.0, 'n_sersic': 10.0, 'center_x': 1.0, 'center_y': 1.0, 'e1': 1.0, 'e2': 1.0})
+                kwargs_source_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1, 'center_x': 0.1, 'center_y': 0.1, 'e1': 0.1, 'e2': 0.1})
+                kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 1.0, 'center_x': -1.0, 'center_y': -1.0, 'e1': -1.0, 'e2': -1.0})
+                kwargs_upper_source.append({'R_sersic': 5.0, 'n_sersic': 10.0, 'center_x': 1.0, 'center_y': 1.0, 'e1': 1.0, 'e2': 1.0})
+                kwargs_constraints = {}
+
+            elif source_model == 'sersic_shapelets':
+                source_model_list = ['SHAPELETS', 'SERSIC_ELLIPSE']
+                beta_init = max(0.02, 0.5 * kwargs_sl[i]['R_sersic'])
+
+                fixed_source.append({'n_max': shapelet_n_max})
+                kwargs_source_init.append({'beta': beta_init,
+                                           'center_x': kwargs_sl[i]['center_x'],
+                                           'center_y': kwargs_sl[i]['center_y']})
+                kwargs_source_sigma.append({'beta': 0.01, 'center_x': 0.1, 'center_y': 0.1})
+                kwargs_lower_source.append({'beta': 0.01, 'center_x': -1.0, 'center_y': -1.0})
+                kwargs_upper_source.append({'beta': 1.0, 'center_x': 1.0, 'center_y': 1.0})
+
+                fixed_source.append({})
+                kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
+                                           'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
+                                           'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+                kwargs_source_sigma.append({'R_sersic': 0.1, 'n_sersic': 0.1, 'center_x': 0.1, 'center_y': 0.1, 'e1': 0.1, 'e2': 0.1})
+                kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 1.0, 'center_x': -1.0, 'center_y': -1.0, 'e1': -1.0, 'e2': -1.0})
+                kwargs_upper_source.append({'R_sersic': 5.0, 'n_sersic': 10.0, 'center_x': 1.0, 'center_y': 1.0, 'e1': 1.0, 'e2': 1.0})
+
+                kwargs_constraints = {
+                    'joint_source_with_source': [[0, 1, ['center_x', 'center_y']]]
+                }
+            else:
+                raise ValueError('Unknown source_model setting.')
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -349,7 +376,6 @@ class SplitMCMC:
 
             kwargs_data_joint = {'multi_band_list': multi_band_list,
                                  'multi_band_type': 'multi-linear'}
-            kwargs_constraints = {}
 
 
             print('Starting MCMC')
