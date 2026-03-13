@@ -391,10 +391,9 @@ class MCMC:
             fitting_seq = FittingSequence(kwargs_data_joint, kwargs_model, kwargs_constraints,
                                           kwargs_likelihood, kwargs_params)
 
-            fitting_kwargs_list = [['MCMC',
+            fitting_kwargs_list = [[mcmc_settings['sampler'].lower(),
                                     {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
-                                     'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
                                                        + str(mcmc_settings['job_name']) + '_'
                                                        + str(i) + '.h5'}]]
