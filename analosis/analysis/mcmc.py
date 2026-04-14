@@ -11,20 +11,22 @@ im = Image()
 class MCMC:
 
     def __init__(self, image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
-                 source, path):
+                 source, path, boxydisky=None):
 
         rings_to_rule_them_all = 1
 
         self.mcmc(image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
-                  source,path)
+                  source, path, boxydisky=boxydisky)
 
     def mcmc(self, image_settings, mcmc_settings, baryons, halo, los, lens_light, Einstein_radii,
-             source, path):
+             source, path, boxydisky=None):
 
         if mcmc_settings['complexity'] == 'perfect':
             lens_fit_list = ['LOS', 'SERSIC_ELLIPSE_POTENTIAL', 'NFW_ELLIPSE_POTENTIAL']
         elif mcmc_settings['complexity'] == 'power_law':
             lens_fit_list = ['LOS_MINIMAL', 'EPL']
+        elif mcmc_settings['complexity'] == 'power_law_boxydisky':
+            lens_fit_list = ['LOS_MINIMAL', 'EPL_BOXYDISKY']
         elif mcmc_settings['complexity'] in ['perfect_minimal',
                                         'missing_offset',
                                         'missing_foreground_shear',
@@ -38,6 +40,7 @@ class MCMC:
         kwargs_bar = baryons.to_dict('records')
         kwargs_nfw = halo.to_dict('records')
         kwargs_sl  = source.to_dict('records')
+        kwargs_bd = None if boxydisky is None else boxydisky.to_dict('records')
 
         if lens_light is not None:
             kwargs_ll  = lens_light.to_dict('records')
@@ -45,6 +48,8 @@ class MCMC:
             kwargs_ll = None
 
         kwargs_likelihood = {'source_marg': True}
+        source_model = mcmc_settings.get('source_model', 'sersic')
+        shapelet_n_max = int(mcmc_settings.get('shapelet_n_max', 6))
 
         # load the hyperdata
         hyperfile = str(path)+'/datasets/'+str(image_settings['image_name'])+'_hyperdata.pickle'
@@ -179,16 +184,34 @@ class MCMC:
                                           'omega_los': omega_prior})
 
 
-            if mcmc_settings['complexity'] == 'power_law':
+            if mcmc_settings['complexity'] in ['power_law', 'power_law_boxydisky']:
+                if kwargs_bd is not None:
+                    power_law_init = {'theta_E': kwargs_bd[i]['theta_E'],
+                                      'gamma': kwargs_bd[i]['gamma'],
+                                      'e1': kwargs_bd[i]['e1'],
+                                      'e2': kwargs_bd[i]['e2']}
+                else:
+                    power_law_init = {'theta_E': Einstein_radii[i], 'gamma': 2.0,
+                                      'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']}
+
                 fixed_lens.append({'center_x': 0.0, 'center_y': 0.0})
-                kwargs_lens_init.append({'theta_E': Einstein_radii[i], 'gamma': 2.0,
-                                         'e1': kwargs_bar[i]['e1'], 'e2': kwargs_bar[i]['e2']})
-                kwargs_lens_sigma.append({'theta_E': 0.001, 'gamma': 0.01,
-                                         'e1': 0.01, 'e2': 0.01})
-                kwargs_lower_lens.append({'theta_E': 0.3, 'gamma': 1.0,
-                                         'e1': -0.5, 'e2': -0.5})
-                kwargs_upper_lens.append({'theta_E': 3.0, 'gamma': 3.0,
-                                         'e1': 0.5, 'e2': 0.5})
+                kwargs_lens_sigma_power_law = {'theta_E': 0.001, 'gamma': 0.01,
+                                               'e1': 0.01, 'e2': 0.01}
+                kwargs_lower_lens_power_law = {'theta_E': 0.3, 'gamma': 1.0,
+                                               'e1': -0.5, 'e2': -0.5}
+                kwargs_upper_lens_power_law = {'theta_E': 3.0, 'gamma': 3.0,
+                                               'e1': 0.5, 'e2': 0.5}
+
+                if mcmc_settings['complexity'] == 'power_law_boxydisky':
+                    power_law_init['a4_a'] = 0.0 if kwargs_bd is None else kwargs_bd[i]['a4_a']
+                    kwargs_lens_sigma_power_law['a4_a'] = 0.01
+                    kwargs_lower_lens_power_law['a4_a'] = -0.1
+                    kwargs_upper_lens_power_law['a4_a'] = 0.1
+
+                kwargs_lens_init.append(power_law_init)
+                kwargs_lens_sigma.append(kwargs_lens_sigma_power_law)
+                kwargs_lower_lens.append(kwargs_lower_lens_power_law)
+                kwargs_upper_lens.append(kwargs_upper_lens_power_law)
 
             else:
                 # SERSIC_ELLIPSE_POTENTIAL
@@ -286,8 +309,6 @@ class MCMC:
 
             # SOURCE MODEL
 
-            source_model_list = ['SERSIC_ELLIPSE']
-
             # Initialise the lists of parameters
             fixed_source = []
             kwargs_source_init = []
@@ -295,24 +316,64 @@ class MCMC:
             kwargs_lower_source = []
             kwargs_upper_source = []
 
+            if source_model == 'sersic':
+                source_model_list = ['SERSIC_ELLIPSE']
 
-            # Define parameters
-            fixed_source.append({})
-            kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
-                                       'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
-                                       'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+                fixed_source.append({})
+                kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
+                                           'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
+                                           'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
 
-            kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
-                                        'center_x': 0.01, 'center_y': 0.01,
-                                        'e1': 0.01, 'e2': 0.01})
+                kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
+                                            'center_x': 0.01, 'center_y': 0.01,
+                                            'e1': 0.01, 'e2': 0.01})
 
-            kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
-                                        'center_x': -0.5, 'center_y': -0.5,
-                                        'e1': -0.5, 'e2': -0.5})
+                kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
+                                            'center_x': -0.5, 'center_y': -0.5,
+                                            'e1': -0.5, 'e2': -0.5})
 
-            kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
-                                         'center_x': 0.5, 'center_y': 0.5,
-                                         'e1': 0.5, 'e2': 0.5})
+                kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
+                                             'center_x': 0.5, 'center_y': 0.5,
+                                             'e1': 0.5, 'e2': 0.5})
+                kwargs_constraints = {}
+
+            elif source_model == 'sersic_shapelets':
+                source_model_list = ['SHAPELETS', 'SERSIC_ELLIPSE']
+                beta_init = max(0.02, 0.5 * kwargs_sl[i]['R_sersic'])
+
+                fixed_source.append({'n_max': shapelet_n_max})
+                kwargs_source_init.append({'beta': beta_init,
+                                           'center_x': kwargs_sl[i]['center_x'],
+                                           'center_y': kwargs_sl[i]['center_y']})
+                kwargs_source_sigma.append({'beta': 0.01,
+                                            'center_x': 0.01,
+                                            'center_y': 0.01})
+                kwargs_lower_source.append({'beta': 0.01,
+                                            'center_x': -0.5,
+                                            'center_y': -0.5})
+                kwargs_upper_source.append({'beta': 1.0,
+                                            'center_x': 0.5,
+                                            'center_y': 0.5})
+
+                fixed_source.append({})
+                kwargs_source_init.append({'R_sersic': kwargs_sl[i]['R_sersic'], 'n_sersic': kwargs_sl[i]['n_sersic'],
+                                           'center_x': kwargs_sl[i]['center_x'], 'center_y': kwargs_sl[i]['center_y'],
+                                           'e1': kwargs_sl[i]['e1'], 'e2': kwargs_sl[i]['e2']})
+                kwargs_source_sigma.append({'R_sersic': 0.001, 'n_sersic': 0.001,
+                                            'center_x': 0.01, 'center_y': 0.01,
+                                            'e1': 0.01, 'e2': 0.01})
+                kwargs_lower_source.append({'R_sersic': 0.0, 'n_sersic': 2.0,
+                                            'center_x': -0.5, 'center_y': -0.5,
+                                            'e1': -0.5, 'e2': -0.5})
+                kwargs_upper_source.append({'R_sersic': 1.0, 'n_sersic': 7.0,
+                                            'center_x': 0.5, 'center_y': 0.5,
+                                            'e1': 0.5, 'e2': 0.5})
+
+                kwargs_constraints = {
+                    'joint_source_with_source': [[0, 1, ['center_x', 'center_y']]]
+                }
+            else:
+                raise ValueError('Unknown source_model setting.')
 
             source_params = [kwargs_source_init, kwargs_source_sigma,
                              fixed_source, kwargs_lower_source, kwargs_upper_source]
@@ -363,17 +424,15 @@ class MCMC:
 
             kwargs_data_joint = {'multi_band_list': multi_band_list,
                                  'multi_band_type': 'multi-linear'}
-            kwargs_constraints = {}
 
 
             print('Starting MCMC')
             fitting_seq = FittingSequence(kwargs_data_joint, kwargs_model, kwargs_constraints,
                                           kwargs_likelihood, kwargs_params)
 
-            fitting_kwargs_list = [['MCMC',
+            fitting_kwargs_list = [[mcmc_settings['sampler'].lower(),
                                     {'n_burn': mcmc_settings['n_burn'], 'n_run':  mcmc_settings['n_run'],
                                      'walkerRatio': walker_ratio, 'sigma_scale': sigma_scale,
-                                     'sampler_type':  mcmc_settings['sampler'],
                                      'backend_filename': str(path) + '/chains/'
                                                        + str(mcmc_settings['job_name']) + '_'
                                                        + str(i) + '.h5'}]]

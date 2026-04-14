@@ -340,8 +340,24 @@ class Utilities:
                 'x_sl': 'center_x',
                 'y_sl': 'center_y',
                 'e1_sl': 'e1',
-                'e2_sl': 'e2'})
+                    'e2_sl': 'e2'})
         return baryons, halo, lens_light, source
+
+    def rename_boxydisky_kwargs(self, boxydisky):
+        if boxydisky is None:
+            return None
+
+        boxydisky = boxydisky.rename(
+            index=str, columns={
+                'theta_E_bodi': 'theta_E',
+                'gamma_bodi': 'gamma',
+                'e1_bodi': 'e1',
+                'e2_bodi': 'e2',
+                'x_bodi': 'center_x',
+                'y_bodi': 'center_y',
+                'a4_a_bodi': 'a4_a',
+            })
+        return boxydisky
 
 
 def estimate_quality(input_kwargs, snr_cut=1):

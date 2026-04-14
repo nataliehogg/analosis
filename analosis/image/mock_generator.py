@@ -5,6 +5,7 @@ import pandas as pd
 from analosis.image.source import Source
 from analosis.image.los import LOS
 from analosis.image.baryons import Baryons
+from analosis.image.boxydisky import BoxyDisky
 from analosis.image.dark_matter import Halo
 from lenstronomy.LensModel.lens_model import LensModel
 from analosis.utilities.useful_functions import estimate_Einstein_radius
@@ -25,6 +26,8 @@ class Mocks:
                  min_aspect_ratio_baryons = 0.9,
                  min_aspect_ratio_nfw = 0.9,
                  gamma_max=0.03,
+                 truth_model='composite',
+                 a4_max=0.05,
                  sigma_halo_offset=300, # pc
                  maximum_source_offset_factor=1, # in units of source half-light radius
                  telescope = 'HST',
@@ -43,6 +46,8 @@ class Mocks:
         self.masses_baryons = []
         self.masses_haloes  = []
         self.gamma_max = gamma_max
+        self.truth_model = truth_model
+        self.a4_max = a4_max
         self.sigma_halo_offset = sigma_halo_offset
         self.maximum_source_offset_factor = maximum_source_offset_factor
         self.telescope = telescope
@@ -56,6 +61,10 @@ class Mocks:
         """
 
         kwargs = {'baryons': [], 'halo':[], 'los':[], 'lens_light':[], 'source': []}
+        if self.truth_model == 'boxydisky':
+            kwargs['boxydisky'] = []
+        elif self.truth_model != 'composite':
+            raise ValueError('Unknown truth model.')
 
         for i in range(self.number_of_images):
 
@@ -121,6 +130,14 @@ class Mocks:
             los = LOS(util=self.util, gamma_max=self.gamma_max)
             los_kwargs = los.kwargs
 
+            if self.truth_model == 'boxydisky':
+                boxydisky = BoxyDisky(
+                    Einstein_radius=Einstein_radius,
+                    e1=baryons.kwargs['e1'],
+                    e2=baryons.kwargs['e2'],
+                    a4_max=self.a4_max,
+                )
+
             # source
             source = Source(redshifts, distances, self.util,
                             maximum_source_offset_factor=self.maximum_source_offset_factor,
@@ -137,5 +154,7 @@ class Mocks:
             kwargs['los'].append(los_kwargs)
             kwargs['lens_light'].append(lens_light_kwargs)
             kwargs['source'].append(source_kwargs)
+            if self.truth_model == 'boxydisky':
+                kwargs['boxydisky'].append(boxydisky.kwargs)
 
         return kwargs
